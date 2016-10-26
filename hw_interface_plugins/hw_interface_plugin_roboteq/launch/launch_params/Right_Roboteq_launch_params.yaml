@@ -1,0 +1,18 @@
+plugin_names: 
+    {
+        hw_interface_plugin_roboteq : roboteq_drive,
+    }
+
+roboteq_drive:
+    {
+        Right_Roboteq : Right_Roboteq,
+    }
+
+Right_Roboteq:
+    {
+        deviceName         : "/dev/ttyS0",
+        baudrate           : 115200,
+        subscribeToTopic   : "/control/actuatorout/all",
+        publishToTopic     : "/roboteq/drivemotorin/right",
+        controllerType     : "Right_Drive"
+    }

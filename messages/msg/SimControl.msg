@@ -1,0 +1,16 @@
+bool teleport
+float64 teleX
+float64 teleY
+float64 teleHeading
+bool setSimSpeed
+float64 simSpeed
+bool pauseSwitch
+uint8 collision
+float32 collisionDistance
+bool cvFindSample
+int32 cvType
+float32 cvDistance
+float32 cvBearing
+float32 cvConfidence
+bool pubKeyframeList
+float32 rollAngle

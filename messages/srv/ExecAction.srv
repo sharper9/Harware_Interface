@@ -1,0 +1,23 @@
+uint8 nextActionType
+bool newActionFlag
+bool pushToFrontFlag
+bool clearDequeFlag
+bool clearFrontFlag
+bool pause
+float32 float1
+float32 float2
+float32 float3
+float32 float4
+float32 float5
+int32 int1
+bool bool1
+bool bool2
+bool bool3
+bool bool4
+bool bool5
+bool bool6
+bool bool7
+bool bool8
+uint8 procType
+uint32 serialNum
+---

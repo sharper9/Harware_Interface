@@ -1,0 +1,13 @@
+bool cached
+bool purple
+bool red
+bool blue
+bool silver
+bool brass
+bool confirm
+bool save
+bool live
+bool path
+uint8 procType
+uint32 serialNum
+---
