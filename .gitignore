@@ -27,3 +27,6 @@
 *.exe
 *.out
 *.app
+
+# Top level Cmake file
+CMakeLists.txt
