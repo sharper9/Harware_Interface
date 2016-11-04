@@ -7,7 +7,7 @@ project(hw_interface)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   pluginlib
-    messages
+  messages
   grid_map_ros
 )
 
@@ -103,8 +103,8 @@ add_definitions("-std=gnu++11")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  #INCLUDE_DIRS include
-  LIBRARIES base_interface base_serial_interface base_UDP_interface
+  INCLUDE_DIRS include
+  LIBRARIES hw_interface base_interface base_serial_interface base_UDP_interface
   CATKIN_DEPENDS roscpp messages pluginlib
 #  DEPENDS system_lib
 )
@@ -117,7 +117,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 #include_directories(include)
 include_directories(AFTER
-    ~/cataglyphis_ws/src/hw_interface/include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 include_directories()

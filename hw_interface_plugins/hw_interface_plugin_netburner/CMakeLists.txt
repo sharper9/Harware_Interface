@@ -117,8 +117,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-    include
-    ~/cataglyphis_ws/src/hw_interface/include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
