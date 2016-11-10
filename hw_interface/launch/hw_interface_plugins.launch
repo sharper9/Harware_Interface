@@ -1,6 +1,8 @@
+<!-- this launch file simply loads the each plugins' launch file -->
+
 <launch>
 
    
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Left_Roboteq_Interface.launch" />
+    <include file="$(find hw_interface_plugin_example)/launch/Example_Serial_Interface.launch" />
 
 </launch>

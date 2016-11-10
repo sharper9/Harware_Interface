@@ -1,0 +1,19 @@
+plugin_names: 
+    {
+        hw_interface_plugin_example: example_serial,
+    }
+    
+example_serial:
+    {
+        example1 : example1,
+    }
+    
+example1:
+    {
+        deviceName         : "/dev/ttyS0",
+        baudrate           : 115200,
+        subscribeToTopic   : "/example/subscribe",
+        publishToTopic     : "/example/publish",
+    }
+
+
