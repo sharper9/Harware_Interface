@@ -4,7 +4,7 @@
     
     <rosparam
                 command="load"
-                file="$(find hw_interface_plugin_example)/launch/launch_params/example_launch_params.yaml"
+                file="$(find hw_interface_plugin_example)/launch/launch_params/Example_Serial_launch_params.yaml"
                 subst_value="true"
     />
 

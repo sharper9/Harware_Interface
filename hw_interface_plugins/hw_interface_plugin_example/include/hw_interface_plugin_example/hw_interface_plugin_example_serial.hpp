@@ -34,6 +34,7 @@ namespace hw_interface_plugin_example {
 }
 
 //put the fully qualified type including its namespace here
+//for more info: http://wiki.ros.org/pluginlib#pluginlib.2BAC8-pluginlib_groovy.Registering.2BAC8-Exporting_a_Plugin
 PLUGINLIB_EXPORT_CLASS(hw_interface_plugin_example::example_serial, base_classes::base_interface)
 
 
