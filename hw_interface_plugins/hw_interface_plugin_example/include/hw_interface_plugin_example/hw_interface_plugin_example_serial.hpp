@@ -9,7 +9,7 @@
 //include the header of the base type you want, Serial or UDP 
 #include <hw_interface/base_serial_interface.hpp>
 
-
+#include <messages/ActuatorOut.h>
 
 namespace hw_interface_plugin_example {
 
@@ -21,14 +21,14 @@ namespace hw_interface_plugin_example {
 
     protected:
     
-        //these methods are abstract as defined by the base_Serial_interface
+        //these methods are abstract as defined by the base_serial_interface
             //they must be defined
         bool subPluginInit(ros::NodeHandlePtr nhPtr);
         void setInterfaceOptions();
         bool interfaceReadHandler(const long &length, int arrayStartPos);
         bool verifyChecksum();
 
-
+        void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn);
     };
 
 }

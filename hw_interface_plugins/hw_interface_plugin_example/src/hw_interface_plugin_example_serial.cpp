@@ -25,9 +25,18 @@ bool hw_interface_plugin_example::example_serial::subPluginInit(ros::NodeHandleP
 
     /*for Serial interfaces, 'deviceName' is an inherited member and must be defined.
         failing to define this variable will disable the plugin.
-        opening of the device port is handled automatically */
+        Opening of the device port is handled automatically
+        
+        deviceName is the name and path of the port to be opened
+            example: "/dev/ttyS0" */
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
+    
+    headerString = "FFab";
+    footerString = "dbac";
+    readLength = 26;
+    setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
+                                        footerString.c_str());
 
     //retrieve string from the ROS Parameter Server
         //of the format '<plugin_name>/<parameter>
@@ -91,6 +100,7 @@ void hw_interface_plugin_example::example_serial::setInterfaceOptions()
 //this is called automatically when data that passes the streamMatcher is okay
     //this function is called with a data length and a position in an inherited array member
         //named 'receivedData'
+//data should be published to topics from here
 bool hw_interface_plugin_example::example_serial::interfaceReadHandler(const long &length,
                                                                             int arrayStartPos)
 {
@@ -112,4 +122,9 @@ bool hw_interface_plugin_example::example_serial::interfaceReadHandler(const lon
 bool hw_interface_plugin_example::example_serial::verifyChecksum()
 {
     return true;
+}
+
+void hw_interface_plugin_example::example_serial::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
+{
+   //this function is called when a ros message comes in
 }
