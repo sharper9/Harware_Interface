@@ -32,11 +32,12 @@ bool hw_interface_plugin_example::example_serial::subPluginInit(ros::NodeHandleP
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
     
-    headerString = "FFab";
-    footerString = "dbac";
-    readLength = 26;
-    setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
-                                        footerString.c_str());
+    //example use of the streamMatcher.
+    std::string header = "FFab";
+    std::string footer = "dbac";
+    int readLen = 26;
+    setupStreamMatcherDelimAndLength(readLen, header.c_str(),
+                                        footer.c_str());
 
     //retrieve string from the ROS Parameter Server
         //of the format '<plugin_name>/<parameter>
