@@ -45,6 +45,8 @@ bool hw_interface_plugin_example::example_serial::subPluginInit(ros::NodeHandleP
     //place that wants to write data to the device
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
     {
+	//This will create a ros subscriber to the topic from the ROS parameter server.
+	    //The rosMsgCallback method will be called whenever there is a message pending.
         //rosDataSub = nh->subscribe(tempString, 1, &roboteq_drive::rosMsgCallback, this);
     }
     else
