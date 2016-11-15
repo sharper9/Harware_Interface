@@ -70,7 +70,7 @@ bool base_classes::base_serial_interface::startWork()
                                                         boost::asio::placeholders::error(),
                                                         boost::asio::placeholders::bytes_transferred()));
     }
-//    else if(enableStreamMatcher)
+//    else if(enableStreamMatcher)ROS_INFO_EXTRA_SINGLE
 //    {
 //        boost::asio::async_read_until(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
 //                                        streamSequenceMatcher,
@@ -80,6 +80,7 @@ bool base_classes::base_serial_interface::startWork()
 //    }
     else
     {
+    ROS_INFO("BASE INTERFACE_READ");
         boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
                                         boost::bind(&base_serial_interface::handleIORequest,this,
                                                         boost::asio::placeholders::error(),

@@ -27,6 +27,26 @@ namespace hw_interface_support_types
           buffer_(boost::asio::buffer(*data_))
       {
       }
+      
+      shared_const_buffer(const char* data, const int length)
+        : data_(new std::vector<char>(data, data+length)),
+          buffer_(boost::asio::buffer(*data_))
+      { 
+      }
+
+      shared_const_buffer(const char* data, const int length, bool LEtoBE)
+        : data_(new std::vector<char>(length)),
+          buffer_(boost::asio::buffer(*data_))
+      {
+          if(LEtoBE)
+          {
+            for(int i = 0; i < length; i++)
+            {
+                data_->data()[i] = data[length-1-i];
+            }
+          }
+      }
+        
 
       // Implement the ConstBufferSequence requirements.
       typedef boost::asio::const_buffer value_type;
@@ -37,7 +57,9 @@ namespace hw_interface_support_types
     private:
       std::shared_ptr<std::vector<char> > data_;
       boost::asio::const_buffer buffer_;
+
     };
 }
 
 #endif //SHARED_CONST_BUFFER_HPP__
+

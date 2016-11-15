@@ -66,11 +66,12 @@ uint32_t base_classes::base_interface::calcCRC32Block(const void * const buf, st
 }
 
 std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boost::system::error_code &error, long totalBytesInBuffer,
-                                                                      const int packetLengthInBytes, const char *headerSequence,
+                                                                      const int& packetLengthInBytes, const char *headerSequence,
                                                                       const char *footerSequence)
 {
-    //ROS_DEBUG("%s:: Length and footer matcher %lu", pluginName.c_str(), totalBytesInBuffer);
-    //ROS_DEBUG("Candidate Header: %s", headerSequence);
+    ROS_DEBUG("%s:: Length and footer matcher: buffer length%lu", pluginName.c_str(), totalBytesInBuffer);
+    ROS_DEBUG("packetlength %d", packetLengthInBytes);
+    ROS_DEBUG("Candidate Header: %s", headerSequence);
     //ROS_DEBUG("Candidate Footer: %s", footerSequence);
     if(totalBytesInBuffer <= std::strlen(footerSequence))
     {
@@ -83,7 +84,7 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
         std::printf("Contents: ");
 	    for(int i = 0; i < totalBytesInBuffer; i++)
 	    {
-	        std::printf("%c | ", receivedData[i]);
+            std::printf("%c, %X | ", receivedData[i], receivedData[i]);
 	    }
 	    std::printf("\r\n");
         const int footerLength = std::strlen(footerSequence);
@@ -104,11 +105,12 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
         }
         std::cout << std::endl;
         const int headerLength = std::strlen(headerSequence);
-        std::cout << "Header: ";
+        std::printf("%d Header: ", headerLength);
         for(i = 0; i < headerLength; i++)
         {
-            std::printf("%c | ", receivedData[totalBytesInBuffer - packetLengthInBytes + i] );
-            if(receivedData[totalBytesInBuffer - packetLengthInBytes + i] != headerSequence[i])
+            std::printf("%x, %x, %d| ", receivedData[totalBytesInBuffer - packetLengthInBytes + i], (headerSequence[i] & 0xff),
+                        receivedData[totalBytesInBuffer - packetLengthInBytes + i] == headerSequence[i]);
+            if(receivedData[totalBytesInBuffer - packetLengthInBytes + i] != (headerSequence[i] & 0xff))
             {
                 //THIS IS WHERE AN HSM invalid message can be sent
                 std::printf("\r\n");

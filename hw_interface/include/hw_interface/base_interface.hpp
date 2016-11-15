@@ -113,7 +113,7 @@ namespace base_classes
 
         //Plugins should overide this function if it intends on using this functionality
         std::size_t streamMatcherDelimAndLength(const boost::system::error_code &error, long totalBytesInBuffer,
-                                                    const int packetLengthInBytes, const char *headerSequence,
+                                                    const int &packetLengthInBytes, const char *headerSequence,
                                                     const char *footerSequence);
 
         bool enableMetrics();
