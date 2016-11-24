@@ -2,7 +2,6 @@
 
 <launch>
 
-   
-    <include file="$(find hw_interface_plugin_timedomain)/launch/Timedomain_Serial_Interface.launch" />
+    <include file="$(find hw_interface_plugin_example)/launch/Example_Serial_Interface.launch" />
 
 </launch>

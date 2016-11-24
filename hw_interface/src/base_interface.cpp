@@ -66,7 +66,7 @@ uint32_t base_classes::base_interface::calcCRC32Block(const void * const buf, st
 }
 
 std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boost::system::error_code &error, long totalBytesInBuffer,
-                                                                      const int& packetLengthInBytes, const char *headerSequence,
+                                                                      const int &packetLengthInBytes, const char *headerSequence,
                                                                       const char *footerSequence)
 {
     ROS_DEBUG("%s:: Length and footer matcher: buffer length%lu", pluginName.c_str(), totalBytesInBuffer);
