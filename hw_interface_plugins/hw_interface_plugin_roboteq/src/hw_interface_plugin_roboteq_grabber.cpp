@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 
-#include <hw_interface_plugin_roboteq//hw_interface_plugin_roboteq_grabber.hpp>
+#include <hw_interface_plugin_roboteq/hw_interface_plugin_roboteq_grabber.hpp>
 
 
 
