@@ -1,12 +1,12 @@
- #ifndef ROBOTEQ_DRIVE_PACKET_HPP__
-#define ROBOTEQ_DRIVE_PACKET_HPP__
+ #ifndef OLD_ROBOTEQ_DRIVE_PACKET_HPP__
+#define OLD_ROBOTEQ_DRIVE_PACKET_HPP__
 
 #include <ros/ros.h>
 #include <messages/encoder_data.h>
 
-namespace hw_interface_plugin_roboteq {
+namespace hw_interface_plugin_old_roboteq {
 
-    namespace roboteq_drive_packet {
+    namespace old_roboteq_drive_packet {
     
         const char * HEADER = "Az";
         const char * FOOTER = "P1fC";
@@ -41,4 +41,4 @@ namespace hw_interface_plugin_roboteq {
     }
 }
 
-#endif //ROBOTEQ_DRIVE_PACKET_HPP__
+#endif //OLD_ROBOTEQ_DRIVE_PACKET_HPP__

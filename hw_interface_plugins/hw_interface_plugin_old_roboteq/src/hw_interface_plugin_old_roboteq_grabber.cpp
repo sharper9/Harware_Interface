@@ -1,15 +1,15 @@
 #include <ros/ros.h>
 
-#include <hw_interface_plugin_roboteq/hw_interface_plugin_roboteq_grabber.hpp>
+#include <hw_interface_plugin_old_roboteq/hw_interface_plugin_old_roboteq_grabber.hpp>
 
 
 
-void hw_interface_plugin_roboteq::roboteq_grabber::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
+void hw_interface_plugin_old_roboteq::roboteq_grabber::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
 {
 
 }
 
-bool hw_interface_plugin_roboteq::roboteq_grabber::implInit()
+bool hw_interface_plugin_old_roboteq::roboteq_grabber::implInit()
 {
     std::string tempString;
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
@@ -34,19 +34,19 @@ bool hw_interface_plugin_roboteq::roboteq_grabber::implInit()
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_grabber::implStart()
+bool hw_interface_plugin_old_roboteq::roboteq_grabber::implStart()
 {
 
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_grabber::implStop()
+bool hw_interface_plugin_old_roboteq::roboteq_grabber::implStop()
 {
 
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_grabber::implDataHandler(const long &bufferSize,
+bool hw_interface_plugin_old_roboteq::roboteq_grabber::implDataHandler(const long &bufferSize,
                                                                         int arrayStartPos)
 {
 

@@ -1,6 +1,6 @@
 plugin_names: 
     {
-        hw_interface_plugin_roboteq : roboteq_drive,
+        hw_interface_plugin_old_roboteq : roboteq_drive,
     }
 
 roboteq_drive:

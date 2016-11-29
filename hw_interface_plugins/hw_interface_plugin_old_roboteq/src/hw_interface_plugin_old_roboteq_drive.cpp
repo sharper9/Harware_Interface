@@ -1,8 +1,8 @@
 #include <ros/ros.h>
 
-#include <hw_interface_plugin_roboteq/hw_interface_plugin_roboteq_drive.hpp>
+#include <hw_interface_plugin_old_roboteq/hw_interface_plugin_old_roboteq_drive.hpp>
 
-void hw_interface_plugin_roboteq::roboteq_drive::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
+void hw_interface_plugin_old_roboteq::roboteq_drive::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
 {
     std::string motorSpeedCmds = "";
 
@@ -28,13 +28,13 @@ void hw_interface_plugin_roboteq::roboteq_drive::rosMsgCallback(const messages::
     //need to add monitoring facilities to monitor health
 }
 
-bool hw_interface_plugin_roboteq::roboteq_drive::implInit()
+bool hw_interface_plugin_old_roboteq::roboteq_drive::implInit()
 {
 
-    readLength = sizeof(roboteq_drive_packet::drive_packet_struct_t);
+    readLength = sizeof(old_roboteq_drive_packet::drive_packet_struct_t);
     
-    headerString = roboteq_drive_packet::HEADER;
-    footerString = roboteq_drive_packet::FOOTER;
+    headerString = old_roboteq_drive_packet::HEADER;
+    footerString = old_roboteq_drive_packet::FOOTER;
 
     std::string tempString;
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
@@ -59,19 +59,19 @@ bool hw_interface_plugin_roboteq::roboteq_drive::implInit()
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_drive::implStart()
+bool hw_interface_plugin_old_roboteq::roboteq_drive::implStart()
 {
 
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_drive::implStop()
+bool hw_interface_plugin_old_roboteq::roboteq_drive::implStop()
 {
 
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_drive::implDataHandler(const long &length, int arrayStartPos)
+bool hw_interface_plugin_old_roboteq::roboteq_drive::implDataHandler(const long &length, int arrayStartPos)
 {
     ROS_DEBUG("%s :: Roboteq Drive Implementation Data Handler", pluginName.c_str());
 
@@ -84,12 +84,12 @@ bool hw_interface_plugin_roboteq::roboteq_drive::implDataHandler(const long &len
     }
     std::printf("\r\n");
     uint32_t crcCheck = calcCRC32Block(&receivedData[arrayStartPos],
-                                            roboteq_drive_packet::PACKET_SIZE_MINUS_CRC_AND_FOOTER);
+                                            old_roboteq_drive_packet::PACKET_SIZE_MINUS_CRC_AND_FOOTER);
     ROS_DEBUG("%s :: CRC32: %x", pluginName.c_str(), crcCheck);
 
     if(true /*verify checksum here*/)
     {
-        roboteq_drive_packet::deserializeBufAndPublish(rosDataPub, &receivedData[arrayStartPos]);
+        old_roboteq_drive_packet::deserializeBufAndPublish(rosDataPub, &receivedData[arrayStartPos]);
     }
     else
     {

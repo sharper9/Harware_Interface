@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package>
-  <name>hw_interface_plugin_roboteq</name>
+  <name>hw_interface_plugin_old_roboteq</name>
   <version>0.0.0</version>
-  <description>The hw_interface_plugin_roboteq package</description>
+  <description>The hw_interface_plugin_old_roboteq package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="jqnguyen@mix.wvu.edu">Jenn Nguyen</maintainer>
+  <maintainer email="ros@todo.todo">ros</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -40,11 +40,20 @@
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>hw_interface</build_depend>
+  <build_depend>messages</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>roscpp</build_depend>
+  <run_depend>hw_interface</run_depend>
+  <run_depend>messages</run_depend>
+  <run_depend>pluginlib</run_depend>
+  <run_depend>roscpp</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
+    <hw_interface plugin="${prefix}/old_roboteq_plugins.xml" />
 
   </export>
 </package>

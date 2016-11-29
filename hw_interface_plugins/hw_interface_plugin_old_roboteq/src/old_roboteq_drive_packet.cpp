@@ -1,10 +1,10 @@
 #include <ros/ros.h>
 
-#include <hw_interface_plugin_roboteq/roboteq_drive_packet.hpp>
+#include <hw_interface_plugin_old_roboteq/old_roboteq_drive_packet.hpp>
 
 
 messages::encoder_data
-    hw_interface_plugin_roboteq::roboteq_drive_packet::deserializeBufIntoMsg(void *buffer)
+    hw_interface_plugin_old_roboteq::old_roboteq_drive_packet::deserializeBufIntoMsg(void *buffer)
 {
     messages::encoder_data msg;
 
@@ -21,12 +21,12 @@ messages::encoder_data
     return msg;
 }
 
-void hw_interface_plugin_roboteq::roboteq_drive_packet::publishMsg(const ros::Publisher &rosPublisher, const messages::encoder_data &msg)
+void hw_interface_plugin_old_roboteq::old_roboteq_drive_packet::publishMsg(const ros::Publisher &rosPublisher, const messages::encoder_data &msg)
 {
     rosPublisher.publish(msg);
 }
 
-void hw_interface_plugin_roboteq::roboteq_drive_packet::deserializeBufAndPublish(const ros::Publisher &rosPublisher, void * buffer)
+void hw_interface_plugin_old_roboteq::old_roboteq_drive_packet::deserializeBufAndPublish(const ros::Publisher &rosPublisher, void * buffer)
 {
     publishMsg(rosPublisher, deserializeBufIntoMsg(buffer));
 }

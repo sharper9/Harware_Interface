@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hw_interface_plugin_roboteq)
+project(hw_interface_plugin_old_roboteq)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  hw_interface
+  messages
+  pluginlib
+  roscpp
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -86,6 +91,8 @@ find_package(catkin REQUIRED)
 #   cfg/DynReconf2.cfg
 # )
 
+add_definitions("-std=gnu++11")
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -96,9 +103,9 @@ find_package(catkin REQUIRED)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES hw_interface_plugin_roboteq
-#  CATKIN_DEPENDS other_catkin_pkg
+  INCLUDE_DIRS include
+  LIBRARIES hw_interface_plugin_old_roboteq hw_interface_plugin_old_roboteq_drive hw_interface_plugin_old_roboteq_grabber
+  CATKIN_DEPENDS hw_interface messages pluginlib roscpp
 #  DEPENDS system_lib
 )
 
@@ -109,17 +116,25 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+include_directories(
+  include
+  ~/cataglyphis_ws/src/hw_interface/include
+  ${catkin_INCLUDE_DIRS}
+)
 
 ## Declare a C++ library
-# add_library(hw_interface_plugin_roboteq
-#   src/${PROJECT_NAME}/hw_interface_plugin_roboteq.cpp
-# )
+ add_library(hw_interface_plugin_old_roboteq            src/hw_interface_plugin_old_roboteq.cpp)
+ add_library(hw_interface_plugin_old_roboteq_grabber    src/hw_interface_plugin_old_roboteq_grabber.cpp)
+ add_library(hw_interface_plugin_old_roboteq_drive      src/hw_interface_plugin_old_roboteq_drive.cpp)
+ add_library(old_roboteq_drive_packet                   src/old_roboteq_drive_packet.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(hw_interface_plugin_roboteq ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+ add_dependencies(hw_interface_plugin_old_roboteq ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+                    hw_interface
+                    messages_generate_messages)
+                    
 ## Declare a C++ executable
 # add_executable(hw_interface_plugin_roboteq_node src/hw_interface_plugin_roboteq_node.cpp)
 
@@ -128,9 +143,26 @@ catkin_package(
 # add_dependencies(hw_interface_plugin_roboteq_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hw_interface_plugin_roboteq_node
-#   ${catkin_LIBRARIES}
-# )
+ target_link_libraries(hw_interface_plugin_old_roboteq
+   ${catkin_LIBRARIES}
+   base_interface
+   base_serial_interface
+ )
+ 
+ target_link_libraries(hw_interface_plugin_old_roboteq_grabber
+   ${catkin_LIBRARIES}
+   base_interface
+   base_serial_interface
+   hw_interface_plugin_old_roboteq
+ )
+ 
+ target_link_libraries(hw_interface_plugin_old_roboteq_drive
+   ${catkin_LIBRARIES}
+   base_interface
+   base_serial_interface
+   hw_interface_plugin_old_roboteq
+   old_roboteq_drive_packet
+ )
 
 #############
 ## Install ##
