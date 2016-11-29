@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hw_interface_plugin_old_roboteq)
+project(hw_interface_plugin_timedomain)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   hw_interface
-  messages
   pluginlib
   roscpp
+  messages
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,11 +45,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   RCM_Range_Info.msg
+   Range_Request.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +66,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
+ generate_messages(
+   DEPENDENCIES
+   
 #   std_msgs  # Or other packages containing msgs
-# )
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +105,7 @@ add_definitions("-std=gnu++11")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES hw_interface_plugin_old_roboteq hw_interface_plugin_old_roboteq_drive hw_interface_plugin_old_roboteq_grabber
+  LIBRARIES hw_interface_plugin_timedomain
   CATKIN_DEPENDS hw_interface messages pluginlib roscpp
 #  DEPENDS system_lib
 )
@@ -121,47 +122,42 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
+add_library(hw_interface_plugin_timedomain_serial   src/hw_interface_plugin_timedomain_serial.cpp)
+
+
+add_dependencies(hw_interface_plugin_timedomain_serial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+                    hw_interface
+                    messages_generate_messages)
+                    
+target_link_libraries(hw_interface_plugin_timedomain_serial
+   ${catkin_LIBRARIES}
+    base_interface
+    base_serial_interface
+ )
+
 ## Declare a C++ library
- add_library(hw_interface_plugin_old_roboteq            src/hw_interface_plugin_old_roboteq.cpp)
- add_library(hw_interface_plugin_old_roboteq_grabber    src/hw_interface_plugin_old_roboteq_grabber.cpp)
- add_library(hw_interface_plugin_old_roboteq_drive      src/hw_interface_plugin_old_roboteq_drive.cpp)
- add_library(old_roboteq_drive_packet                   src/old_roboteq_drive_packet.cpp)
+# add_library(hw_interface_plugin_netburner
+#   src/${PROJECT_NAME}/hw_interface_plugin_netburner.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
- add_dependencies(hw_interface_plugin_old_roboteq ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-                    hw_interface
-                    messages_generate_messages)
-                    
+# add_dependencies(hw_interface_plugin_netburner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 ## Declare a C++ executable
-# add_executable(hw_interface_plugin_roboteq_node src/hw_interface_plugin_roboteq_node.cpp)
+# add_executable(hw_interface_plugin_netburner_node src/hw_interface_plugin_netburner_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(hw_interface_plugin_roboteq_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(hw_interface_plugin_netburner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
- target_link_libraries(hw_interface_plugin_old_roboteq
-   ${catkin_LIBRARIES}
-   base_interface
-   base_serial_interface
- )
- 
- target_link_libraries(hw_interface_plugin_old_roboteq_grabber
-   ${catkin_LIBRARIES}
-   base_interface
-   base_serial_interface
-   hw_interface_plugin_old_roboteq
- )
- 
- target_link_libraries(hw_interface_plugin_old_roboteq_drive
-   ${catkin_LIBRARIES}
-   base_interface
-   base_serial_interface
-   hw_interface_plugin_old_roboteq
-   old_roboteq_drive_packet
- )
+# target_link_libraries(hw_interface_plugin_netburner_node
+#   ${catkin_LIBRARIES}
+# )
+
 
 #############
 ## Install ##
@@ -178,7 +174,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS hw_interface_plugin_roboteq hw_interface_plugin_roboteq_node
+# install(TARGETS hw_interface_plugin_netburner hw_interface_plugin_netburner_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -203,7 +199,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_hw_interface_plugin_roboteq.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_hw_interface_plugin_netburner.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
