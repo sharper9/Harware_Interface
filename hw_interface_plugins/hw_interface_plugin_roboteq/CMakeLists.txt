@@ -118,7 +118,6 @@ catkin_package(
 # include_directories(include)
 include_directories(
   include
-  ~/cataglyphis_ws/src/hw_interface/include
   ${catkin_INCLUDE_DIRS}
 )
 
