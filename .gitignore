@@ -30,3 +30,6 @@
 
 # Top level Cmake file
 /CMakeLists.txt
+
+#qt creator user files
+.user
