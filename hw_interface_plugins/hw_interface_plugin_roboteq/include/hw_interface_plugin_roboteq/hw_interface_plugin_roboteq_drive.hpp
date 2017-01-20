@@ -1,17 +1,23 @@
-#ifndef HW_INTERFACE_PLUGIN_OLD_ROBOTEQ_DRIVE_HPP__
-#define HW_INTERFACE_PLUGIN_OLD_ROBOTEQ_DRIVE_HPP__
+#ifndef HW_INTERFACE_PLUGIN_ROBOTEQ_DRIVE_HPP__
+#define HW_INTERFACE_PLUGIN_ROBOTEQ_DRIVE_HPP__
 
 #include <ros/ros.h>
 
 #include <pluginlib/class_list_macros.h>
 
-#include <hw_interface_plugin_old_roboteq/hw_interface_plugin_old_roboteq.hpp>
+#include <hw_interface_plugin_roboteq/hw_interface_plugin_roboteq.hpp>
 
-#include <hw_interface_plugin_old_roboteq/old_roboteq_drive_packet.hpp>
 
-namespace hw_interface_plugin_old_roboteq {
+/*
+ * Roboteq usage
+ * 1. send '# C' to clear history buffer
+ * 2. send '?CB' to get absolute brushless encoder count
+ * 3. send '# 20' to have runtime queries repeated at 20 ms delta (50 hz)
+ */
 
-    class roboteq_drive : public hw_interface_plugin_old_roboteq::roboteq_serial
+namespace hw_interface_plugin_roboteq {
+
+    class roboteq_drive : public hw_interface_plugin_roboteq::roboteq_serial
     {
         public:
             roboteq_drive(){
@@ -35,6 +41,6 @@ namespace hw_interface_plugin_old_roboteq {
 
 }
 
-PLUGINLIB_EXPORT_CLASS(hw_interface_plugin_old_roboteq::roboteq_drive, base_classes::base_interface)
+PLUGINLIB_EXPORT_CLASS(hw_interface_plugin_roboteq::roboteq_drive, base_classes::base_interface)
 
-#endif //HW_INTERFACE_PLUGIN_OLD_ROBOTEQ_DRIVE_HPP__
+#endif //HW_INTERFACE_PLUGIN_ROBOTEQ_DRIVE_HPP__

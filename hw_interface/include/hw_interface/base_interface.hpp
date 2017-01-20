@@ -127,6 +127,7 @@ namespace base_classes
 
         boost::shared_array<uint8_t> receivedData;
         int dataArrayStart;
+        int dataReadLength;
 
     private:
 

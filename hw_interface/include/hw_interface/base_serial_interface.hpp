@@ -61,6 +61,16 @@ namespace base_classes
         void interfaceWriteHandler(const hw_interface_support_types::shared_const_buffer &buffer);
         void postInterfaceWriteRequest(const hw_interface_support_types::shared_const_buffer &buffer);
 
+        virtual bool pluginStart()
+        {
+            return true;
+        }
+        
+        virtual bool pluginStop()
+        {
+            return true;
+        }
+
         template<typename Option>
         boost::system::error_code setOption(const Option * newOption)
         {

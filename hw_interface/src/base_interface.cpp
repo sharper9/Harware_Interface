@@ -124,6 +124,7 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
         ROS_DEBUG("%s:: Header Found, Footer Found, Correct Length, Good Packet", pluginName.c_str());
 
         dataArrayStart = ( totalBytesInBuffer - packetLengthInBytes );
+        dataReadLength = packetLengthInBytes;
         return 0;
     }
     return packetLengthInBytes - totalBytesInBuffer;

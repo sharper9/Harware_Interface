@@ -5,10 +5,10 @@ project(hw_interface_plugin_roboteq)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-    hw_interface
-    messages
-    pluginlib
-    roscpp
+  hw_interface
+  messages
+  pluginlib
+  roscpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +104,7 @@ add_definitions("-std=gnu++11")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES hw_interface_plugin_roboteq 
+  LIBRARIES hw_interface_plugin_roboteq hw_interface_plugin_roboteq_drive
   CATKIN_DEPENDS hw_interface messages pluginlib roscpp
 #  DEPENDS system_lib
 )
@@ -122,15 +122,16 @@ include_directories(
 )
 
 ## Declare a C++ library
- add_library(hw_interface_plugin_roboteq   src/hw_interface_plugin_roboteq.cpp )
+ add_library(hw_interface_plugin_roboteq            src/hw_interface_plugin_roboteq.cpp)
+ add_library(hw_interface_plugin_roboteq_drive      src/hw_interface_plugin_roboteq_drive.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
  add_dependencies(hw_interface_plugin_roboteq ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-                  hw_interface
-                  messages_generate_messages)
-
+                    hw_interface
+                    messages_generate_messages)
+                    
 ## Declare a C++ executable
 # add_executable(hw_interface_plugin_roboteq_node src/hw_interface_plugin_roboteq_node.cpp)
 
@@ -143,6 +144,13 @@ include_directories(
    ${catkin_LIBRARIES}
    base_interface
    base_serial_interface
+ )
+ 
+ target_link_libraries(hw_interface_plugin_roboteq_drive
+   ${catkin_LIBRARIES}
+   base_interface
+   base_serial_interface
+   hw_interface_plugin_roboteq
  )
 
 #############

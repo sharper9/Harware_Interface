@@ -58,33 +58,36 @@ bool base_classes::base_serial_interface::startWork()
     }
     if(!interfaceStarted)
     {
-        interfaceStarted = true;
+        interfaceStarted = pluginStart();
     }
 
-    if(enableCompletionFunctor)
+    if(interfaceStarted)
     {
-        ROS_DEBUG_ONCE("%s %d:: Async Read custom Functor", __FILE__, __LINE__);
-        boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
-                                        streamCompletionChecker,
-                                        boost::bind(&base_serial_interface::handleIORequest,this,
-                                                        boost::asio::placeholders::error(),
-                                                        boost::asio::placeholders::bytes_transferred()));
-    }
-//    else if(enableStreamMatcher)ROS_INFO_EXTRA_SINGLE
-//    {
-//        boost::asio::async_read_until(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
-//                                        streamSequenceMatcher,
-//                                        boost::bind(&base_serial_interface::handleIORequest,this,
-//                                                        boost::asio::placeholders::error(),
-//                                                        boost::asio::placeholders::bytes_transferred()));
-//    }
-    else
-    {
-    ROS_INFO("BASE INTERFACE_READ");
-        boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
-                                        boost::bind(&base_serial_interface::handleIORequest,this,
-                                                        boost::asio::placeholders::error(),
-                                                        boost::asio::placeholders::bytes_transferred()));
+        if(enableCompletionFunctor)
+        {
+            ROS_DEBUG_ONCE("%s %d:: Async Read custom Functor", __FILE__, __LINE__);
+            boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
+                                            streamCompletionChecker,
+                                            boost::bind(&base_serial_interface::handleIORequest,this,
+                                                            boost::asio::placeholders::error(),
+                                                            boost::asio::placeholders::bytes_transferred()));
+        }
+    //    else if(enableStreamMatcher)ROS_INFO_EXTRA_SINGLE
+    //    {
+    //        boost::asio::async_read_until(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
+    //                                        streamSequenceMatcher,
+    //                                        boost::bind(&base_serial_interface::handleIORequest,this,
+    //                                                        boost::asio::placeholders::error(),
+    //                                                        boost::asio::placeholders::bytes_transferred()));
+    //    }
+        else
+        {
+        ROS_INFO("BASE INTERFACE_READ");
+            boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
+                                            boost::bind(&base_serial_interface::handleIORequest,this,
+                                                            boost::asio::placeholders::error(),
+                                                            boost::asio::placeholders::bytes_transferred()));
+        }
     }
     return true;
 }
@@ -93,6 +96,7 @@ bool base_classes::base_serial_interface::stopWork()
 {
     if(interfaceStarted)
     {
+        pluginStop();
         interfacePort->cancel();
         interfacePort->close();
         interfaceStarted = false;
@@ -116,7 +120,7 @@ bool base_classes::base_serial_interface::handleIORequest(const boost::system::e
 
     //call plugin's data handler
     //SHORTCUT, if the first boolean check fails, the other is not called and avoids the worry of a null pointer
-    if(!interfaceReadHandler(readLength, dataArrayStart))
+    if(!interfaceReadHandler(dataReadLength, dataArrayStart))
     {
         ROS_ERROR("Error Occurred in plugin data Handler <%s>", this->pluginName.c_str());
     }

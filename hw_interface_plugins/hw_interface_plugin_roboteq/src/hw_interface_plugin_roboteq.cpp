@@ -29,8 +29,9 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     implInit();
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Init");
     enableMetrics();
-    setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
-                                        footerString.c_str());
+    //setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
+    //                                    footerString.c_str());
+    
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
 
@@ -98,3 +99,79 @@ hw_interface_plugin_roboteq::roboteq_serial::matchFooter(matcherIterator begin, 
     }
     return std::make_pair(begin, true);
 }
+
+std::size_t hw_interface_plugin_roboteq::roboteq_serial::roboteqStreamMatcher(const boost::system::error_code &error, long totalBytesInBuffer,
+                                            const char *header, const char *footer, int headerLength, int footerLength)
+{
+    //ROS_INFO("Stream Matcher Started, %ld", totalBytesInBuffer);
+    //ROS_INFO("Header %s", header);
+    //ROS_INFO("Footer %s", footer);
+
+    int headerCounter = 0, headerLoc = -1;
+
+    //counter of footer bytes found so far, and the location of the beginning of the footer
+    int footerCounter = 0, footerLoc = -1;
+    for(int i = 0; i<totalBytesInBuffer; i++)
+    {
+        //std::printf("i= %d, %c %X", i, receivedData[i], receivedData[i]);
+        if(headerCounter != headerLength)
+        {
+            if((receivedData[i]&0xff) == (header[headerCounter]&0xff))
+            {
+                //std::printf("HM ");
+                headerCounter++;
+                if(headerCounter == headerLength)
+                {
+                    headerLoc = i;
+                }
+            }
+            else
+            {
+                headerCounter = 0;
+            }
+        }
+        else if(footerCounter != footerLength)
+        {
+            //std::printf("::F %c %x %d", footer[footerLength - footerCounter - 1], footer[footerLength - footerCounter - 1], footerLength - footerCounter - 1);
+            if((receivedData[i]&0xff) == (footer[footerCounter])&0xff)
+            {
+                //std::printf("FM ");
+                footerCounter++;
+                if(footerCounter == footerLength)
+                {
+                    footerLoc = i;
+                }
+            }
+            else
+            {
+                footerCounter = 0;
+            }
+        } 
+        if((headerLoc != -1) && (footerLoc != -1))
+        {
+            dataArrayStart = headerLoc-(headerLength-1);
+            dataReadLength = (footerLoc+1)-headerLoc;
+            return 0; //found everything we need return
+            //std::printf("\r\n");
+        }
+
+        //std::printf(" | ");
+    }
+    return headerLength + footerLength - footerCounter - headerCounter;
+    //std::printf("\r\n");
+}
+
+//int headerLoc=0,footerLoc=0;
+//if(headerLoc = strstr((char*)receivedData.get(), header))
+//{
+//    if(footerLoc = strstr((char*)receivedData.get(), footer))
+//    {
+//        dataArrayStart = headerLoc;
+//        readLength = (footerLoc+footerLength)-headerLoc;
+//        return 0;
+//    }
+//}
+
+//return headerLength + footerLength;
+
+
