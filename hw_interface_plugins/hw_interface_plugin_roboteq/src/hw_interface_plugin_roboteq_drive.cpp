@@ -1,6 +1,9 @@
 #include <ros/ros.h>
 
 #include <hw_interface_plugin_roboteq/hw_interface_plugin_roboteq_drive.hpp>
+#include <iterator>
+#include <boost/regex.hpp>
+
 
 void hw_interface_plugin_roboteq::roboteq_drive::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
 {
@@ -102,47 +105,36 @@ bool hw_interface_plugin_roboteq::roboteq_drive::implDataHandler(const long &len
     std::string dataCopy((char*) &receivedData[arrayStartPos], length);
     std::printf("Contents: %s\r\n", dataCopy.c_str());
     
-    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-    boost::char_separator<char> sep("= :\r\n");
-    tokenizer tokens(dataCopy, sep);
+    // add more commands inside (CB|A|AI)
+    boost::regex expression("(CB|A|AI){1}=-?\\d+:-?\\d+");
+    boost::sregex_token_iterator reg_iter (dataCopy.begin(), dataCopy.end(), expression);
+
+	
     try{
         messages::encoder_data encoderData;
-        tokenizer::iterator tok_iter = tokens.begin();
-        if(tok_iter != tokens.end())
-        {
-            ROS_INFO("%s",tok_iter->c_str());
-            ++tok_iter;
-        }
-        if(tok_iter != tokens.end())
-        {
-            ROS_INFO("%s",tok_iter->c_str());
-            encoderData.motor_1_encoder_count = boost::lexical_cast<int32_t>(tok_iter->c_str());
-            ++tok_iter;
-        }
-        if(tok_iter != tokens.end())
-        {
-            ROS_INFO("%s",tok_iter->c_str());
-            encoderData.motor_2_encoder_count = boost::lexical_cast<int32_t>(tok_iter->c_str());
-            ++tok_iter;
-        }
-        rosDataPub.publish(encoderData);
+            
+		ROS_INFO("stream matches -> %s", reg_iter->str().c_str());
+
+		char *ch = strtok((char*)reg_iter->str().c_str(), "=");
+		ROS_INFO("%s", ch);
+		
+		ch = strtok(NULL, ":");
+		ROS_INFO("%s", ch);
+		encoderData.motor_1_encoder_count = boost::lexical_cast<int32_t>(ch);
+		
+		ch = strtok(NULL, "");
+		ROS_INFO("%s", ch);
+		encoderData.motor_2_encoder_count = boost::lexical_cast<int32_t>(ch);
+		
+		rosDataPub.publish(encoderData);
+
     }
     catch (const boost::bad_lexical_cast& e ){
         ROS_ERROR("%s:: Caught bad lexical cast with error %s", pluginName.c_str(), e.what());
     }
     catch(...){
         ROS_ERROR("%s:: Caught Unknown Error while parsing packet in data handler", pluginName.c_str());
-    }
-        
-
-    
-    //for(int i = 0; i < 50; i++)
-    //{
-     //   std::printf("%c", receivedData[i]);
-    //}
-    //std::printf("\r\n");
-//    ROS_INFO("Length %ld, start pos %d", length, arrayStartPos);
-    
+    } 
 
     return true;
 }
