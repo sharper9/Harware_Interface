@@ -106,7 +106,7 @@ bool hw_interface_plugin_roboteq::roboteq_drive::implDataHandler(const long &len
     std::printf("Contents: %s\r\n", dataCopy.c_str());
     
     // add more commands inside (CB|A|AI)
-    boost::regex expression("(CB|A|AI){1}=-?\\d+:-?\\d+");
+    boost::regex expression("(CB|A|AI){1}=(-?\\d)+:(-?\\d)+");
     boost::sregex_token_iterator reg_iter (dataCopy.begin(), dataCopy.end(), expression);
 
 	
