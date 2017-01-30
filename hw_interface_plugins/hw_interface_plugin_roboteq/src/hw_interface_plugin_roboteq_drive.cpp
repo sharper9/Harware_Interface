@@ -35,10 +35,15 @@ bool hw_interface_plugin_roboteq::roboteq_drive::implInit()
 {
     headerString =  "CB";
     footerString = "\r";
+    /*
     streamCompletionChecker = boost::bind(&hw_interface_plugin_roboteq::roboteq_serial::roboteqStreamMatcher, this,
                                                 _1, _2, headerString.c_str(), footerString.c_str(), 
                                                         std::strlen(headerString.c_str()), std::strlen(footerString.c_str()));
     enableCompletionFunctor =! streamCompletionChecker.empty();
+    */
+    enableRegexReadUntil = true;
+    regexExpr = "^(CB|AI|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+)(\\r){2}$";
+
 
     std::string tempString;
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
@@ -103,34 +108,48 @@ bool hw_interface_plugin_roboteq::roboteq_drive::implDataHandler(const long &len
     ROS_DEBUG("Buf Pointer: 0x%p\r\n", &receivedData[arrayStartPos]);
     receivedData[arrayStartPos+length] = '\0';
     std::string dataCopy((char*) &receivedData[arrayStartPos], length);
-    std::printf("Contents: %s\r\n", dataCopy.c_str());
+    //std::printf("Contents: %s\r\n", dataCopy.c_str());
     
     // add more commands inside (CB|A|AI)
     boost::regex expression("(CB|A|AI){1}=(-?\\d)+:(-?\\d)+");
     boost::sregex_token_iterator reg_iter (dataCopy.begin(), dataCopy.end(), expression);
-
 	
+	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+	boost::char_separator<char> sep("= :\r\n");
+	tokenizer tokens(dataCopy, sep);
+	
+	tokenizer::iterator tok_iter = tokens.begin();
+
     try{
         messages::encoder_data encoderData;
             
 		ROS_INFO("stream matches -> %s", reg_iter->str().c_str());
-
-		char *ch = strtok((char*)reg_iter->str().c_str(), "=");
-		ROS_INFO("%s", ch);
 		
-		ch = strtok(NULL, ":");
-		ROS_INFO("%s", ch);
-		encoderData.motor_1_encoder_count = boost::lexical_cast<int32_t>(ch);
+		if (tok_iter != tokens.end())
+		{
+			ROS_INFO("%s", tok_iter->c_str());
+			++tok_iter;
+		}
 		
-		ch = strtok(NULL, "");
-		ROS_INFO("%s", ch);
-		encoderData.motor_2_encoder_count = boost::lexical_cast<int32_t>(ch);
+		if (tok_iter != tokens.end())
+		{
+			ROS_INFO("%s", tok_iter->c_str());
+			encoderData.motor_1_encoder_count = boost::lexical_cast<int32_t>(tok_iter->c_str());
+			++tok_iter;
+		}
+		
+		if (tok_iter != tokens.end())
+		{
+			ROS_INFO("%s", tok_iter->c_str());
+			encoderData.motor_2_encoder_count = boost::lexical_cast<int32_t>(tok_iter->c_str());
+			++tok_iter;
+		}
 		
 		rosDataPub.publish(encoderData);
 
     }
     catch (const boost::bad_lexical_cast& e ){
-        ROS_ERROR("%s:: Caught bad lexical cast with error %s", pluginName.c_str(), e.what());
+        ROS_ERROR("%s:: Caught bad lexical cast with error \"%s\" attempted to cast --> %s from %s", pluginName.c_str(), e.what(), tok_iter->c_str(), dataCopy.c_str());
     }
     catch(...){
         ROS_ERROR("%s:: Caught Unknown Error while parsing packet in data handler", pluginName.c_str());

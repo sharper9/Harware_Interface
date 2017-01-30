@@ -15,12 +15,35 @@
 #include <boost/asio/basic_serial_port.hpp>
 #include <boost/asio/serial_port.hpp>
 
+#include <boost/asio/read_until.hpp>
+#include <boost/regex.hpp>
+
+
 #define MAX_SERIAL_READ 250
 
 namespace base_classes
 {
     class base_serial_interface : public base_interface
     {
+		
+    public:
+        bool handleIORequest(const boost::system::error_code &ec, size_t bytesReceived);
+		bool handler(const boost::system::error_code& e, std::size_t bytesTransferred);
+
+        //this definition is used to check if a certain character sequence has been encountered
+        //on the stream. The begin and end iterators represent positions in the stream that this
+        //current functor is working. The return iterator represents where the next function call
+        //(if needed) will begin in the buffer stream. The return bool indicates if the ASIO Service
+        //is complete and should call the plugin IO Handler. (true = yes, call handler)
+
+        //Plugins should overide this function if it intends on using this functionality
+
+        virtual std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char* sequence)
+        {
+            return std::make_pair(end, true);
+        }
+
+        boost::regex regexExpr;
 
     private:
 
@@ -33,7 +56,6 @@ namespace base_classes
         //will receive request, then run plugin readHandler(), check work flag,
             //if work flag restart async read
 
-
         //this ptr is used to pass the beginning of data to the plugin data handler.
         //  its void because we don't type discriminate around here.
         //But mainly so the plugin can interpret the data however it wants to.
@@ -43,6 +65,7 @@ namespace base_classes
 
         std::string deviceName;
         boost::asio::streambuf interfaceDataBuffer;
+        boost::asio::streambuf b;
 
         int readLength;
         std::string headerString, footerString;
@@ -90,26 +113,6 @@ namespace base_classes
             }
             return returnValue;
         }
-
-    public:
-        bool handleIORequest(const boost::system::error_code &ec, size_t bytesReceived);
-
-
-        //this definition is used to check if a certain character sequence has been encountered
-        //on the stream. The begin and end iterators represent positions in the stream that this
-        //current functor is working. The return iterator represents where the next function call
-        //(if needed) will begin in the buffer stream. The return bool indicates if the ASIO Service
-        //is complete and should call the plugin IO Handler. (true = yes, call handler)
-
-        //Plugins should overide this function if it intends on using this functionality
-
-        virtual std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char* sequence)
-        {
-            return std::make_pair(end, true);
-        }
-
-
-
     };
 };
 

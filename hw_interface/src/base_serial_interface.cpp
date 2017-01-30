@@ -63,26 +63,29 @@ bool base_classes::base_serial_interface::startWork()
 
     if(interfaceStarted)
     {
+
         if(enableCompletionFunctor)
         {
             ROS_DEBUG_ONCE("%s %d:: Async Read custom Functor", __FILE__, __LINE__);
             boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
-                                            streamCompletionChecker,
-                                            boost::bind(&base_serial_interface::handleIORequest,this,
+                                        streamCompletionChecker,
+                                        boost::bind(&base_serial_interface::handleIORequest,this,
+                                                        boost::asio::placeholders::error(),
+                                                        boost::asio::placeholders::bytes_transferred()));
+
+        }
+        else if(enableRegexReadUntil)
+        {
+			ROS_DEBUG_ONCE("%s %d:: REGEX Async Read Until", __FILE__, __LINE__);
+            boost::asio::async_read_until(*interfacePort, b,
+                                            regexExpr,
+                                            boost::bind(&base_serial_interface::handler,this,
                                                             boost::asio::placeholders::error(),
                                                             boost::asio::placeholders::bytes_transferred()));
         }
-    //    else if(enableStreamMatcher)ROS_INFO_EXTRA_SINGLE
-    //    {
-    //        boost::asio::async_read_until(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
-    //                                        streamSequenceMatcher,
-    //                                        boost::bind(&base_serial_interface::handleIORequest,this,
-    //                                                        boost::asio::placeholders::error(),
-    //                                                        boost::asio::placeholders::bytes_transferred()));
-    //    }
         else
         {
-        ROS_INFO("BASE INTERFACE_READ");
+        ROS_INFO_ONCE("BASE INTERFACE_READ");
             boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
                                             boost::bind(&base_serial_interface::handleIORequest,this,
                                                             boost::asio::placeholders::error(),
@@ -103,6 +106,26 @@ bool base_classes::base_serial_interface::stopWork()
         return !interfacePort->is_open();
     }
     return false;
+}
+
+bool base_classes::base_serial_interface::handler(const boost::system::error_code& e, std::size_t bytesTransferred)
+{
+	printMetrics(true);
+    //ROS_INFO("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), b);
+    
+	if (!e)
+	{
+		std::istream is(&b);
+		std::string line;
+		std::getline(is, line);
+		
+		ROS_INFO("\n\r%s", line.c_str());
+	} else {
+		ROS_ERROR("Error Occured in plugin data handler <%s>", e.message().c_str());
+	}
+  
+	//restart the work
+    return startWork();
 }
 
 bool base_classes::base_serial_interface::handleIORequest(const boost::system::error_code &ec, size_t bytesReceived)
