@@ -28,7 +28,9 @@ namespace base_classes
 		
     public:
         bool handleIORequest(const boost::system::error_code &ec, size_t bytesReceived);
-		bool handler(const boost::system::error_code& e, std::size_t bytesTransferred);
+        
+        //handles ascii roboteq runtime queries
+		bool handleRegexRequest(const boost::system::error_code& e, std::size_t bytesTransferred);
 
         //this definition is used to check if a certain character sequence has been encountered
         //on the stream. The begin and end iterators represent positions in the stream that this
@@ -64,8 +66,7 @@ namespace base_classes
         boost::shared_ptr<boost::asio::serial_port> interfacePort;
 
         std::string deviceName;
-        boost::asio::streambuf interfaceDataBuffer;
-        boost::asio::streambuf b;
+        boost::asio::streambuf interfaceRegexBuffer;
 
         int readLength;
         std::string headerString, footerString;

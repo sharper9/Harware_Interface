@@ -30,7 +30,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Init");
     enableMetrics();
     //setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
-    //                                    footerString.c_str());
+                                        //footerString.c_str());
     
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);

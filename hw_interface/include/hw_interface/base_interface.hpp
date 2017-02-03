@@ -57,7 +57,7 @@ namespace base_classes
 
         bool enableCompletionFunctor;
         bool enableStreamMatcher;
-        bool enableRegexReadUntil;
+        bool enableRegexReadUntil; //enabled in roboteq plugin
         
         ros::Publisher rosDataPub; //publisher, data from interface to ros
         ros::Subscriber rosDataSub;//subscriber, data from ros to interface
