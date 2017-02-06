@@ -1,14 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hw_interface_plugin_timedomain)
+project(td_navigation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  hw_interface
-  pluginlib
+message_generation
   roscpp
+  std_msgs
   messages
+hw_interface_plugin_timedomain
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,11 +46,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   RCM_Range_Info.msg
-   Range_Request.msg
- )
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,11 +67,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   
-#   std_msgs  # Or other packages containing msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -92,8 +92,6 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf2.cfg
 # )
 
-add_definitions("-std=gnu++11")
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -105,8 +103,8 @@ add_definitions("-std=gnu++11")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES hw_interface_plugin_timedomain
-  CATKIN_DEPENDS hw_interface messages pluginlib roscpp
+  LIBRARIES td_navigation
+  CATKIN_DEPENDS message_runtime hw_interface_plugin_timedomain
 #  DEPENDS system_lib
 )
 
@@ -118,46 +116,31 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
+  include
 )
 
-
-add_library(hw_interface_plugin_timedomain   src/hw_interface_plugin_timedomain_serial.cpp)
-
-
-add_dependencies(hw_interface_plugin_timedomain ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-                    hw_interface
-                    messages_generate_messages)
-                    
-target_link_libraries(hw_interface_plugin_timedomain
-   ${catkin_LIBRARIES}
-    base_interface
-    base_serial_interface
- )
-
 ## Declare a C++ library
-# add_library(hw_interface_plugin_netburner
-#   src/${PROJECT_NAME}/hw_interface_plugin_netburner.cpp
-# )
+ add_library(td_navigation src/td_navigation.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(hw_interface_plugin_netburner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(td_navigation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+#                    hw_interface_plugin_timedomain_serial
+#                )
 
 ## Declare a C++ executable
-# add_executable(hw_interface_plugin_netburner_node src/hw_interface_plugin_netburner_node.cpp)
+# add_executable(td_navigation_node src/td_navigation_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(hw_interface_plugin_netburner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(td_navigation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hw_interface_plugin_netburner_node
-#   ${catkin_LIBRARIES}
-# )
-
+ target_link_libraries(td_navigation
+   ${catkin_LIBRARIES}
+ )
 
 #############
 ## Install ##
@@ -174,7 +157,7 @@ target_link_libraries(hw_interface_plugin_timedomain
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS hw_interface_plugin_netburner hw_interface_plugin_netburner_node
+# install(TARGETS td_navigation td_navigation_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -199,7 +182,7 @@ target_link_libraries(hw_interface_plugin_timedomain
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_hw_interface_plugin_netburner.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_td_navigation.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
