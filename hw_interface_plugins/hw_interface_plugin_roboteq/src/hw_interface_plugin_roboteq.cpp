@@ -12,7 +12,7 @@ hw_interface_plugin_roboteq::roboteq_serial::roboteq_serial()
 bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandlePtr nhPtr)
 {
     nh = ros::NodeHandlePtr(nhPtr);
-    
+
     std::string tempString = "";
     if(ros::param::get(pluginName+"/controllerType", tempString))
     {
@@ -31,7 +31,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
     //setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
                                         //footerString.c_str());
-    
+
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
 
@@ -146,7 +146,7 @@ std::size_t hw_interface_plugin_roboteq::roboteq_serial::roboteqStreamMatcher(co
             {
                 footerCounter = 0;
             }
-        } 
+        }
         if((headerLoc != -1) && (footerLoc != -1))
         {
             dataArrayStart = headerLoc-(headerLength-1);
@@ -173,5 +173,3 @@ std::size_t hw_interface_plugin_roboteq::roboteq_serial::roboteqStreamMatcher(co
 //}
 
 //return headerLength + footerLength;
-
-

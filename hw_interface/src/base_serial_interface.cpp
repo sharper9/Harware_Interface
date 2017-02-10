@@ -76,7 +76,7 @@ bool base_classes::base_serial_interface::startWork()
         }
         else if(enableRegexReadUntil)
         {
-			ROS_DEBUG_ONCE("%s %d:: REGEX Async Read Until", __FILE__, __LINE__);
+			      ROS_DEBUG_ONCE("%s %d:: REGEX Async Read Until", __FILE__, __LINE__);
             boost::asio::async_read_until(*interfacePort, interfaceRegexBuffer,
                                             regexExpr,
                                             boost::bind(&base_serial_interface::handleRegexRequest,this,
@@ -85,11 +85,11 @@ bool base_classes::base_serial_interface::startWork()
         }
         else
         {
-        ROS_INFO_ONCE("BASE INTERFACE_READ");
-            boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
-                                            boost::bind(&base_serial_interface::handleIORequest,this,
-                                                            boost::asio::placeholders::error(),
-                                                            boost::asio::placeholders::bytes_transferred()));
+          ROS_INFO_ONCE("BASE INTERFACE_READ");
+          boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
+                                          boost::bind(&base_serial_interface::handleIORequest,this,
+                                                          boost::asio::placeholders::error(),
+                                                          boost::asio::placeholders::bytes_transferred()));
         }
     }
     return true;
@@ -111,20 +111,25 @@ bool base_classes::base_serial_interface::stopWork()
 bool base_classes::base_serial_interface::handleRegexRequest(const boost::system::error_code& e, std::size_t bytesTransferred)
 {
 	printMetrics(true);
-    ROS_INFO("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesTransferred);
-    
+  ROS_INFO("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesTransferred);
+
 	if (!e)
 	{
 		std::istream is(&interfaceRegexBuffer);
-		std::string line;
-		std::getline(is, line);
-		
-		ROS_INFO("%s\r\n", line.c_str());
-		
+		std::getline(is, receivedRegexData);
+
+		// ROS_INFO("%s\r\n", receivedRegexData.c_str());
+
+    if(!interfaceReadHandler(dataReadLength, dataArrayStart))
+    {
+        ROS_ERROR("Error Occurred in data handler for plugin <%s>", this->pluginName.c_str());
+    }
+
+
 	} else {
 		ROS_ERROR("Error Occured in plugin data handler <%s>", e.message().c_str());
 	}
-  
+
 	//restart the work
     return startWork();
 }

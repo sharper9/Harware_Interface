@@ -22,24 +22,24 @@ namespace hw_interface_plugin_roboteq {
    {
     public:
         typedef boost::asio::buffers_iterator<boost::asio::streambuf::const_buffers_type> matcherIterator;
-        
+
         roboteq_serial();
         virtual ~roboteq_serial() {} //need to implement closing of the port here
-        
+
         std::size_t roboteqStreamMatcher(const boost::system::error_code &error, long totalBytesInBuffer,
                                             const char *header, const char *footer, int headerLength, int footerLength);
-        
+
     protected:
         ros::NodeHandlePtr nh;
-        
+
         messages::ActuatorOut latestActuatorCmd;
         controller_t roboteqType;
-        
+
         bool subPluginInit(ros::NodeHandlePtr nhPtr);
         void setInterfaceOptions();
         bool interfaceReadHandler(const long &length, int arrayStartPost);
         bool verifyChecksum();
-        
+
         bool pluginStart()
         {
             return implStart();
@@ -55,11 +55,11 @@ namespace hw_interface_plugin_roboteq {
         virtual bool implStop() = 0;
         virtual bool implDataHandler(const long &bufferSize, int arrayStartPos) = 0;
         virtual void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn) = 0;
-        
+
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
-        
-        
+
+
    };
 }
 
-#endif 
+#endif

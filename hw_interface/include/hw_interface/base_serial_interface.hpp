@@ -25,12 +25,14 @@ namespace base_classes
 {
     class base_serial_interface : public base_interface
     {
-		
+
     public:
         bool handleIORequest(const boost::system::error_code &ec, size_t bytesReceived);
-        
+
         //handles ascii roboteq runtime queries
-		bool handleRegexRequest(const boost::system::error_code& e, std::size_t bytesTransferred);
+		    bool handleRegexRequest(const boost::system::error_code& e, std::size_t bytesTransferred);
+        boost::regex regexExpr;
+        std::string receivedRegexData;
 
         //this definition is used to check if a certain character sequence has been encountered
         //on the stream. The begin and end iterators represent positions in the stream that this
@@ -44,8 +46,6 @@ namespace base_classes
         {
             return std::make_pair(end, true);
         }
-
-        boost::regex regexExpr;
 
     private:
 
@@ -89,7 +89,7 @@ namespace base_classes
         {
             return true;
         }
-        
+
         virtual bool pluginStop()
         {
             return true;
