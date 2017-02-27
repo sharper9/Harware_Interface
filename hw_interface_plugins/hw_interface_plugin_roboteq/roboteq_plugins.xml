@@ -1,6 +1,6 @@
-<library path="lib/libhw_interface_plugin_roboteq_drive">
-  <class type="hw_interface_plugin_roboteq::roboteq_drive" base_class_type="base_classes::base_interface">
-    <description>Roboteq Drive Serial Interface</description>
+<library path="lib/libhw_interface_plugin_roboteq_brushed">
+  <class type="hw_interface_plugin_roboteq::brushed" base_class_type="base_classes::base_interface">
+    <description>Roboteq Brushed DC Controller Serial Interface</description>
   </class>
 </library>
 
@@ -9,5 +9,3 @@
     <description>Roboteq Grabber Serial Interface</description>
   </class>
 </library>
-
-

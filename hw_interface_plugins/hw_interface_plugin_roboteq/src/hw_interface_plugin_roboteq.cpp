@@ -29,8 +29,9 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     implInit();
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Init");
     enableMetrics();
-    //setupStreamMatcherDelimAndLength(readLength, headerString.c_str(),
-                                        //footerString.c_str());
+
+    enableRegexReadUntil = true;
+    regexExpr = "^(CB|A|AI|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+)(\\r){2}$";
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
@@ -38,6 +39,54 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     return true;
 }
 
+void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn)
+{
+    std::string motorSpeedCmds = "";
+
+    if(roboteqType == controller_t::Right_Drive_Roboteq)
+    {
+        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->fr_speed_cmd) + "\r";
+        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->mr_speed_cmd) + "\r";
+        postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
+    }
+    else if(roboteqType == controller_t::Left_Drive_Roboteq)
+    {
+        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->fl_speed_cmd) + "\r";
+        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->ml_speed_cmd) + "\r";
+        postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
+    }
+    else
+    {
+        ROS_WARN("%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
+    }
+
+    //need to add monitoring facilities to monitor health
+}
+
+bool hw_interface_plugin_roboteq::roboteq_serial::implInit()
+{
+    std::string tempString;
+    if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
+    {
+        rosDataSub = nh->subscribe(tempString, 1, &roboteq_serial::rosMsgCallback, this);
+    }
+    else
+    {
+        ROS_ERROR("%s:: Could not find topic subscription name", pluginName.c_str());
+    }
+
+    if(ros::param::get(pluginName+"/publishToTopic", tempString))
+    {
+        rosDataPub = nh->advertise<messages::encoder_data>(tempString, 1, false);
+    }
+    else
+    {
+        ROS_ERROR("%s:: Could not find topic advertisment name", pluginName.c_str());
+    }
+
+    //need to start async timers here for grabber monitoring
+    return true;
+}
 
 void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
 {
@@ -71,9 +120,48 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
                                                                             int arrayStartPos)
 {
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Data Handler");
-    if(! implDataHandler(length, arrayStartPos))
+
+    ROS_DEBUG("\r\nContents: %s\r\n", receivedRegexData.c_str());
+
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    boost::char_separator<char> sep("= :\r\n");
+    tokenizer tokens(receivedRegexData, sep);
+
+    try
     {
-        ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
+      tokenizer::iterator tok_iter = tokens.begin();
+
+      if(tok_iter != tokens.end())
+      {
+        ROS_INFO("%s",tok_iter->c_str());
+        m_command = tok_iter->c_str();
+        ++tok_iter;
+      }
+
+      if(tok_iter != tokens.end())
+      {
+          ROS_INFO("%s",tok_iter->c_str());
+          m_commandVal1 = tok_iter->c_str();
+          ++tok_iter;
+      }
+
+      if(tok_iter != tokens.end())
+      {
+          ROS_INFO("%s",tok_iter->c_str());
+          m_commandVal2 = tok_iter->c_str();
+          ++tok_iter;
+      }
+    }
+    catch (const boost::bad_lexical_cast& e ){
+      ROS_ERROR("%s:: Caught bad lexical cast with error %s", pluginName.c_str(), e.what());
+    }
+    catch(...){
+      ROS_ERROR("%s:: Caught Unknown Error while parsing packet in data handler", pluginName.c_str());
+    }
+
+    if(!implDataHandler())
+    {
+      ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
     }
     return true;
 }
@@ -99,77 +187,3 @@ hw_interface_plugin_roboteq::roboteq_serial::matchFooter(matcherIterator begin, 
     }
     return std::make_pair(begin, true);
 }
-
-std::size_t hw_interface_plugin_roboteq::roboteq_serial::roboteqStreamMatcher(const boost::system::error_code &error, long totalBytesInBuffer,
-                                            const char *header, const char *footer, int headerLength, int footerLength)
-{
-    //ROS_INFO("Stream Matcher Started, %ld", totalBytesInBuffer);
-    //ROS_INFO("Header %s", header);
-    //ROS_INFO("Footer %s", footer);
-
-    int headerCounter = 0, headerLoc = -1;
-
-    //counter of footer bytes found so far, and the location of the beginning of the footer
-    int footerCounter = 0, footerLoc = -1;
-    for(int i = 0; i<totalBytesInBuffer; i++)
-    {
-        //std::printf("i= %d, %c %X", i, receivedData[i], receivedData[i]);
-        if(headerCounter != headerLength)
-        {
-            if((receivedData[i]&0xff) == (header[headerCounter]&0xff))
-            {
-                //std::printf("HM ");
-                headerCounter++;
-                if(headerCounter == headerLength)
-                {
-                    headerLoc = i;
-                }
-            }
-            else
-            {
-                headerCounter = 0;
-            }
-        }
-        else if(footerCounter != footerLength)
-        {
-            //std::printf("::F %c %x %d", footer[footerLength - footerCounter - 1], footer[footerLength - footerCounter - 1], footerLength - footerCounter - 1);
-            if((receivedData[i]&0xff) == (footer[footerCounter])&0xff)
-            {
-                //std::printf("FM ");
-                footerCounter++;
-                if(footerCounter == footerLength)
-                {
-                    footerLoc = i;
-                }
-            }
-            else
-            {
-                footerCounter = 0;
-            }
-        }
-        if((headerLoc != -1) && (footerLoc != -1))
-        {
-            dataArrayStart = headerLoc-(headerLength-1);
-            dataReadLength = (footerLoc+1)-headerLoc;
-            return 0; //found everything we need return
-            //std::printf("\r\n");
-        }
-
-        //std::printf(" | ");
-    }
-    return headerLength + footerLength - footerCounter - headerCounter;
-    //std::printf("\r\n");
-}
-
-//int headerLoc=0,footerLoc=0;
-//if(headerLoc = strstr((char*)receivedData.get(), header))
-//{
-//    if(footerLoc = strstr((char*)receivedData.get(), footer))
-//    {
-//        dataArrayStart = headerLoc;
-//        readLength = (footerLoc+footerLength)-headerLoc;
-//        return 0;
-//    }
-//}
-
-//return headerLength + footerLength;

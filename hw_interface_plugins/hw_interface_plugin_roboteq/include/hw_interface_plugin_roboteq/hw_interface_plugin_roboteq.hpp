@@ -9,6 +9,8 @@
 #include <hw_interface/base_serial_interface.hpp>
 
 #include <boost/tokenizer.hpp>
+#include <iterator>
+#include <boost/regex.hpp>
 
 #include <messages/ActuatorOut.h>
 #include <messages/encoder_data.h>
@@ -25,9 +27,6 @@ namespace hw_interface_plugin_roboteq {
 
         roboteq_serial();
         virtual ~roboteq_serial() {} //need to implement closing of the port here
-
-        std::size_t roboteqStreamMatcher(const boost::system::error_code &error, long totalBytesInBuffer,
-                                            const char *header, const char *footer, int headerLength, int footerLength);
 
     protected:
         ros::NodeHandlePtr nh;
@@ -50,11 +49,15 @@ namespace hw_interface_plugin_roboteq {
             return implStop();
         }
 
-        virtual bool implInit() = 0;
+        bool implInit();
+        void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn);
+        std::string m_command;
+        std::string m_commandVal1;
+        std::string m_commandVal2;
+
         virtual bool implStart() = 0;
         virtual bool implStop() = 0;
-        virtual bool implDataHandler(const long &bufferSize, int arrayStartPos) = 0;
-        virtual void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn) = 0;
+        virtual bool implDataHandler() = 0;
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
 

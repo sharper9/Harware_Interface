@@ -1,12 +1,7 @@
 #ifndef HW_INTERFACE_PLUGIN_ROBOTEQ_DRIVE_HPP__
 #define HW_INTERFACE_PLUGIN_ROBOTEQ_DRIVE_HPP__
 
-#include <ros/ros.h>
-
-#include <pluginlib/class_list_macros.h>
-
 #include <hw_interface_plugin_roboteq/hw_interface_plugin_roboteq.hpp>
-
 
 /*
  * Roboteq usage
@@ -26,12 +21,12 @@ namespace hw_interface_plugin_roboteq {
                     }
             }
 
-            void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn);
+            // void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn);
 
         protected:
             messages::encoder_data lastMsgPub;
 
-            bool implInit();
+            // bool implInit();
             bool implStart();
             bool implStop();
             bool implDataHandler(const long &length, int arrayStartPos);

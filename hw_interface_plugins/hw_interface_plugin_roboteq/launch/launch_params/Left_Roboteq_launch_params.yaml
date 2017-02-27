@@ -1,9 +1,9 @@
-plugin_names: 
+plugin_names:
     {
-        hw_interface_plugin_roboteq : roboteq_drive,
+        hw_interface_plugin_roboteq : brushed,
     }
 
-roboteq_drive:
+brushed:
     {
         Left_Roboteq : Left_Roboteq,
     }
