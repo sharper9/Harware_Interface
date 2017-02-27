@@ -5,11 +5,11 @@ project(td_navigation)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-message_generation
+  message_generation
   roscpp
   std_msgs
   messages
-hw_interface_plugin_timedomain
+  hw_interface_plugin_timedomain
 )
 
 ## System dependencies are found with CMake's conventions
@@ -48,8 +48,8 @@ hw_interface_plugin_timedomain
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
+#   RCM_Range_Info.msg
+#   Range_Request.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -121,7 +121,7 @@ include_directories(
 )
 
 ## Declare a C++ library
- add_library(td_navigation src/td_navigation.cpp)
+ add_executable(td_navigation src/td_navigation.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -135,7 +135,7 @@ include_directories(
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(td_navigation_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ add_dependencies(td_navigation ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(td_navigation
