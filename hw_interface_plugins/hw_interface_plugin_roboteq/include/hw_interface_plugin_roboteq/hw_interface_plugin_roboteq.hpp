@@ -16,9 +16,11 @@
 #include <messages/encoder_data.h>
 #include <messages/GrabberFeedback.h>
 
+#include <hw_interface_plugin_roboteq/Analog_Input_Conversion_Info.h>
+
 namespace hw_interface_plugin_roboteq {
 
-    enum controller_t {Other, Left_Drive_Roboteq, Right_Drive_Roboteq};
+    enum controller_t {Other, Left_Drive_Roboteq, Right_Drive_Roboteq, Bucket_Roboteq};
 
    class roboteq_serial : public base_classes::base_serial_interface
    {

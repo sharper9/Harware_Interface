@@ -18,6 +18,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     {
         if (tempString.compare("Right_Drive")) { roboteqType = controller_t::Right_Drive_Roboteq; }
         else if(tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
+        else if(tempString.compare("Bucket")) { roboteqType = controller_t::Bucket_Roboteq; }
         else { roboteqType = controller_t::Other; }
     }
     else
@@ -31,7 +32,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "^(CB|A|AI|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+)(\\r){2}$";
+    regexExpr = "^(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+)(\\r){2}$";
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);

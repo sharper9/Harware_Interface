@@ -2,6 +2,6 @@
 
 <launch>
 
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Left_Roboteq_Interface.launch" />
+    <include file="$(find hw_interface_plugin_roboteq)/launch/Bucket_Roboteq_Interface.launch" />
 
 </launch>
