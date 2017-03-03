@@ -16,9 +16,10 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     std::string tempString = "";
     if(ros::param::get(pluginName+"/controllerType", tempString))
     {
-        if (tempString.compare("Right_Drive")) { roboteqType = controller_t::Right_Drive_Roboteq; }
-        else if(tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
-        else if(tempString.compare("Bucket")) { roboteqType = controller_t::Bucket_Roboteq; }
+    
+        if (!tempString.compare("Right_Drive")) { roboteqType = controller_t::Right_Drive_Roboteq; }
+        else if(!tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
+        else if(!tempString.compare("Bucket_Roboteq")) { roboteqType = controller_t::Bucket_Roboteq; }
         else { roboteqType = controller_t::Other; }
     }
     else
@@ -32,7 +33,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "^(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+):(-?\\d+):(-?\\d+)(\\r){2}$";
+    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+):(-?\\d+):(-?\\d+)(\\r){2}";
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
@@ -66,6 +67,8 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     {
         ROS_WARN("%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
     }
+    
+    ROS_INFO("%s", motorSpeedCmds.c_str());
 
     //need to add monitoring facilities to monitor health
 }
@@ -140,7 +143,14 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
 
       if(tok_iter != tokens.end())
       {
-        ROS_INFO("%s",tok_iter->c_str());
+
+        while ((tok_iter->c_str()[0]) == '+' && tok_iter != tokens.end())
+        {
+          ROS_INFO("%s", tok_iter->c_str());
+          ++tok_iter;
+        }
+        
+        ROS_INFO("%s",tok_iter->c_str()); 
         m_command = tok_iter->c_str();
         ++tok_iter;
       }
