@@ -32,7 +32,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "^(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+)(\\r){2}$";
+    regexExpr = "^(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+):(-?\\d+):(-?\\d+)(\\r){2}$";
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
@@ -55,6 +55,12 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->fl_speed_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->ml_speed_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
+    }
+    else if(roboteqType == controller_t::Bucket_Roboteq)
+    {
+        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(-msgIn->bucket_pos_cmd) + "\r";
+        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
+        postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));      
     }
     else
     {
@@ -152,6 +158,11 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
           m_commandVal2 = tok_iter->c_str();
           ++tok_iter;
       }
+      
+      if(!implDataHandler())
+      {
+        ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
+      }
     }
     catch (const boost::bad_lexical_cast& e ){
       ROS_ERROR("%s:: Caught bad lexical cast with error %s", pluginName.c_str(), e.what());
@@ -160,10 +171,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
       ROS_ERROR("%s:: Caught Unknown Error while parsing packet in data handler", pluginName.c_str());
     }
 
-    if(!implDataHandler())
-    {
-      ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
-    }
+    
     return true;
 }
 
