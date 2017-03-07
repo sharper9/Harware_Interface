@@ -33,3 +33,6 @@
 
 #qt creator user files
 .user
+
+# Doxygen config file
+hw_interface.doxy
