@@ -4,10 +4,6 @@
 #include "robot_status.h"
 #include <ros/ros.h>
 #include "bit_utils.h"
-#define SCOOP_RAISED 1000
-#define SCOOP_LOWERED -900
-#define BUCKET_RAISED 1000
-#define BUCKET_LOWERED -1000
 
 class RobotControlInterface
 {

@@ -3,7 +3,6 @@
 #include "actuator_deque_interface.h"
 #include "action_params.h"
 #include "robot_control_interface.h"
-#include "cataglyphis_timer.h"
 #include <math.h>
 
 class Action : public ActuatorDequeInterface, public RobotControlInterface

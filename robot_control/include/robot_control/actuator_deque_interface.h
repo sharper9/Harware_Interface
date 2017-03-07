@@ -6,13 +6,13 @@
 #include "drive_halt.h"
 #include "drive_straight.h"
 #include "drive_pivot.h"
-#include "drive_straight_cl.h"
-#include "grabber_halt.h"
-#include "grabber_set_drop.h"
-#include "grabber_set_slides.h"
-#include "grabber_idle.h"
-#include "vision_halt.h"
-#include "vision_search.h"
+#include "drive_arc.h"
+#include "scoop_halt.h"
+#include "scoop_set_pos.h"
+#include "scoop_idle.h"
+#include "bucket_halt.h"
+#include "bucket_set_pos.h"
+#include "bucket_idle.h"
 #define TASK_POOL_SIZE 100
 #define PI 3.14159265359
 
@@ -20,41 +20,43 @@ class ActuatorDequeInterface
 {
 public:
 	static std::deque <Task*> driveDeque;
-	static std::deque <Task*> grabberDeque;
-	static std::deque <Task*> visionDeque;
+	static std::deque <Task*> scoopDeque;
+	static std::deque <Task*> bucketDeque;
 	static unsigned int taskPoolIndex[NUM_TASKS];
 	static Task* taskPool[NUM_TASKS][TASK_POOL_SIZE];
 	static DriveHalt driveHalt;
-	static GrabberHalt grabberHalt;
-	static GrabberIdle grabberIdle;
-	static VisionHalt visionHalt;
+	static ScoopHalt scoopHalt;
+	static ScoopIdle scoopIdle;
+	static BucketHalt bucketHalt;
+	static BucketIdle bucketIdle;
 	static int driveDequeEnded;
 	static int driveDequeEmpty;
 	static int driveDequeEmptyPrev;
-	static int grabberDequeEnded;
-	static int grabberDequeEmpty;
-	static int grabberDequeEmptyPrev;
-	static int visionDequeEnded;
-	static int visionDequeEmpty;
-	static int visionDequeEmptyPrev;
+	static int scoopDequeEnded;
+	static int scoopDequeEmpty;
+	static int scoopDequeEmptyPrev;
+	static int bucketDequeEnded;
+	static int bucketDequeEmpty;
+	static int bucketDequeEmptyPrev;
 };
 
 std::deque <Task*> ActuatorDequeInterface::driveDeque;
-std::deque <Task*> ActuatorDequeInterface::grabberDeque;
-std::deque <Task*> ActuatorDequeInterface::visionDeque;
+std::deque <Task*> ActuatorDequeInterface::scoopDeque;
+std::deque <Task*> ActuatorDequeInterface::bucketDeque;
 unsigned int ActuatorDequeInterface::taskPoolIndex[NUM_TASKS] = {0};
 Task* ActuatorDequeInterface::taskPool[NUM_TASKS][TASK_POOL_SIZE] = {0};
 DriveHalt ActuatorDequeInterface::driveHalt;
-GrabberHalt ActuatorDequeInterface::grabberHalt;
-GrabberIdle ActuatorDequeInterface::grabberIdle;
-VisionHalt ActuatorDequeInterface::visionHalt;
+ScoopHalt ActuatorDequeInterface::scoopHalt;
+ScoopIdle ActuatorDequeInterface::scoopIdle;
+BucketHalt ActuatorDequeInterface::bucketHalt;
+BucketIdle ActuatorDequeInterface::bucketIdle;
 int ActuatorDequeInterface::driveDequeEnded;
 int ActuatorDequeInterface::driveDequeEmpty;
 int ActuatorDequeInterface::driveDequeEmptyPrev = 1;
-int ActuatorDequeInterface::grabberDequeEnded;
-int ActuatorDequeInterface::grabberDequeEmpty;
-int ActuatorDequeInterface::grabberDequeEmptyPrev = 1;
-int ActuatorDequeInterface::visionDequeEnded;
-int ActuatorDequeInterface::visionDequeEmpty;
-int ActuatorDequeInterface::visionDequeEmptyPrev = 1;
+int ActuatorDequeInterface::scoopDequeEnded;
+int ActuatorDequeInterface::scoopDequeEmpty;
+int ActuatorDequeInterface::scoopDequeEmptyPrev = 1;
+int ActuatorDequeInterface::bucketDequeEnded;
+int ActuatorDequeInterface::bucketDequeEmpty;
+int ActuatorDequeInterface::bucketDequeEmptyPrev = 1;
 #endif // ACTUATOR_DEQUE_INTERFACE_H
