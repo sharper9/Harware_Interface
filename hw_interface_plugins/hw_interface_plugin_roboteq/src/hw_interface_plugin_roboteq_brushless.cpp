@@ -48,6 +48,5 @@ bool hw_interface_plugin_roboteq::brushless::implDataHandler()
 
     m_commandVal1 = "";
     m_commandVal2 = "";
-
     return true;
 }

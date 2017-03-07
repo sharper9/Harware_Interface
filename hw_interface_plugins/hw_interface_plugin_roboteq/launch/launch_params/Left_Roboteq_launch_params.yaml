@@ -1,9 +1,9 @@
 plugin_names:
     {
-        hw_interface_plugin_roboteq : brushed,
+        hw_interface_plugin_roboteq : brushless,
     }
 
-brushed:
+brushless:
     {
         Left_Roboteq : Left_Roboteq,
     }

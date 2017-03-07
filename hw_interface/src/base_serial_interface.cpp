@@ -118,13 +118,12 @@ bool base_classes::base_serial_interface::handleRegexRequest(const boost::system
 		std::istream is(&interfaceRegexBuffer);
 		std::getline(is, receivedRegexData);
 
-		ROS_INFO("Data -> %s\r\n", receivedRegexData.c_str());
+		ROS_INFO("Data -> %s", receivedRegexData.c_str());
 
     if(!interfaceReadHandler(dataReadLength, dataArrayStart))
     {
         ROS_ERROR("Error Occurred in data handler for plugin <%s>", this->pluginName.c_str());
     }
-
 
 	} else {
 		ROS_ERROR("Error Occured in plugin data handler <%s>", e.message().c_str());

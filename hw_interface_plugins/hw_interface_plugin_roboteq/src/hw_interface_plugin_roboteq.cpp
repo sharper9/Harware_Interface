@@ -16,7 +16,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     std::string tempString = "";
     if(ros::param::get(pluginName+"/controllerType", tempString))
     {
-    
+
         if (!tempString.compare("Right_Drive")) { roboteqType = controller_t::Right_Drive_Roboteq; }
         else if(!tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
         else if(!tempString.compare("Bucket_Roboteq")) { roboteqType = controller_t::Bucket_Roboteq; }
@@ -33,7 +33,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=(-?\\d+):(-?\\d+):(-?\\d+):(-?\\d+)(\\r){2}";
+    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
@@ -61,13 +61,13 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     {
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(-msgIn->bucket_pos_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
-        postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));      
+        postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else
     {
         ROS_WARN("%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
     }
-    
+
     ROS_INFO("%s", motorSpeedCmds.c_str());
 
     //need to add monitoring facilities to monitor health
@@ -131,7 +131,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
 {
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Data Handler");
 
-    ROS_DEBUG("\r\nContents: %s\r\n", receivedRegexData.c_str());
+    ROS_DEBUG("\n\nContents: %s\n", receivedRegexData.c_str());
 
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
     boost::char_separator<char> sep("= :\r\n");
@@ -149,8 +149,8 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
           ROS_INFO("%s", tok_iter->c_str());
           ++tok_iter;
         }
-        
-        ROS_INFO("%s",tok_iter->c_str()); 
+
+        ROS_INFO("%s",tok_iter->c_str());
         m_command = tok_iter->c_str();
         ++tok_iter;
       }
@@ -168,7 +168,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
           m_commandVal2 = tok_iter->c_str();
           ++tok_iter;
       }
-      
+
       if(!implDataHandler())
       {
         ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
@@ -181,7 +181,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
       ROS_ERROR("%s:: Caught Unknown Error while parsing packet in data handler", pluginName.c_str());
     }
 
-    
+
     return true;
 }
 

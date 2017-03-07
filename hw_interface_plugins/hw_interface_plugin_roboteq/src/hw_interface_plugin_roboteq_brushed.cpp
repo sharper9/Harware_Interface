@@ -44,7 +44,7 @@ bool hw_interface_plugin_roboteq::brushed::implDataHandler()
 
     // TODO: implement publishing data to rosDataPub
     try{
-        
+
         hw_interface_plugin_roboteq::Analog_Input_Conversion_Info aicData;
         aicData.channel1_mV = boost::lexical_cast<int16_t>(m_commandVal1);
         aicData.channel2_mV = boost::lexical_cast<int16_t>(m_commandVal2);
