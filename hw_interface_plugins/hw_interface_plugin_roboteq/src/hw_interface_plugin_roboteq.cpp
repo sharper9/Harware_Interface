@@ -143,13 +143,6 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
 
       if(tok_iter != tokens.end())
       {
-
-        while ((tok_iter->c_str()[0]) == '+' && tok_iter != tokens.end())
-        {
-          ROS_INFO("%s", tok_iter->c_str());
-          ++tok_iter;
-        }
-
         ROS_INFO("%s",tok_iter->c_str());
         m_command = tok_iter->c_str();
         ++tok_iter;

@@ -118,6 +118,12 @@ bool base_classes::base_serial_interface::handleRegexRequest(const boost::system
 		std::istream is(&interfaceRegexBuffer);
 		std::getline(is, receivedRegexData);
 
+    boost::smatch result;
+    if (boost::regex_search(receivedRegexData, result, regexExpr)) {
+      std::string submatch(result[0].first, result[0].second);
+      receivedRegexData = submatch;
+    }
+
 		ROS_INFO("Data -> %s", receivedRegexData.c_str());
 
     if(!interfaceReadHandler(dataReadLength, dataArrayStart))
