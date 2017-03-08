@@ -15,4 +15,5 @@ Left_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/drivemotorin/left",
         controllerType     : "Left_Drive",
+        initializationCmd  : "analog_inputs",
     }
