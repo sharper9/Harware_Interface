@@ -21,6 +21,12 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
   std::string initializationCmd = "";
   if(ros::param::get(pluginName+"/initializationCmd", initializationCmd))
   {
+    if (!command_list[initializationCmd].length())
+    {
+      ROS_WARN("Roboteq initialization command was not found, defaulting...");
+      initializationCmd = "\r# C\r?CB\r# 20\r";
+    }
+
     initializationCmd = "?" + command_list[initializationCmd] + "\r# 20 \r";
   }
   else
