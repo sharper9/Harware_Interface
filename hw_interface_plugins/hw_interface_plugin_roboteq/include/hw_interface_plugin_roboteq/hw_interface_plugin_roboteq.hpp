@@ -11,16 +11,18 @@
 #include <boost/tokenizer.hpp>
 #include <iterator>
 #include <boost/regex.hpp>
+#include <map>
 
 #include <messages/ActuatorOut.h>
 #include <messages/encoder_data.h>
 #include <messages/GrabberFeedback.h>
 
+#include <hw_interface_plugin_roboteq/Roboteq_Data.h>
 #include <hw_interface_plugin_roboteq/Analog_Input_Conversion_Info.h>
 
 namespace hw_interface_plugin_roboteq {
 
-    enum controller_t {Other, Left_Drive_Roboteq, Right_Drive_Roboteq, Bucket_Roboteq};
+    enum controller_t { Other, Left_Drive_Roboteq, Right_Drive_Roboteq, Bucket_Roboteq, Arm_Roboteq, Scoop_Roboteq };
 
    class roboteq_serial : public base_classes::base_serial_interface
    {
@@ -57,12 +59,28 @@ namespace hw_interface_plugin_roboteq {
         std::string m_commandVal1;
         std::string m_commandVal2;
 
+        hw_interface_plugin_roboteq::Roboteq_Data roboteqData;
+
         virtual bool implStart() = 0;
         virtual bool implStop() = 0;
         virtual bool implDataHandler() = 0;
 
-        std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
+        std::map <std::string, std::string> command_list = {
+          {"motor_amps", "A"},
+          {"analog_inputs", "AI"},
+          {"analog_inputs_conversion", "AIC"},
+          {"bl_motor_speed_rpm", "BS"},
+          {"individual_digital_inputs", "DI"},
+          {"destination_reached", "DR"},
+          {"fault_flags", "FF"},
+          {"absolute_brushless_counter", "CB"},
+          {"brushless_count_relative", "BCR"},
+          {"battery_amps", "BA"}
+        };
 
+        std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
+      private:
+        bool dataHandler();
 
    };
 }

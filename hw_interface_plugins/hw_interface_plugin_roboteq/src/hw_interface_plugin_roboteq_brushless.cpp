@@ -19,7 +19,11 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
    * 3. send '# 20' to have runtime queries repeated at 20 ms delta (50 hz)
    */
   std::string initializationCmd = "";
-  if(!(ros::param::get(pluginName+"/initializationCmd", initializationCmd)))
+  if(ros::param::get(pluginName+"/initializationCmd", initializationCmd))
+  {
+    initializationCmd = "?" + command_list[initializationCmd] + "\r# 20 \r";
+  }
+  else
   {
       ROS_WARN("Roboteq Initialization Command Unspecified, defaulting");
       initializationCmd = "\r# C\r?CB\r# 20\r";
@@ -41,12 +45,5 @@ bool hw_interface_plugin_roboteq::brushless::implDataHandler()
     ROS_DEBUG("%s :: Roboteq Brushless Implementation Data Handler", pluginName.c_str());
     //should check size of buffer is equal to size of msg, just in case.
 
-    messages::encoder_data encoderData;
-    encoderData.motor_1_encoder_count = boost::lexical_cast<int32_t>(m_commandVal1);
-    encoderData.motor_2_encoder_count = boost::lexical_cast<int32_t>(m_commandVal2);
-    rosDataPub.publish(encoderData);
-
-    m_commandVal1 = "";
-    m_commandVal2 = "";
     return true;
 }

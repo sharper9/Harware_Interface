@@ -2,7 +2,7 @@
 
     <rosparam
                 command="load"
-                file="$(find hw_interface_plugin_roboteq)/launch/launch_params/Bucket_Launch_Params.yaml"
+                file="$(find hw_interface_plugin_roboteq)/launch/launch_params/Arm_Launch_Params.yaml"
                 subst_value="true"
     />
 

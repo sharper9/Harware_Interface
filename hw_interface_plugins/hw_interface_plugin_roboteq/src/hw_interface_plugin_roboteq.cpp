@@ -20,6 +20,8 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
         if (!tempString.compare("Right_Drive")) { roboteqType = controller_t::Right_Drive_Roboteq; }
         else if(!tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
         else if(!tempString.compare("Bucket_Roboteq")) { roboteqType = controller_t::Bucket_Roboteq; }
+        else if(!tempString.compare("Arm_Roboteq")) { roboteqType = controller_t::Arm_Roboteq; }
+        else if(!tempString.compare("Scoop_Roboteq")) { roboteqType = controller_t::Scoop_Roboteq; }
         else { roboteqType = controller_t::Other; }
     }
     else
@@ -33,7 +35,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BAR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
+    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BCR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
@@ -78,7 +80,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::implInit()
     std::string tempString;
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
     {
-        rosDataSub = nh->subscribe(tempString, 1, &roboteq_serial::rosMsgCallback, this);
+      rosDataSub = nh->subscribe(tempString, 1, &roboteq_serial::rosMsgCallback, this);
     }
     else
     {
@@ -87,7 +89,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::implInit()
 
     if(ros::param::get(pluginName+"/publishToTopic", tempString))
     {
-        rosDataPub = nh->advertise<messages::encoder_data>(tempString, 1, false);
+      rosDataPub = nh->advertise<hw_interface_plugin_roboteq::Roboteq_Data>(tempString, 1, false);
     }
     else
     {
@@ -160,9 +162,8 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
           ROS_INFO("%s",tok_iter->c_str());
           m_commandVal2 = tok_iter->c_str();
           ++tok_iter;
-      }
-
-      if(!implDataHandler())
+      }  
+      if(!dataHandler())
       {
         ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
       }
@@ -178,6 +179,70 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
     return true;
 }
 
+bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler()
+{
+  try{
+
+    if (!m_command.compare("A"))
+    {
+      roboteqData.c1_amps = boost::lexical_cast<int16_t>(m_commandVal1);
+      roboteqData.c2_amps = boost::lexical_cast<int16_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("AI"))
+    {
+      roboteqData.c1_analog_inputs = boost::lexical_cast<int16_t>(m_commandVal1);
+      roboteqData.c2_analog_inputs = boost::lexical_cast<int16_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("AIC"))
+    {
+      roboteqData.c1_analog_inputs_conversion = boost::lexical_cast<int16_t>(m_commandVal1);
+      roboteqData.c2_analog_inputs_conversion = boost::lexical_cast<int16_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("BA"))
+    {
+      roboteqData.c1_battery_amps = boost::lexical_cast<int16_t>(m_commandVal1);
+      roboteqData.c2_battery_amps = boost::lexical_cast<int16_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("BCR"))
+    {
+      roboteqData.c1_brushless_count_relative = boost::lexical_cast<int32_t>(m_commandVal1);
+      roboteqData.c2_brushless_count_relative = boost::lexical_cast<int32_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("BS"))
+    {
+      roboteqData.c1_bl_motor_speed_rpm = boost::lexical_cast<int16_t>(m_commandVal1);
+      roboteqData.c2_bl_motor_speed_rpm = boost::lexical_cast<int16_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("CB"))
+    {
+      roboteqData.c1_absolute_brushless_counter = boost::lexical_cast<int32_t>(m_commandVal1);
+      roboteqData.c2_absolute_brushless_counter = boost::lexical_cast<int32_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("DI"))
+    {
+      roboteqData.c1_individual_digital_inputs = boost::lexical_cast<bool>(m_commandVal1);
+      roboteqData.c2_individual_digital_inputs = boost::lexical_cast<bool>(m_commandVal2);
+    }
+    else if (!m_command.compare("DR"))
+    {
+      roboteqData.c1_destination_reached = boost::lexical_cast<uint8_t>(m_commandVal1);
+      roboteqData.c2_destination_reached = boost::lexical_cast<uint8_t>(m_commandVal2);
+    }
+    else if (!m_command.compare("FF"))
+    {
+      roboteqData.fault_flags = boost::lexical_cast<uint8_t>(m_commandVal1);
+    }
+
+  }
+  catch(const std::exception &ex)
+  {
+      ROS_ERROR_EXTRA("STD Exception Caught! \r\n %s", ex.what());
+      ROS_ERROR("REGEX Container %s", receivedRegexData.c_str());
+  }
+
+  rosDataPub.publish(roboteqData);
+  return true;
+}
 bool hw_interface_plugin_roboteq::roboteq_serial::verifyChecksum()
 {
     return true;
