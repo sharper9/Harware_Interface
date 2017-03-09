@@ -45,11 +45,12 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+ add_message_files(
+   FILES
+   Roboteq_Data.msg
+   Analog_Input_Info.msg
+   Analog_Input_Conversion_Info.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +67,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+   # std_msgs  # Or other packages containing msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +105,7 @@ add_definitions("-std=gnu++11")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES hw_interface_plugin_roboteq hw_interface_plugin_roboteq_drive hw_interface_plugin_roboteq_grabber
+  LIBRARIES hw_interface_plugin_roboteq hw_interface_plugin_roboteq_brushed hw_interface_plugin_roboteq_brushless
   CATKIN_DEPENDS hw_interface messages pluginlib roscpp
 #  DEPENDS system_lib
 )
@@ -122,10 +123,9 @@ include_directories(
 )
 
 ## Declare a C++ library
- add_library(hw_interface_plugin_roboteq            src/hw_interface_plugin_roboteq.cpp)
- add_library(hw_interface_plugin_roboteq_grabber    src/hw_interface_plugin_roboteq_grabber.cpp)
- add_library(hw_interface_plugin_roboteq_drive      src/hw_interface_plugin_roboteq_drive.cpp)
- add_library(roboteq_drive_packet                   src/roboteq_drive_packet.cpp)
+ add_library(hw_interface_plugin_roboteq              src/hw_interface_plugin_roboteq.cpp)
+ add_library(hw_interface_plugin_roboteq_brushed      src/hw_interface_plugin_roboteq_brushed.cpp)
+ add_library(hw_interface_plugin_roboteq_brushless      src/hw_interface_plugin_roboteq_brushless.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -133,7 +133,7 @@ include_directories(
  add_dependencies(hw_interface_plugin_roboteq ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
                     hw_interface
                     messages_generate_messages)
-                    
+
 ## Declare a C++ executable
 # add_executable(hw_interface_plugin_roboteq_node src/hw_interface_plugin_roboteq_node.cpp)
 
@@ -147,20 +147,19 @@ include_directories(
    base_interface
    base_serial_interface
  )
- 
- target_link_libraries(hw_interface_plugin_roboteq_grabber
+
+ target_link_libraries(hw_interface_plugin_roboteq_brushed
    ${catkin_LIBRARIES}
    base_interface
    base_serial_interface
    hw_interface_plugin_roboteq
  )
- 
- target_link_libraries(hw_interface_plugin_roboteq_drive
+
+ target_link_libraries(hw_interface_plugin_roboteq_brushless
    ${catkin_LIBRARIES}
    base_interface
    base_serial_interface
    hw_interface_plugin_roboteq
-   roboteq_drive_packet
  )
 
 #############
