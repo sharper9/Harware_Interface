@@ -128,7 +128,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
     ROS_INFO("%s :: Device: %s :: Baudrate %d", pluginName.c_str(), deviceName.c_str(), tempBaudRate);
 }
 
-bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const long &length,
+bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const size_t &length,
                                                                             int arrayStartPos)
 {
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Data Handler");
@@ -162,7 +162,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const lon
           ROS_INFO("%s",tok_iter->c_str());
           m_commandVal2 = tok_iter->c_str();
           ++tok_iter;
-      }  
+      }
       if(!dataHandler())
       {
         ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());

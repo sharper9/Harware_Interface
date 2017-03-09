@@ -129,7 +129,7 @@ void hw_interface_plugin_timedomain::timedomain_serial::rosMsgCallback(const hw_
 //this is called automatically when data that passes the streamMatcher is okay
     //this function is called with a data length and a position in an inherited array member
         //named 'receivedData'
-bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(const long &length,
+bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(const size_t &length,
                                                                             int arrayStartPos)
 {
     ROS_INFO("TimeDomain Plugin Data Handler, %ld, %d", length, arrayStartPos);

@@ -58,7 +58,7 @@ namespace base_classes
         bool enableCompletionFunctor;
         bool enableStreamMatcher;
         bool enableRegexReadUntil; //enabled in roboteq plugin
-        
+
         ros::Publisher rosDataPub; //publisher, data from interface to ros
         ros::Subscriber rosDataSub;//subscriber, data from ros to interface
 
@@ -127,7 +127,6 @@ namespace base_classes
     protected:
         boost::shared_array<uint8_t> receivedData;
         int dataArrayStart;
-        int dataReadLength;
 
     private:
 

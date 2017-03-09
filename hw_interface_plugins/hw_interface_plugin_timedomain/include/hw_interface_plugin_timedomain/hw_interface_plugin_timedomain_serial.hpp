@@ -6,7 +6,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <hw_interface/base_interface.hpp>
 
-//include the header of the base type you want, Serial or UDP 
+//include the header of the base type you want, Serial or UDP
 #include <hw_interface/base_serial_interface.hpp>
 
 #include <hw_interface_plugin_timedomain/ranging_radio_types.h>
@@ -25,12 +25,12 @@ namespace hw_interface_plugin_timedomain {
         virtual ~timedomain_serial() {}
 
     protected:
-    
+
         //these methods are abstract as defined by the base_Serial_interface
             //they must be defined
         bool subPluginInit(ros::NodeHandlePtr nhPtr);
         void setInterfaceOptions();
-        bool interfaceReadHandler(const long &length, int arrayStartPos);
+        bool interfaceReadHandler(const size_t &length, int arrayStartPos);
         bool verifyChecksum();
 
         void rosMsgCallback(const hw_interface_plugin_timedomain::Range_Request::ConstPtr &msg);
