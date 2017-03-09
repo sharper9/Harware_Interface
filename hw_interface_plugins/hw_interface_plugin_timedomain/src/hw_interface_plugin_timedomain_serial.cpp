@@ -1,5 +1,3 @@
-#include <ros/ros.h>
-
 #include <hw_interface_plugin_timedomain/hw_interface_plugin_timedomain_serial.hpp>
 
 //class constructor, do required instatiation only here
@@ -13,7 +11,7 @@ hw_interface_plugin_timedomain::timedomain_serial::timedomain_serial()
     if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
-        
+
     //enable automatic class metric collection.
     enableMetrics();
 }
@@ -37,7 +35,7 @@ bool hw_interface_plugin_timedomain::timedomain_serial::subPluginInit(ros::NodeH
     //retrieve string from the ROS Parameter Server
         //of the format '<plugin_name>/<parameter>
     std::string tempString = "";
-    
+
     //place that wants to write data to the device
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
     {
@@ -135,7 +133,7 @@ bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(con
                                                                             int arrayStartPos)
 {
     ROS_INFO("TimeDomain Plugin Data Handler, %ld, %d", length, arrayStartPos);
-    
+
     ROS_DEBUG("Buf Pointer: 0x%p\r\n", &receivedData[arrayStartPos]);
     std::printf("Contents: ");
     for(int i = 0; i < length; i++)
@@ -143,7 +141,7 @@ bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(con
         std::printf("%x | ", receivedData[arrayStartPos + i]);
     }
     std::printf("\r\n");
-    
+
     ranging_radio_types::Pre_Response_t preRead;
     ranging_radio_types::bigToLittleEndian((const uint8_t*)receivedData.get(), preRead.msgData, ranging_radio_types::PRE_READ_SIZE);
 
@@ -183,7 +181,7 @@ bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(con
     return true;
 }
 
-//automatically called to check the checksum of the packet. 
+//automatically called to check the checksum of the packet.
     //If un-wanted/un-needed, return true.
 bool hw_interface_plugin_timedomain::timedomain_serial::verifyChecksum()
 {

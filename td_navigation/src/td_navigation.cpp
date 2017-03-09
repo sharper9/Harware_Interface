@@ -1,10 +1,4 @@
-#include <ros/ros.h>
-
-#include <boost/scoped_ptr.hpp>
-#include <math.h>
-
-#include <hw_interface_plugin_timedomain/Range_Request.h>
-#include <hw_interface_plugin_timedomain/RCM_Range_Info.h>
+#include <td_navigation/td_navigation.h>
 
 //Range_Request_()
 //  : send_range_request(false)
@@ -29,82 +23,64 @@
 //  , msgID(0)  {
 //  }
 
-//class that let's us get variables from callbacks mostly
-class Listener{
+td_navigation::listener::listener()
+{
+  confirmed = 0;
+  rad0_DistL = 0;
+  rad0_DistR = 0;
+  rad1_DistL = 0;
+  rad1_DistR = 0;
+  selector = 0;
+}
 
-public:
-
-    bool confirmed;
-    int* count;
-    int selector;
-
-    double rad0_DistL;
-    double rad0_DistR;
-
-    double rad1_DistL;
-    double rad1_DistR;
-
-    Listener(){
-        confirmed = 0;
-        rad0_DistL = 0;
-        rad0_DistR = 0;
-        rad1_DistL = 0;
-        rad1_DistR = 0;
-        selector = 0;
+void td_navigation::listener::radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
+    ROS_INFO("TDRR Navigation Callback");
+    //check the message id, busy, failed
+    //update appropriate distance
+    if (msg->busy == true){
+        ROS_WARN("TDRR was busy");
+        return;
+    }
+    if (msg->failed == true){
+        ROS_WARN("TDRR request has failed!");
+        return;
     }
 
-    void radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
-        ROS_INFO("TDRR Navigation Callback");
-        //check the message id, busy, failed
-        //update appropriate distance
-        if (msg->busy == true){
-            ROS_WARN("TDRR was busy");
+    //from rad0 to leftRad
+    if(msg->msgID >=0 && msg->msgID < 400 ){
+        if(msg->msgID == *count && selector == 0){
+            ROS_INFO("Reading from rad0 to leftRad");
+            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            rad0_DistL = msg->PRM;
+            confirmed = true;
+        }else if(msg-> msgID == 100 + *count && selector == 1){
+            ROS_INFO("Reading from rad0 to RightRad");
+            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            rad0_DistR = msg->PRM;
+            confirmed = true;
             return;
-        }
-        if (msg->failed == true){
-            ROS_WARN("TDRR request has failed!");
+        }else if(msg-> msgID == 200 + *count && selector == 2){
+            ROS_INFO("Reading from rad1 to leftRad");
+            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            rad1_DistL = msg->PRM;
+            confirmed = true;
             return;
-        }
-
-        //from rad0 to leftRad
-        if(msg->msgID >=0 && msg->msgID < 400 ){
-            if(msg->msgID == *count && selector == 0){
-                ROS_INFO("Reading from rad0 to leftRad");
-                ROS_INFO("Precise Range Measure: %d", msg->PRM);
-                rad0_DistL = msg->PRM;
-                confirmed = true;
-            }else if(msg-> msgID == 100 + *count && selector == 1){
-                ROS_INFO("Reading from rad0 to RightRad");
-                ROS_INFO("Precise Range Measure: %d", msg->PRM);
-                rad0_DistR = msg->PRM;
-                confirmed = true;
-                return;
-            }else if(msg-> msgID == 200 + *count && selector == 2){
-                ROS_INFO("Reading from rad1 to leftRad");
-                ROS_INFO("Precise Range Measure: %d", msg->PRM);
-                rad1_DistL = msg->PRM;
-                confirmed = true;
-                return;
-            }else if(msg-> msgID == 300 + *count && selector == 3){
-                ROS_INFO("Reading from rad1 to RightRad");
-                ROS_INFO("Precise Range Measure: %d", msg->PRM);
-                rad1_DistR = msg->PRM;
-                confirmed = true;
-                return;
-            }else{
-                ROS_WARN("TDRR MsgID mismatched!");
-                return;
-            }
-
+        }else if(msg-> msgID == 300 + *count && selector == 3){
+            ROS_INFO("Reading from rad1 to RightRad");
+            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            rad1_DistR = msg->PRM;
+            confirmed = true;
+            return;
         }else{
-            ROS_WARN("TDRR MsgID Very Wrong!");
+            ROS_WARN("TDRR MsgID mismatched!");
+            return;
         }
 
-
+    }else{
+        ROS_WARN("TDRR MsgID Very Wrong!");
     }
+}
 
-
-};
 
 int main(int argc, char **argv)
 {
@@ -119,12 +95,12 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ROS_INFO(" - node handle created");
 
-    Listener listener;
+    td_navigation::listener listener;
 
 
     //subscriber for recieving messages
-    ros::Subscriber rad0_s = nh.subscribe("/radio0/data", 5, &Listener::radCallBack, &listener);
-    ros::Subscriber rad1_s = nh.subscribe("/radio1/data", 5, &Listener::radCallBack, &listener);
+    ros::Subscriber rad0_s = nh.subscribe("/radio0/data", 5, &td_navigation::listener::radCallBack, &listener);
+    ros::Subscriber rad1_s = nh.subscribe("/radio1/data", 5, &td_navigation::listener::radCallBack, &listener);
 
     //publisher for sending a message to timedomain serial to get a range request
     ros::Publisher rad0_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio0/cmd", 5);
@@ -266,5 +242,3 @@ int main(int argc, char **argv)
     ROS_DEBUG("td_navigation Closing");
     return 0;
 }
-
-
