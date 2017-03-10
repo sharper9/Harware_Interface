@@ -23,13 +23,15 @@
 //  , msgID(0)  {
 //  }
 
+#define PI 3.14159265
+
 td_navigation::listener::listener()
 {
   confirmed = 0;
-  rad0_DistL = 0;
-  rad0_DistR = 0;
-  rad1_DistL = 0;
-  rad1_DistR = 0;
+  rad104_DistL = 0;
+  rad104_DistR = 0;
+  rad105_DistL = 0;
+  rad105_DistR = 0;
   selector = 0;
 }
 
@@ -44,6 +46,7 @@ void td_navigation::listener::radCallBack(const hw_interface_plugin_timedomain::
     if (msg->failed == true){
         ROS_WARN("TDRR request has failed!");
         return;
+
     }
 
     //from rad0 to leftRad
@@ -51,26 +54,27 @@ void td_navigation::listener::radCallBack(const hw_interface_plugin_timedomain::
         if(msg->msgID == *count && selector == 0){
             ROS_INFO("Reading from rad0 to leftRad");
             ROS_INFO("Precise Range Measure: %d", msg->PRM);
-            rad0_DistL = msg->PRM;
+            rad104_DistL = msg->PRM;
             confirmed = true;
         }else if(msg-> msgID == 100 + *count && selector == 1){
             ROS_INFO("Reading from rad0 to RightRad");
             ROS_INFO("Precise Range Measure: %d", msg->PRM);
-            rad0_DistR = msg->PRM;
+            rad104_DistR = msg->PRM;
             confirmed = true;
             return;
         }else if(msg-> msgID == 200 + *count && selector == 2){
             ROS_INFO("Reading from rad1 to leftRad");
             ROS_INFO("Precise Range Measure: %d", msg->PRM);
-            rad1_DistL = msg->PRM;
+            rad105_DistL = msg->PRM;
             confirmed = true;
             return;
         }else if(msg-> msgID == 300 + *count && selector == 3){
             ROS_INFO("Reading from rad1 to RightRad");
             ROS_INFO("Precise Range Measure: %d", msg->PRM);
-            rad1_DistR = msg->PRM;
+            rad105_DistR = msg->PRM;
             confirmed = true;
             return;
+
         }else{
             ROS_WARN("TDRR MsgID mismatched!");
             return;
@@ -99,12 +103,14 @@ int main(int argc, char **argv)
 
 
     //subscriber for recieving messages
-    ros::Subscriber rad0_s = nh.subscribe("/radio0/data", 5, &td_navigation::listener::radCallBack, &listener);
-    ros::Subscriber rad1_s = nh.subscribe("/radio1/data", 5, &td_navigation::listener::radCallBack, &listener);
+
+    ros::Subscriber rad104_s = nh.subscribe("/radio104/data", 5, &td_navigation::listener::radCallBack, &listener);
+    ros::Subscriber rad105_s = nh.subscribe("/radio105/data", 5, &td_navigation::listener::radCallBack, &listener);
+
 
     //publisher for sending a message to timedomain serial to get a range request
-    ros::Publisher rad0_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio0/cmd", 5);
-    ros::Publisher rad1_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio1/cmd", 5);
+    ros::Publisher rad104_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
+    ros::Publisher rad105_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
 
 
     ros::Rate loop_rate(5);
@@ -113,10 +119,10 @@ int main(int argc, char **argv)
     int count = 0;
     listener.count = &count;
     //temporary value
-    const double dStation = 300.0;
+    const double dStation = 850.0;
     double d0l, d0r, d1l, d1r;
-    double angle_0, rad0_x, rad0_y;
-    double angle_1, rad1_x, rad1_y;
+    double angle_104, rad104_x, rad104_y;
+    double angle_105, rad105_x, rad105_y;
     double bot_x, bot_y, angle_bot;
     double temp;
 
@@ -133,14 +139,14 @@ int main(int argc, char **argv)
         listener.selector = 0;
 
         while(!listener.confirmed){
-            //publish a range request from rad0 to leftRad
-            //rr.radio_id_to_target = from 0 rr to left rr
-            rad0_p.publish(rr);
+            //publish a range request from rad104 to leftRad
+            rr.radio_id_to_target = 101;
+            rad104_p.publish(rr);
             ros::spinOnce();
             //for testing
             loop_rate.sleep();
             //test
-            ROS_INFO("Woot0");
+            //ROS_INFO("Woot0");
 
         }
 
@@ -149,14 +155,14 @@ int main(int argc, char **argv)
         rr.msgID = 100 + count;
 
         while(!listener.confirmed){
-            //publish a range request from rad0 to RightRad
-            //rr.radio_id_to_target = from 0 rr to right rr
-            rad0_p.publish(rr);
+            //publish a range request from rad104 to RightRad
+            rr.radio_id_to_target = 106;
+            rad104_p.publish(rr);
             ros::spinOnce();
             //for Testing
             loop_rate.sleep();
             //test
-            ROS_INFO("Woot1");
+            //ROS_INFO("Woot1");
 
         }
 
@@ -165,16 +171,15 @@ int main(int argc, char **argv)
         rr.msgID = 200 + count;
 
         while(listener.confirmed != true){
-            //publish a range request from rad0 to rightRad
+            //publish a range request from rad104 to rightRad
             //publish a range request
-            //rr.radio_id_to_target = from 0 rr to right rr
+            rr.radio_id_to_target = 101;
 
-            rad0_p.publish(rr);
+            rad105_p.publish(rr);
             ros::spinOnce();
             //for Testing
             loop_rate.sleep();
-
-            ROS_INFO("Woot2");
+            //ROS_INFO("Woot2");
         }
 
         listener.confirmed = false;
@@ -182,54 +187,54 @@ int main(int argc, char **argv)
         rr.msgID = 300 + count;
 
         while(listener.confirmed != true){
-            //publish a range request from rad01 to leftRad
+            //publish a range request from rad1041 to leftRad
             //publish a range request
-            //rr.radio_id_to_target = from 1 rr to left rr
+            rr.radio_id_to_target = 106;
 
-            rad1_p.publish(rr);
+            rad105_p.publish(rr);
             ros::spinOnce();
             //for Testing
             loop_rate.sleep();
-            ROS_INFO("Woot3");
+            //ROS_INFO("Woot3");
         }
 
 
         listener.confirmed = false;
 
-        d0l = listener.rad0_DistL;
-        d0r = listener.rad0_DistR;
-        d1l = listener.rad1_DistL;
-        d1r = listener.rad1_DistR;
+        d0l = listener.rad104_DistL;
+        d0r = listener.rad104_DistR;
+        d1l = listener.rad105_DistL;
+        d1r = listener.rad105_DistR;
 
 
-        ROS_INFO("d0l %e, d0r %e, d1l %e, d1r %e", d0l, d0r, d1l, d1r);
+        ROS_DEBUG("d0l %e, d0r %e, d1l %e, d1r %e", d0l, d0r, d1l, d1r);
 
         //triangulation of rad_0
         temp = pow(d0r,2.0) + pow(dStation,2.0) - pow(d0l,2.0);
-        angle_0 = acos(temp/(2.0 * dStation * d0l));
-        rad0_x = (d0r * cos(angle_0)) - (dStation/(2.0));
-        rad0_y = d0r * sin(angle_0);
+        angle_104 = acos(temp/(2.0 * dStation * d0l));
+        rad104_x = (d0r * cos(angle_104)) - (dStation/(2.0));
+        rad104_y = d0r * sin(angle_104);
 
-        ROS_INFO("X_0: %e, Y_0: %e, Ang_0: %e", rad0_x, rad0_y, angle_0);
+        ROS_DEBUG("X_0: %e, Y_0: %e, Ang_0: %e", rad104_x, rad104_y, (angle_104* 180.0 / PI) );
 
         //triangulation of rad_1
-        angle_1 = acos((pow(d1r,2.0) + pow(dStation,2.0) - pow(d1l,2.0))/(2.0 * dStation * d1l));
-        rad1_x = (d1r * cos(angle_1)) - (dStation/(2.0));
-        rad1_y = d1r * sin(angle_1);
+        angle_105 = acos((pow(d1r,2.0) + pow(dStation,2.0) - pow(d1l,2.0))/(2.0 * dStation * d1l));
+        rad105_x = (d1r * cos(angle_105)) - (dStation/(2.0));
+        rad105_y = d1r * sin(angle_105);
 
-        ROS_INFO("X_1: %e, Y_1: %e, Ang_1: %e", rad1_x, rad1_y, angle_1);
+        ROS_DEBUG("X_1: %e, Y_1: %e, Ang_1: %e", rad105_x, rad105_y, (angle_105* 180.0 / PI));
 
         //bot_x and bot_y describe the point in between the two tdrr on the bot, not sure how accurate this'll be once the hardware is there
-        bot_x = (rad0_x + rad1_x)/2.0;
-        bot_y = (rad0_y + rad1_y)/2.0;
+        bot_x = (rad104_x + rad105_x)/2.0;
+        bot_y = (rad104_y + rad105_y)/2.0;
 
 
 
         //if angle is 0 we are looking straight forward (perpindicular to the stationary time domain ranging radios)
         //as long as the tdrr are in the places I thought they were
-        angle_bot = atan((rad1_y - rad0_y)/(rad1_x - rad0_x));
+        angle_bot = atan((rad105_y - rad104_y)/(rad105_x - rad104_x));
 
-        ROS_INFO("X: %e, Y: %e, Ang: %e", bot_x, bot_y, angle_bot);
+        ROS_DEBUG("X: %e, Y: %e, Ang: %e", bot_x, bot_y, (angle_bot * 180.0 / PI));
 
 
         ++count;

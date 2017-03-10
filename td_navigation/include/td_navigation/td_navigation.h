@@ -24,11 +24,11 @@ namespace td_navigation
     int* count;
     int selector;
 
-    double rad0_DistL;
-    double rad0_DistR;
+    double rad104_DistL;
+    double rad104_DistR;
 
-    double rad1_DistL;
-    double rad1_DistR;
+    double rad105_DistL;
+    double rad105_DistR;
 
     void radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
   };
