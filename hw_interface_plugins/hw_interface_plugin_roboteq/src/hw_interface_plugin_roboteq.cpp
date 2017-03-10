@@ -100,6 +100,33 @@ bool hw_interface_plugin_roboteq::roboteq_serial::implInit()
     return true;
 }
 
+std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::string initializationCmd)
+{
+  boost::char_separator<char> seperator(" :/");
+  tokenizer tokens(initializationCmd, seperator);
+  tokenizer::iterator tok_iter = tokens.begin();
+
+  initializationCmd = "\r^ECHOF 1\r# C\r";
+
+  while ( tok_iter != tokens.end() )
+  {
+    ROS_INFO("Init Cmd -> %s", tok_iter->c_str());
+
+    if (!command_list[*tok_iter].length())
+    {
+      ROS_WARN("Roboteq command << %s >> was not found", tok_iter->c_str());
+    }
+    else
+    {
+      initializationCmd += "?" + command_list[*tok_iter] + "\r";
+    }
+
+    ++tok_iter;
+  }
+
+  return initializationCmd += "# 20 \r";
+}
+
 void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
 {
 	int tempBaudRate = 0;
@@ -135,7 +162,6 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const siz
 
     ROS_DEBUG("\n\nContents: %s\n", receivedRegexData.c_str());
 
-    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
     boost::char_separator<char> sep("= :\r\n");
     tokenizer tokens(receivedRegexData, sep);
 
