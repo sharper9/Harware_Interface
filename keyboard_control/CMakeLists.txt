@@ -8,6 +8,8 @@ project(keyboard_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  message_generation
+  message_runtime
   messages
   roscpp
 )
@@ -101,10 +103,13 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+
+add_definitions("-std=gnu++11")
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES keyboard_control
-#  CATKIN_DEPENDS messages roscpp
+  CATKIN_DEPENDS messages roscpp message_runtime
 #  DEPENDS system_lib
 )
 
@@ -118,6 +123,17 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+
+add_executable(keyboard_control_node src/keyboard_control_node.cpp)
+ 
+add_dependencies(keyboard_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
+                    messages_generate_messages)
+ 
+target_link_libraries(keyboard_control_node
+   ${catkin_LIBRARIES}
+   libncurses.so
+ )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
