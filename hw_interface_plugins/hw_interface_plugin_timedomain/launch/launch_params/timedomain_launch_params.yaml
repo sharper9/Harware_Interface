@@ -1,14 +1,13 @@
-plugin_names: 
+plugin_names:
     {
         hw_interface_plugin_timedomain: timedomain_serial,
     }
-    
+
 timedomain_serial:
     {
         id104 : id104,
-        id105 : id105,
     }
-    
+
 id104:
     {
         deviceName         : "/dev/ttyACM0",

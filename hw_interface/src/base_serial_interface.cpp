@@ -126,7 +126,7 @@ bool base_classes::base_serial_interface::handleRegexRequest(const boost::system
 
 		ROS_INFO("Data -> %s", receivedRegexData.c_str());
 
-    if(!interfaceReadHandler(dataReadLength, dataArrayStart))
+    if(!interfaceReadHandler(bytesTransferred, dataArrayStart))
     {
         ROS_ERROR("Error Occurred in data handler for plugin <%s>", this->pluginName.c_str());
     }
@@ -154,7 +154,7 @@ bool base_classes::base_serial_interface::handleIORequest(const boost::system::e
 
     //call plugin's data handler
     //SHORTCUT, if the first boolean check fails, the other is not called and avoids the worry of a null pointer
-    if(!interfaceReadHandler(dataReadLength, dataArrayStart))
+    if(!interfaceReadHandler(bytesReceived, dataArrayStart))
     {
         ROS_ERROR("Error Occurred in plugin data Handler <%s>", this->pluginName.c_str());
     }
