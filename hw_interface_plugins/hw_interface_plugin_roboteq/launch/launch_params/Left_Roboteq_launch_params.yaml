@@ -10,10 +10,10 @@ brushless:
 
 Left_Roboteq:
     {
-        deviceName         : "/dev/tnt1",
+        deviceName         : "/dev/ttyUSB0",
         baudrate           : 115200,
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/drivemotorin/left",
         controllerType     : "Left_Drive",
-        initializationCmd  : "analog_inputs",
+        initializationCmd  : "absolute_brushless_counter",
     }

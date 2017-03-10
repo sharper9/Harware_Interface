@@ -28,7 +28,7 @@ bool hw_interface_plugin_roboteq::brushed::implStart()
       initializationCmd = "\r^ECHOF 1\r# C\r?AIC\r# 20\r";
     }
 
-    initializationCmd = "?" + command_list[initializationCmd] + "\r# 20 \r";
+    initializationCmd = "\r^ECHOF 1\r# C\r?" + command_list[initializationCmd] + "\r# 20 \r";
   }
   else
   {

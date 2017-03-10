@@ -50,13 +50,13 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     if(roboteqType == controller_t::Right_Drive_Roboteq)
     {
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->fr_speed_cmd) + "\r";
-        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->mr_speed_cmd) + "\r";
+        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->br_speed_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else if(roboteqType == controller_t::Left_Drive_Roboteq)
     {
-        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->fl_speed_cmd) + "\r";
-        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->ml_speed_cmd) + "\r";
+        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(-msgIn->fl_speed_cmd) + "\r";
+        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(-msgIn->bl_speed_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else if(roboteqType == controller_t::Bucket_Roboteq)

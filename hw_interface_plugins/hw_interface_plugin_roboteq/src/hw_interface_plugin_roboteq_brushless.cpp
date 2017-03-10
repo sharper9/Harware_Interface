@@ -24,15 +24,15 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
     if (!command_list[initializationCmd].length())
     {
       ROS_WARN("Roboteq initialization command was not found, defaulting...");
-      initializationCmd = "\r# C\r?CB\r# 20\r";
+      initializationCmd = "\r^ECHOF 1\r# C\r?CB\r# 20\r";
     }
 
-    initializationCmd = "?" + command_list[initializationCmd] + "\r# 20 \r";
+    initializationCmd = "\r^ECHOF 1\r# C\r?" + command_list[initializationCmd] + "\r# 20 \r";
   }
   else
   {
       ROS_WARN("Roboteq Initialization Command Unspecified, defaulting");
-      initializationCmd = "\r# C\r?CB\r# 20\r";
+      initializationCmd = "\r^ECHOF 1\r# C\r?CB\r# 20\r";
   }
   ROS_INFO("Roboteq Init Cmd %s", initializationCmd.c_str());
   postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(initializationCmd));
