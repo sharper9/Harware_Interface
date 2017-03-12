@@ -1,28 +1,5 @@
 #include <td_navigation/td_navigation.h>
 
-//Range_Request_()
-//  : send_range_request(false)
-//  , radio_id_to_target(0)
-//  , msgID(0)  {
-//  }
-
-
-//RCM_Range_Info_()
-//  : RespondingNode(0)
-//  , AntennaMode(0)
-//  , rangeStatus(0)
-//  , PRM(0)
-//  , CRE(0)
-//  , FRE(0)
-//  , PRMError(0)
-//  , CREError(0)
-//  , FREError(0)
-//  , rangeType(0)
-//  , busy(false)
-//  , failed(false)
-//  , msgID(0)  {
-//  }
-
 #define PI 3.14159265
 
 td_navigation::listener::listener()
@@ -35,42 +12,44 @@ td_navigation::listener::listener()
   selector = 0;
 }
 
+//check the message id, busy, failed
+//update appropriate distance
 void td_navigation::listener::radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
     ROS_INFO("TDRR Navigation Callback");
-    //check the message id, busy, failed
-    //update appropriate distance
+    //check if the radio was busy
     if (msg->busy == true){
         ROS_WARN("TDRR was busy");
         return;
     }
+    //check if the radio range has failed
     if (msg->failed == true){
         ROS_WARN("TDRR request has failed!");
         return;
 
     }
 
-    //from rad0 to leftRad
-    if(msg->msgID >=0 && msg->msgID < 400 ){
+    //Selector for assigneing the distance to the correct value
+    if(msg->msgID >=0 && msg->msgID < 32000 ){
         if(msg->msgID == *count && selector == 0){
             ROS_INFO("Reading from rad0 to leftRad");
-            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             rad104_DistL = msg->PRM;
             confirmed = true;
-        }else if(msg-> msgID == 100 + *count && selector == 1){
+        }else if(msg-> msgID == *count && selector == 1){
             ROS_INFO("Reading from rad0 to RightRad");
-            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             rad104_DistR = msg->PRM;
             confirmed = true;
             return;
-        }else if(msg-> msgID == 200 + *count && selector == 2){
+        }else if(msg-> msgID == *count && selector == 2){
             ROS_INFO("Reading from rad1 to leftRad");
-            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             rad105_DistL = msg->PRM;
             confirmed = true;
             return;
-        }else if(msg-> msgID == 300 + *count && selector == 3){
+        }else if(msg-> msgID == *count && selector == 3){
             ROS_INFO("Reading from rad1 to RightRad");
-            ROS_INFO("Precise Range Measure: %d", msg->PRM);
+            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             rad105_DistR = msg->PRM;
             confirmed = true;
             return;
@@ -84,6 +63,8 @@ void td_navigation::listener::radCallBack(const hw_interface_plugin_timedomain::
         ROS_WARN("TDRR MsgID Very Wrong!");
     }
 }
+
+bool send_and_recieve(td_navigation::listener& listener, int& to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub);
 
 
 int main(int argc, char **argv)
@@ -101,9 +82,7 @@ int main(int argc, char **argv)
 
     td_navigation::listener listener;
 
-
     //subscriber for recieving messages
-
     ros::Subscriber rad104_s = nh.subscribe("/radio104/data", 5, &td_navigation::listener::radCallBack, &listener);
     ros::Subscriber rad105_s = nh.subscribe("/radio105/data", 5, &td_navigation::listener::radCallBack, &listener);
 
@@ -112,23 +91,25 @@ int main(int argc, char **argv)
     ros::Publisher rad104_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
     ros::Publisher rad105_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
 
-
-    ros::Rate loop_rate(5);
-
+    //publisher for getting average angle measurements
+    ros::Publisher aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
 
     int count = 0;
+    bool begin_avg = false;
+    int average_length = 20;
     listener.count = &count;
-    //temporary value
-    const double dStation = 850.0;
-    double d0l, d0r, d1l, d1r;
-    double angle_104, rad104_x, rad104_y;
-    double angle_105, rad105_x, rad105_y;
-    double bot_x, bot_y, angle_bot;
-    double temp;
+    //Hard coded numbers, should be launch params
+    double dStation = 1930.4;
+    int rad_L = 101;
+    int rad_R = 106;
+    double angles[average_length];
+    double bearings[average_length];
+
+    double bot_x, bot_y, angle_bot, bearing;
 
     while(nh.ok())
     {
-        //test
+
         ROS_INFO("Count: %d, L_Count: %d", count, *(listener.count));
 
         hw_interface_plugin_timedomain::Range_Request rr;
@@ -138,112 +119,109 @@ int main(int argc, char **argv)
         listener.confirmed = false;
         listener.selector = 0;
 
-        while(!listener.confirmed){
-            //publish a range request from rad104 to leftRad
-            rr.radio_id_to_target = 101;
-            rad104_p.publish(rr);
-            ros::spinOnce();
-            //for testing
-            loop_rate.sleep();
-            //test
-            //ROS_INFO("Woot0");
-
+        //range request and response from 104 to 101
+        if (send_and_recieve(listener, rad_L, rr, rad104_p) == false){
+          //call a function to tell about the malfunction
+          ROS_DEBUG("We didn't get a response in time!");
         }
 
-        listener.confirmed = false;
         listener.selector = 1;
-        rr.msgID = 100 + count;
-
-        while(!listener.confirmed){
-            //publish a range request from rad104 to RightRad
-            rr.radio_id_to_target = 106;
-            rad104_p.publish(rr);
-            ros::spinOnce();
-            //for Testing
-            loop_rate.sleep();
-            //test
-            //ROS_INFO("Woot1");
-
+        rr.msgID = count;
+        //range request and response from 104 to 106
+        if (send_and_recieve(listener, rad_R, rr, rad104_p) == false){
+          //call a function to tell about the malfunction
+          ROS_DEBUG("We didn't get a response in time!");
         }
 
-        listener.confirmed = false;
         listener.selector = 2;
-        rr.msgID = 200 + count;
-
-        while(listener.confirmed != true){
-            //publish a range request from rad104 to rightRad
-            //publish a range request
-            rr.radio_id_to_target = 101;
-
-            rad105_p.publish(rr);
-            ros::spinOnce();
-            //for Testing
-            loop_rate.sleep();
-            //ROS_INFO("Woot2");
+        rr.msgID = count;
+        //range request and response from 105 to 101
+        if (send_and_recieve(listener, rad_L, rr, rad105_p) == false){
+          //call a function to tell about the malfunction
+          ROS_DEBUG("We didn't get a response in time!");
         }
 
-        listener.confirmed = false;
         listener.selector = 3;
-        rr.msgID = 300 + count;
-
-        while(listener.confirmed != true){
-            //publish a range request from rad1041 to leftRad
-            //publish a range request
-            rr.radio_id_to_target = 106;
-
-            rad105_p.publish(rr);
-            ros::spinOnce();
-            //for Testing
-            loop_rate.sleep();
-            //ROS_INFO("Woot3");
+        rr.msgID = count;
+        //range request and response from 105 to 106
+        if (send_and_recieve(listener, rad_R, rr, rad105_p) == false){
+          //call a function to tell about the malfunction
+          ROS_DEBUG("We didn't get a response in time!");
         }
 
 
-        listener.confirmed = false;
-
-        d0l = listener.rad104_DistL;
-        d0r = listener.rad104_DistR;
-        d1l = listener.rad105_DistL;
-        d1r = listener.rad105_DistR;
-
-
-        ROS_DEBUG("d0l %e, d0r %e, d1l %e, d1r %e", d0l, d0r, d1l, d1r);
-
-        //triangulation of rad_0
-        temp = pow(d0r,2.0) + pow(dStation,2.0) - pow(d0l,2.0);
-        angle_104 = acos(temp/(2.0 * dStation * d0l));
-        rad104_x = (d0r * cos(angle_104)) - (dStation/(2.0));
-        rad104_y = d0r * sin(angle_104);
-
-        ROS_DEBUG("X_0: %e, Y_0: %e, Ang_0: %e", rad104_x, rad104_y, (angle_104* 180.0 / PI) );
-
-        //triangulation of rad_1
-        angle_105 = acos((pow(d1r,2.0) + pow(dStation,2.0) - pow(d1l,2.0))/(2.0 * dStation * d1l));
-        rad105_x = (d1r * cos(angle_105)) - (dStation/(2.0));
-        rad105_y = d1r * sin(angle_105);
-
-        ROS_DEBUG("X_1: %e, Y_1: %e, Ang_1: %e", rad105_x, rad105_y, (angle_105* 180.0 / PI));
+        radio_nav rad_nav;
+        rad_nav.triangulate(dStation, listener.rad104_DistL, listener.rad104_DistR, listener.rad105_DistL, listener.rad105_DistR);
 
         //bot_x and bot_y describe the point in between the two tdrr on the bot, not sure how accurate this'll be once the hardware is there
-        bot_x = (rad104_x + rad105_x)/2.0;
-        bot_y = (rad104_y + rad105_y)/2.0;
+        bot_x = (rad_nav.get_rad0_x() + rad_nav.get_rad1_x())/2.0;
+        bot_y = (rad_nav.get_rad0_y() + rad_nav.get_rad1_y())/2.0;
 
 
 
         //if angle is 0 we are looking straight forward (perpindicular to the stationary time domain ranging radios)
-        //as long as the tdrr are in the places I thought they were
-        angle_bot = atan((rad105_y - rad104_y)/(rad105_x - rad104_x));
+        angle_bot = atan((rad_nav.get_rad1_y() - rad_nav.get_rad0_y())/(rad_nav.get_rad1_x() - rad_nav.get_rad0_x())) * 180.0 / PI;
 
-        ROS_DEBUG("X: %e, Y: %e, Ang: %e", bot_x, bot_y, (angle_bot * 180.0 / PI));
+        bearing = tan(bot_y/bot_x) * 180.0 / PI;
 
+        ROS_DEBUG("X: %e, Y: %e, Ang: %e, Bear: %e", bot_x, bot_y, angle_bot, bearing);
+
+        angles[count%average_length] = angle_bot;
+        bearings[count%average_length] = bearing;
 
         ++count;
-        if(count >= 100){
+        if(count >= 32000){
             count = 0;
         }
-        loop_rate.sleep();
+
+        //if we have twenty values, start taking the average
+        if (count == average_length){
+          begin_avg = true;
+        }
+
+        //take the average of the 20 values
+        if(begin_avg){
+          int ang_sum = 0;
+          int bear_sum = 0;
+          for (int i = 0; i < average_length; i++){
+            ang_sum += angles[i];
+            bear_sum += bearings[i];
+          }
+
+          td_navigation::Average_angle aa;
+          aa.angle = ang_sum/(double)average_length;
+          aa.bearing = bear_sum/(double)average_length;
+          aa.x = bot_x;
+          aa.y = bot_y;
+          aa_p.publish(aa);
+        }
+
     }
 
     ROS_DEBUG("td_navigation Closing");
     return 0;
+}
+
+//send a range request and recieve the data back from the request
+bool send_and_recieve(td_navigation::listener& listener, int& to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
+  int wait = 0;
+  int timeout = 0;
+  ros::Rate loop_rate(200);
+
+  while(!listener.confirmed){
+    rr.radio_id_to_target = to;
+    rad_pub.publish(rr);
+    while(!listener.confirmed && wait < 100){
+      ros::spinOnce();
+      loop_rate.sleep();
+      wait ++;
+    }
+    wait = 0;
+    if (timeout >= 10){
+      return false;
+    }
+    timeout++;
+  }
+  listener.confirmed = false;
+  return true;
 }

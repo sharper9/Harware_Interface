@@ -10,7 +10,9 @@
 
 #include <hw_interface_plugin_timedomain/Range_Request.h>
 #include <hw_interface_plugin_timedomain/RCM_Range_Info.h>
+#include <td_navigation/Average_angle.h>
 
+#include <td_navigation/radio_nav.hpp>
 
 namespace td_navigation
 {
@@ -32,6 +34,7 @@ namespace td_navigation
 
     void radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
   };
+
 }
 
 #endif //TD_NAVIGATION_HPP__
