@@ -15,7 +15,6 @@ Exec::Exec()
 	infoPub = nh.advertise<messages::ExecInfo>("control/exec/info",1);
     actionEndedPub = nh.advertise<messages::ExecActionEnded>("control/exec/actionended",1);
     nextWaypointOutPub = nh.advertise<messages::NextWaypointOut>("/control/exec/nextwaypoint", 1);
-    grabberStatusPub = nh.advertise<messages::ExecGrabberStatus>("/control/exec/grabberstatus", 1);
     cvSearchCmdClient = nh.serviceClient<messages::CVSearchCmd>("/vision/samplesearch/searchforsamples");
 	// "allocate" deque memory
     for(int i=0; i<NUM_ACTIONS; i++)

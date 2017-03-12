@@ -101,31 +101,46 @@ include_directories(
 )
 
 ## Declare a cpp library
- add_library(exec src/exec.cpp)
+# add_library(exec src/exec.cpp)
  add_library(action src/action.cpp)
+ add_library(idle src/idle.cpp)
+ add_library(drive_global src/drive_global.cpp)
+ add_library(drive_relative src/drive_relative.cpp)
+ add_library(dig src/dig.cpp)
+ add_library(dump src/dump.cpp)
+ add_library(wait src/wait.cpp)
+ add_library(drive_halt src/drive_halt.cpp)
+ add_library(drive_straight src/drive_straight.cpp)
+ add_library(drive_pivot src/drive_pivot.cpp)
+ add_library(scoop_halt src/scoop_halt.cpp)
+ add_library(scoop_set_pos src/scoop_set_pos.cpp)
+ add_library(arm_halt src/arm_halt.cpp)
+ add_library(arm_set_pos src/arm_set_pos.cpp)
+ add_library(bucket_halt src/bucket_halt.cpp)
+ add_library(bucket_set_pos src/bucket_set_pos.cpp)
  
- add_library(mission_planning src/mission_planning.cpp)
+# add_library(mission_planning src/mission_planning.cpp)
 
 ## Declare a cpp executable
- add_executable(exec_node src/exec_node.cpp)
- add_executable(mission_planning_node src/mission_planning_node.cpp)
+# add_executable(exec_node src/exec_node.cpp)
+# add_executable(mission_planning_node src/mission_planning_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
- add_dependencies(exec_node robot_control_generate_messages_cpp)
- add_dependencies(mission_planning_node robot_control_generate_messages_cpp)
+# add_dependencies(exec_node robot_control_generate_messages_cpp)
+# add_dependencies(mission_planning_node robot_control_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
  
- target_link_libraries(exec_node
-   ${catkin_LIBRARIES}
-   exec
- )
+# target_link_libraries(exec_node
+#   ${catkin_LIBRARIES}
+#   exec
+# )
  
- target_link_libraries(mission_planning_node
-   ${catkin_LIBRARIES}
-   mission_planning
- )
+# target_link_libraries(mission_planning_node
+#   ${catkin_LIBRARIES}
+#   mission_planning
+# )
 
 #############
 ## Install ##

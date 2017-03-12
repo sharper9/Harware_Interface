@@ -1,7 +1,7 @@
 #ifndef ACTION_PARAMS_H
 #define ACTION_PARAMS_H
 #include "action_type_enum.h"
-#include "mission_planning_procedure_share.h"
+#include "mission_planning_types_defines.h"
 
 struct ACTION_PARAMS_T
 {

@@ -26,6 +26,9 @@ public:
 	// Scoop data
 	int scoopStatus = 0;
 	int scoopPos = 0;
+    // Arm data
+    int armStatus = 0;
+    int armPos = 0;
 	// Bucket data
 	int bucketStatus = 0;
 	int bucketPos = 0;

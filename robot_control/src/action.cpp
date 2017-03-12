@@ -2,17 +2,14 @@
 
 void Action::pushTask(TASK_TYPE_T taskType)
 {
-	if(taskType==_driveHalt_ || taskType==_driveStraight_ || taskType==_driveStraightCL_ || taskType==_pivot_)
-	{
-		ROS_DEBUG("before drive deque push back");
+    if(taskType==_driveHalt_ || taskType==_driveStraight_/* || taskType==_driveArc_*/ || taskType==_pivot_)
 		driveDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
-		ROS_DEBUG("after drive deque push back");
-		ROS_DEBUG("drive deque size: %u",driveDeque.size());
-	}
-	else if(taskType==_grabberHalt_ || taskType==_grabberSetSlides_ || taskType==_grabberSetDrop_)
-		grabberDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
-	else if(taskType==_visionHalt_ || taskType==_search_ || taskType==_approach_ || taskType==_confirmCollect_)
-		visionDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
+    else if(taskType==_scoopHalt_ || taskType==_scoopSetPos_)
+        scoopDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
+    else if(taskType==_armHalt_ || taskType==_armSetPos_)
+        armDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
+    else if(taskType==_bucketHalt_ || taskType==_bucketSetPos_)
+        bucketDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
 	else ROS_ERROR("attempted to push back invalid TASK type");
 	taskPoolIndex[taskType]++;
     if(taskPoolIndex[taskType]>=TASK_POOL_SIZE) taskPoolIndex[taskType] = 0;
@@ -32,50 +29,65 @@ int Action::runDeques()
 		if(driveDequeEmpty==0) driveDeque.front()->init();
 	}
 
-	grabberDequeEmpty = grabberDeque.empty();
-	if(grabberDequeEmptyPrev && !grabberDequeEmpty) grabberDeque.front()->init();
-	if(grabberDequeEmpty) {grabberIdle.run(); grabberDequeEmpty = 1; grabberDequeEnded = 0;}
-	else grabberDequeEnded = grabberDeque.front()->run();
-	if(grabberDequeEnded!=0)
+    scoopDequeEmpty = scoopDeque.empty();
+    if(scoopDequeEmptyPrev && !scoopDequeEmpty) scoopDeque.front()->init();
+    if(scoopDequeEmpty) {scoopHalt.run(); scoopDequeEmpty = 1; scoopDequeEnded = 0;}
+    else scoopDequeEnded = scoopDeque.front()->run();
+    if(scoopDequeEnded!=0)
 	{
-        if(dropFailed_) grabberDeque.clear();
-        else grabberDeque.pop_front();
-		grabberDequeEmpty = grabberDeque.empty();
-		if(grabberDequeEmpty==0) grabberDeque.front()->init();
+        if(scoopFailed) scoopDeque.clear();
+        else scoopDeque.pop_front();
+        scoopDequeEmpty = scoopDeque.empty();
+        if(scoopDequeEmpty==0) scoopDeque.front()->init();
 	}
 
-	visionDequeEmpty = visionDeque.empty();
-	if(visionDequeEmptyPrev && !visionDequeEmpty) visionDeque.front()->init();
-	else if(!visionDequeEmptyPrev && visionDequeEmpty) visionHalt.init();
-	if(visionDequeEmpty) {visionHalt.run(); visionDequeEmpty = 1; visionDequeEnded = 0;}
-	else visionDequeEnded = visionDeque.front()->run();
-	if(visionDequeEnded!=0)
-	{
-		visionDeque.pop_front();
-		visionDequeEmpty = visionDeque.empty();
-		if(visionDequeEmpty==0) visionDeque.front()->init();
-	}
+    armDequeEmpty = armDeque.empty();
+    if(armDequeEmptyPrev && !armDequeEmpty) armDeque.front()->init();
+    if(armDequeEmpty) {armHalt.run(); armDequeEmpty = 1; armDequeEnded = 0;}
+    else armDequeEnded = armDeque.front()->run();
+    if(armDequeEnded!=0)
+    {
+        if(armFailed) armDeque.clear();
+        else armDeque.pop_front();
+        armDequeEmpty = armDeque.empty();
+        if(armDequeEmpty==0) armDeque.front()->init();
+    }
+
+    bucketDequeEmpty = bucketDeque.empty();
+    if(bucketDequeEmptyPrev && !bucketDequeEmpty) bucketDeque.front()->init();
+    if(bucketDequeEmpty) {bucketHalt.run(); bucketDequeEmpty = 1; bucketDequeEnded = 0;}
+    else bucketDequeEnded = bucketDeque.front()->run();
+    if(bucketDequeEnded!=0)
+    {
+        if(bucketFailed) bucketDeque.clear();
+        else bucketDeque.pop_front();
+        bucketDequeEmpty = bucketDeque.empty();
+        if(bucketDequeEmpty==0) bucketDeque.front()->init();
+    }
 
 	driveDequeEmptyPrev = driveDequeEmpty;
-	grabberDequeEmptyPrev = grabberDequeEmpty;
-	visionDequeEmptyPrev = visionDequeEmpty;
-	if(driveDequeEmpty && grabberDequeEmpty && visionDequeEmpty) return 1;
+    scoopDequeEmptyPrev = scoopDequeEmpty;
+    armDequeEmptyPrev = armDequeEmpty;
+    bucketDequeEmptyPrev = bucketDequeEmpty;
+    if(driveDequeEmpty && scoopDequeEmpty && armDequeEmpty && bucketDequeEmpty) return 1;
 	else return 0;
 }
 
 void Action::clearDeques()
 {
     driveDeque.clear();
-    grabberDeque.clear();
-    visionDeque.clear();
+    scoopDeque.clear();
+    armDeque.clear();
+    bucketDeque.clear();
     //driveDequeEmptyPrev = 1;
-    //grabberDequeEmptyPrev = 1;
-    //visionDequeEmptyPrev = 1;
+    //scoopDequeEmptyPrev = 1;
+    //armDequeEmptyPrev = 1;
 }
 
 void Action::initDequesFront()
 {
     if(!driveDeque.empty()) driveDeque.front()->init();
-    if(!grabberDeque.empty()) grabberDeque.front()->init();
-    if(!visionDeque.empty()) visionDeque.front()->init();
+    if(!scoopDeque.empty()) scoopDeque.front()->init();
+    if(!armDeque.empty()) armDeque.front()->init();
+    if(!bucketDeque.empty()) bucketDeque.front()->init();
 }
