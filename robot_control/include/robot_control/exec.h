@@ -16,12 +16,10 @@
 #include <messages/ExecInfo.h>
 #include <messages/ExecActionEnded.h>
 #include <messages/NavFilterOut.h>
-#include <messages/GrabberFeedback.h>
 #include <messages/NextWaypointOut.h>
-#include <messages/encoder_data.h>
 #include <messages/ExecManualOverride.h>
-#include <messages/ExecGrabberStatus.h>
 #include <robot_control/DriveSpeeds.h>
+#include <hw_interface_plugin_roboteq/Roboteq_Data.h>
 
 #define ACTION_POOL_SIZE 100
 
@@ -72,7 +70,9 @@ private:
 	bool actionCallback_(messages::ExecAction::Request &req, messages::ExecAction::Response &res);
 	bool manualOverrideCallback_(messages::ExecManualOverride::Request &req, messages::ExecManualOverride::Response &res);
 	void navCallback_(const messages::NavFilterOut::ConstPtr& msg);
-	void grabberCallback_(const messages::GrabberFeedback::ConstPtr& msg);
+	void scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
+	void armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
+	void bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
 	void driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr& msg);
 	void packActuatorMsgOut_();
 	void packInfoMsgOut_();

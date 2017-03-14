@@ -5,17 +5,14 @@ Exec::Exec()
 	robotStatus.loopRate = loopRate;
     actionServ = nh.advertiseService("control/exec/actionin", &Exec::actionCallback_, this);
     manualOverrideServ = nh.advertiseService("/control/exec/manualoverride", &Exec::manualOverrideCallback_, this);
-    poseSub = nh.subscribe<messages::RobotPose>("/hsm/masterexec/globalpose", 1, &Exec::poseCallback_, this);
     navSub = nh.subscribe<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout", 1, &Exec::navCallback_, this);
-	grabberSub = nh.subscribe<messages::GrabberFeedback>("roboteq/grabberin/grabberin", 1, &Exec::grabberCallback_, this);
+    scoopSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/scoop", 1, &Exec::scoopCallback_, this);
+    armSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/arm", 1, &Exec::armCallback_, this);
+    bucketSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/bucket", 1, &Exec::bucketCallback_, this);
     driveSpeedsSub = nh.subscribe<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1, &Exec::driveSpeedsCallback_, this);
-    leftRoboteqSub = nh.subscribe<messages::encoder_data>("/roboteq/drivemotorin/left", 1, &Exec::leftRoboteqCallback_, this);
-    rightRoboteqSub = nh.subscribe<messages::encoder_data>("/roboteq/drivemotorin/right", 1, &Exec::rightRoboteqCallback_, this);
 	actuatorPub = nh.advertise<messages::ActuatorOut>("control/actuatorout/all",1);
 	infoPub = nh.advertise<messages::ExecInfo>("control/exec/info",1);
     actionEndedPub = nh.advertise<messages::ExecActionEnded>("control/exec/actionended",1);
-    nextWaypointOutPub = nh.advertise<messages::NextWaypointOut>("/control/exec/nextwaypoint", 1);
-    cvSearchCmdClient = nh.serviceClient<messages::CVSearchCmd>("/vision/samplesearch/searchforsamples");
 	// "allocate" deque memory
     for(int i=0; i<NUM_ACTIONS; i++)
     {
@@ -24,13 +21,10 @@ Exec::Exec()
 	for(int j=0; j<ACTION_POOL_SIZE; j++)
     {
         actionPool_[_idle][j] = new Idle;
-		actionPool_[_halt][j] = new Halt;
 		actionPool_[_driveGlobal][j] = new DriveGlobal;
 		actionPool_[_driveRelative][j] = new DriveRelative;
-		actionPool_[_grab][j] = new Grab;
-		actionPool_[_drop][j] = new Drop;
-		actionPool_[_open][j] = new Open;
-        actionPool_[_search][j] = new Search;
+        actionPool_[_dig][j] = new Grab;
+        actionPool_[_dump][j] = new Drop;
         actionPool_[_wait][j] = new Wait;
 	}
 	for(int k=0; k<NUM_TASKS; k++)
@@ -42,13 +36,13 @@ Exec::Exec()
 		pauseIdle_.taskPool[_driveHalt_][l] = new DriveHalt;
 		pauseIdle_.taskPool[_driveStraight_][l] = new DriveStraight;
 		pauseIdle_.taskPool[_pivot_][l] = new DrivePivot;
-		pauseIdle_.taskPool[_driveStraightCL_][l] = new DriveStraightCL;
-		pauseIdle_.taskPool[_grabberHalt_][l] = new GrabberHalt;
-		pauseIdle_.taskPool[_grabberIdle_][l] = new GrabberIdle;
-		pauseIdle_.taskPool[_grabberSetDrop_][l] = new GrabberSetDrop;
-		pauseIdle_.taskPool[_grabberSetSlides_][l] = new GrabberSetSlides;
-		pauseIdle_.taskPool[_visionHalt_][l] = new VisionHalt;
-        pauseIdle_.taskPool[_search_][l] = new VisionSearch;
+        //pauseIdle_.taskPool[_driveArc_][l] = new DriveArc;
+        pauseIdle_.taskPool[_scoopHalt_][l] = new ScoopHalt;
+        pauseIdle_.taskPool[_scoopSetPos_][l] = new ScoopSetPos;
+        pauseIdle_.taskPool[_armHalt_][l] = new ArmHalt;
+        pauseIdle_.taskPool[_armSetPos_][l] = new ArmSetPos;
+        pauseIdle_.taskPool[_bucketHalt_][l] = new BucketHalt;
+        pauseIdle_.taskPool[_bucketSetPos_][l] = new BucketSetPos;
 	}
     execStartTime_ = ros::Time::now().toSec();
     actionDequeEmptyPrev_ = true;
@@ -170,13 +164,14 @@ bool Exec::manualOverrideCallback_(messages::ExecManualOverride::Request &req, m
     return true;
 }
 
-void Exec::poseCallback_(const messages::RobotPose::ConstPtr& msg)
+// **** Need to get this from ranging radio nav
+/*void Exec::poseCallback_(const messages::RobotPose::ConstPtr& msg)
 {
     robotStatus.xPos = msg->x;
     robotStatus.yPos = msg->y;
 	robotStatus.heading = msg->heading;
     robotStatus.bearing = RAD2DEG*atan2(msg->y, msg->x);
-}
+}*/
 
 void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 {
@@ -184,14 +179,13 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.rollAngle = msg->roll;
     robotStatus.pitchAngle = msg->pitch;
     robotStatus.velocity = msg->velocity;
+    robotStatus.deltaDistance = msg->delta_distance;
 }
 
-void Exec::grabberCallback_(const messages::GrabberFeedback::ConstPtr& msg)
+void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-	robotStatus.grabberSlideStatus = msg->slideStatus;
-	robotStatus.grabberDropStatus = msg->dropStatus;
-	robotStatus.grabberSlidePos = msg->sliderPosAvg;
-	robotStatus.grabberDropPos = msg->dropPos;
+    robotStatus.scoopStatus = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0;
+    robotStatus.scoopSlidePos = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0; // !!! This may not be the right way to get the feedback position...
 }
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)
