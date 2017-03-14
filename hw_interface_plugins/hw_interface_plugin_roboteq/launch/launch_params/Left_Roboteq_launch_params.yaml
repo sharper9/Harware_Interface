@@ -1,19 +1,19 @@
-plugin_names: 
+plugin_names:
     {
-        hw_interface_plugin_roboteq : roboteq_drive,
+        hw_interface_plugin_roboteq : brushless,
     }
 
-roboteq_drive:
+brushless:
     {
-        Left_Roboteq  : Left_Roboteq,
+        Left_Roboteq : Left_Roboteq,
     }
-    
+
 Left_Roboteq:
     {
-        deviceName         : "/dev/ttyS0",
+        deviceName         : "/dev/ttyUSB0",
         baudrate           : 115200,
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/drivemotorin/left",
-        controllerType     : "Left_Drive"
+        controllerType     : "Left_Drive",
+        initializationCmd  : "absolute_brushless_counter",
     }
-

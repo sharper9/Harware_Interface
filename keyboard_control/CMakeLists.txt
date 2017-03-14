@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hw_interface_plugin_timedomain)
+project(keyboard_control)
+
+## Add support for C++11, supported in ROS Kinetic and newer
+# add_definitions(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  hw_interface
-  pluginlib
-  roscpp
+  message_generation
+  message_runtime
   messages
+  roscpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,11 +48,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   RCM_Range_Info.msg
-   Range_Request.msg
- )
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,11 +69,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   
+# generate_messages(
+#   DEPENDENCIES
 #   std_msgs  # Or other packages containing msgs
-)
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -92,8 +94,6 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf2.cfg
 # )
 
-add_definitions("-std=gnu++11")
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -103,10 +103,13 @@ add_definitions("-std=gnu++11")
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+
+add_definitions("-std=gnu++11")
+
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES hw_interface_plugin_timedomain
-  CATKIN_DEPENDS hw_interface messages pluginlib roscpp
+#  INCLUDE_DIRS include
+#  LIBRARIES keyboard_control
+  CATKIN_DEPENDS messages roscpp message_runtime
 #  DEPENDS system_lib
 )
 
@@ -118,46 +121,49 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
 )
 
 
-add_library(hw_interface_plugin_timedomain   src/hw_interface_plugin_timedomain_serial.cpp)
-
-
-add_dependencies(hw_interface_plugin_timedomain ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-                    hw_interface
+add_executable(keyboard_control_node src/keyboard_control_node.cpp)
+ 
+add_dependencies(keyboard_control_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
                     messages_generate_messages)
-                    
-target_link_libraries(hw_interface_plugin_timedomain
+ 
+target_link_libraries(keyboard_control_node
    ${catkin_LIBRARIES}
-    base_interface
-    base_serial_interface
+   libncurses.so
  )
 
 ## Declare a C++ library
-# add_library(hw_interface_plugin_netburner
-#   src/${PROJECT_NAME}/hw_interface_plugin_netburner.cpp
+# add_library(${PROJECT_NAME}
+#   src/${PROJECT_NAME}/keyboard_control.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(hw_interface_plugin_netburner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(hw_interface_plugin_netburner_node src/hw_interface_plugin_netburner_node.cpp)
+## With catkin_make all packages are built within a single CMake context
+## The recommended prefix ensures that target names across packages don't collide
+# add_executable(${PROJECT_NAME}_node src/keyboard_control_node.cpp)
+
+## Rename C++ executable without prefix
+## The above recommended prefix causes long target names, the following renames the
+## target back to the shorter version for ease of user use
+## e.g. "rosrun someones_pkg node" instead of "rosrun someones_pkg someones_pkg_node"
+# set_target_properties(${PROJECT_NAME}_node PROPERTIES OUTPUT_NAME node PREFIX "")
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(hw_interface_plugin_netburner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hw_interface_plugin_netburner_node
+# target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-
 
 #############
 ## Install ##
@@ -174,7 +180,7 @@ target_link_libraries(hw_interface_plugin_timedomain
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS hw_interface_plugin_netburner hw_interface_plugin_netburner_node
+# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -199,7 +205,7 @@ target_link_libraries(hw_interface_plugin_timedomain
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_hw_interface_plugin_netburner.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_keyboard_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

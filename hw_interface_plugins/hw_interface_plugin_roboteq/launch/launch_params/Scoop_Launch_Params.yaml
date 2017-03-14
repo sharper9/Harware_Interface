@@ -1,0 +1,18 @@
+plugin_names:
+    {
+        hw_interface_plugin_roboteq : brushed,
+    }
+
+brushed:
+    {
+        Scoop_Roboteq : Scoop_Roboteq,
+    }
+
+Scoop_Roboteq:
+    {
+        deviceName         : "/dev/ttyS4",
+        baudrate           : 115200,
+        subscribeToTopic   : "/control/actuatorout/all",
+        publishToTopic     : "/roboteq/brushed/arm",
+        controllerType     : "Scoop_Roboteq",
+    }

@@ -13,7 +13,7 @@ hw_interface_plugin_example::example_serial::example_serial()
     if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
-        
+
     //enable automatic class metric collection.
     enableMetrics();
 }
@@ -26,12 +26,12 @@ bool hw_interface_plugin_example::example_serial::subPluginInit(ros::NodeHandleP
     /*for Serial interfaces, 'deviceName' is an inherited member and must be defined.
         failing to define this variable will disable the plugin.
         Opening of the device port is handled automatically
-        
+
         deviceName is the name and path of the port to be opened
             example: "/dev/ttyS0" */
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
-    
+
     //example use of the streamMatcher.
     std::string header = "FFab";
     std::string footer = "dbac";
@@ -42,7 +42,7 @@ bool hw_interface_plugin_example::example_serial::subPluginInit(ros::NodeHandleP
     //retrieve string from the ROS Parameter Server
         //of the format '<plugin_name>/<parameter>
     std::string tempString = "";
-    
+
     //place that wants to write data to the device
     if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
     {
@@ -104,11 +104,11 @@ void hw_interface_plugin_example::example_serial::setInterfaceOptions()
     //this function is called with a data length and a position in an inherited array member
         //named 'receivedData'
 //data should be published to topics from here
-bool hw_interface_plugin_example::example_serial::interfaceReadHandler(const long &length,
+bool hw_interface_plugin_example::example_serial::interfaceReadHandler(const size_t &length,
                                                                             int arrayStartPos)
 {
     ROS_INFO_EXTRA_SINGLE("Example Plugin Data Handler");
-    
+
     ROS_DEBUG("Buf Pointer: 0x%p\r\n", &receivedData[arrayStartPos]);
     std::printf("Contents: ");
     for(int i = 0; i < length; i++)
@@ -116,11 +116,11 @@ bool hw_interface_plugin_example::example_serial::interfaceReadHandler(const lon
         std::printf("%x | ", receivedData[arrayStartPos + i]);
     }
     std::printf("\r\n");
-    
+
     return true;
 }
 
-//automatically called to check the checksum of the packet. 
+//automatically called to check the checksum of the packet.
     //If un-wanted/un-needed, return true.
 bool hw_interface_plugin_example::example_serial::verifyChecksum()
 {
