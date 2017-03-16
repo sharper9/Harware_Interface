@@ -136,6 +136,22 @@ include_directories(
  target_link_libraries(exec_node
    ${catkin_LIBRARIES}
    exec
+   action
+   idle
+   drive_global
+   drive_relative
+   dig
+   dump
+   wait
+   drive_halt
+   drive_straight
+   drive_pivot
+   scoop_halt
+   scoop_set_pos
+   arm_halt
+   arm_set_pos
+   bucket_halt
+   bucket_set_pos
  )
  
 # target_link_libraries(mission_planning_node

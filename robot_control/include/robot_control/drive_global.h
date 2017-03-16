@@ -2,7 +2,6 @@
 #define DRIVE_GLOBAL_H
 #include "action.h"
 
-enum DRIVE_GLOBAL_STEP_T {_computeManeuver, _performManeuver};
 
 class DriveGlobal : public Action
 {
@@ -10,7 +9,7 @@ public:
 	void init();
 	int run();
 private:
-    DRIVE_GLOBAL_STEP_T step_;
+	enum DRIVE_GLOBAL_STEP_T {_computeManeuver, _performManeuver} step_;
 	float desiredX_;
 	float desiredY_;
 	float vMax_;

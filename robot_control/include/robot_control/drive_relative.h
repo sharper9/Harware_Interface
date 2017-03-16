@@ -2,15 +2,13 @@
 #define DRIVE_RELATIVE_H
 #include "action.h"
 
-enum DRIVE_RELATIVE_STEP_T {_computeManeuver, _performManeuver};
-
 class DriveRelative : public Action
 {
 public:
 	void init();
 	int run();
 private:
-    DRIVE_RELATIVE_STEP_T step_;
+	enum DRIVE_RELATIVE_STEP_T {_computeManeuver, _performManeuver} step_;
     float desiredX_;
     float desiredY_;
     float vMax_;

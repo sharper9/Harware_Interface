@@ -23,8 +23,8 @@ Exec::Exec()
         actionPool_[_idle][j] = new Idle;
 		actionPool_[_driveGlobal][j] = new DriveGlobal;
 		actionPool_[_driveRelative][j] = new DriveRelative;
-        actionPool_[_dig][j] = new Grab;
-        actionPool_[_dump][j] = new Drop;
+        actionPool_[_dig][j] = new Dig;
+        actionPool_[_dump][j] = new Dump;
         actionPool_[_wait][j] = new Wait;
 	}
 	for(int k=0; k<NUM_TASKS; k++)
@@ -106,15 +106,11 @@ void Exec::run()
 	pausePrev_ = pause_;
 	packActuatorMsgOut_();
 	packInfoMsgOut_();
-    packNextWaypointOut_();
-    packGabberStatusOut_();
     if(!manualOverride_)
     {
         actuatorPub.publish(actuatorMsgOut_);
         infoPub.publish(execInfoMsgOut_);
     }
-    nextWaypointOutPub.publish(nextWaypointMsgOut_);
-    grabberStatusPub.publish(grabberStatusMsgOut_);
     std::printf("\n");
     /*execElapsedTime_ = ros::Time::now().toSec() - execStartTime_;
     ROS_INFO("*******\nexecElapsedTime = %f",execElapsedTime_);
@@ -140,8 +136,6 @@ bool Exec::actionCallback_(messages::ExecAction::Request &req, messages::ExecAct
     params_.float3 = req.float3;
     params_.float4 = req.float4;
     params_.float5 = req.float5;
-    params_.float6 = req.float6;
-    params_.float7 = req.float7;
     params_.int1 = req.int1;
     params_.bool1 = req.bool1;
     params_.bool2 = req.bool2;
@@ -185,7 +179,19 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
     robotStatus.scoopStatus = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0;
-    robotStatus.scoopSlidePos = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.scoopPos = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0; // !!! This may not be the right way to get the feedback position...
+}
+
+void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
+{
+    robotStatus.armStatus = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0;
+    robotStatus.armPos = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0; // !!! This may not be the right way to get the feedback position...
+}
+
+void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
+{
+    robotStatus.bucketStatus = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0;
+    robotStatus.bucketPos = (msg->c1_analog_inputs + msg->c1_analog_inputs)/2.0; // !!! This may not be the right way to get the feedback position...
 }
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)
@@ -194,31 +200,18 @@ void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)
     robotStatus.rMax = msg->rMax;
 }
 
-void Exec::leftRoboteqCallback_(const messages::encoder_data::ConstPtr &msg)
-{
-    robotStatus.flEncoder = msg->motor_1_encoder_count;
-    robotStatus.mlEncoder = msg->motor_2_encoder_count;
-    robotStatus.blEncoder = msg->motor_3_encoder_count;
-}
-
-void Exec::rightRoboteqCallback_(const messages::encoder_data::ConstPtr &msg)
-{
-    robotStatus.frEncoder = msg->motor_1_encoder_count;
-    robotStatus.mrEncoder = msg->motor_2_encoder_count;
-    robotStatus.brEncoder = msg->motor_3_encoder_count;
-}
-
 void Exec::packActuatorMsgOut_()
 {
 	actuatorMsgOut_.fl_speed_cmd = robotOutputs.flMotorSpeed;
 	actuatorMsgOut_.fr_speed_cmd = robotOutputs.frMotorSpeed;
-	actuatorMsgOut_.ml_speed_cmd = robotOutputs.mlMotorSpeed;
-	actuatorMsgOut_.mr_speed_cmd = robotOutputs.mrMotorSpeed;
 	actuatorMsgOut_.bl_speed_cmd = robotOutputs.blMotorSpeed;
 	actuatorMsgOut_.br_speed_cmd = robotOutputs.brMotorSpeed;
-	actuatorMsgOut_.slide_pos_cmd = robotOutputs.slidePosCmd;
-	actuatorMsgOut_.drop_pos_cmd = robotOutputs.dropPosCmd;
-	actuatorMsgOut_.grabber_stop_cmd = robotOutputs.grabberStopCmd;
+    actuatorMsgOut_.scoop_pos_cmd = robotOutputs.scoopPosCmd;
+    actuatorMsgOut_.arm_pos_cmd = robotOutputs.armPosCmd;
+    actuatorMsgOut_.bucket_pos_cmd = robotOutputs.bucketPosCmd;
+    actuatorMsgOut_.scoop_stop_cmd = robotOutputs.scoopStopCmd;
+    actuatorMsgOut_.arm_stop_cmd = robotOutputs.armStopCmd;
+    actuatorMsgOut_.bucket_stop_cmd = robotOutputs.bucketStopCmd;
 }
 
 void Exec::packInfoMsgOut_()
@@ -267,23 +260,4 @@ void Exec::packInfoMsgOut_()
         execInfoMsgOut_.actionProcType[i] = static_cast<uint8_t>(actionDeque_.at(i)->params.procType);
         execInfoMsgOut_.actionSerialNum[i] = actionDeque_.at(i)->params.serialNum;
 	}
-}
-
-void Exec::packNextWaypointOut_()
-{
-    if(actionDeque_.size()>0)
-    {
-        if(actionDeque_.at(0)->params.actionType == _driveGlobal || actionDeque_.at(0)->params.actionType == _driveRelative)
-        {
-            nextWaypointMsgOut_.globalX = actionDeque_.at(0)->nextGlobalX;
-            nextWaypointMsgOut_.globalY = actionDeque_.at(0)->nextGlobalY;
-            //nextWaypointMsgOut_.unskippable = actionDeque_.at(0)->params.bool3;
-        }
-    }
-}
-
-void Exec::packGabberStatusOut_()
-{
-    grabberStatusMsgOut_.dropFailed = dropFailed_;
-    grabberStatusMsgOut_.slidesFailed = slidesFailed_;
 }

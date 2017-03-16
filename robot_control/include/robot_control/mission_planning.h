@@ -43,9 +43,7 @@ public:
 	ros::Subscriber ExecActionEndedSub;
     ros::Subscriber nb1Sub;
     ros::Subscriber nb2Sub;
-	ros::Subscriber collisionSub;
 	ros::Subscriber navSub;
-	ros::ServiceServer emergencyEscapeServ;
 	ros::ServiceServer controlServ;
 	messages::MissionPlanningInfo infoMsg;
     messages::nb1_to_i7_msg nb1Msg;
