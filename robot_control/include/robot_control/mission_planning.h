@@ -7,8 +7,11 @@
 #include <messages/MissionPlanningControl.h>
 #include <messages/NavFilterOut.h>
 #include "initialize.h"
-// #include "other_proc.h"
-// ***
+#include "drive_to_dig.h"
+#include "mine.h"
+#include "drive_to_deposit.h"
+#include "deposit.h"
+#include "recover.h"
 #include "pause.h"
 #include "bit_utils.h"
 
@@ -26,13 +29,20 @@ public:
 	ros::ServiceServer controlServ;
 	messages::MissionPlanningInfo infoMsg;
 	const int loopRate = 20; // Hz
-	Initialize initialize;
-	// OtherProc otherProc
-	// ***
+    Initialize initialize;
+    DriveToDig driveToDig;
+    Mine mine;
+    DriveToDeposit driveToDeposit;
+    Deposit deposit;
+    Recover recover;
     Pause pause;
 	bool multiProcLockout;
 	unsigned int lockoutSum;
-	bool initComplete;
+    bool initialized;
+    bool atMineLocation;
+    bool bucketFull;
+    bool atDepositLocation;
+    bool stuck;
 	bool pauseStarted;
 private:
 	void evalConditions_();

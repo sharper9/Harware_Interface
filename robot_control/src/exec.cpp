@@ -174,6 +174,9 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.pitchAngle = msg->pitch;
     robotStatus.velocity = msg->velocity;
     robotStatus.deltaDistance = msg->delta_distance;
+    robotStatus.heading = msg->heading;
+    robotStatus.xPos = msg->x_position;
+    robotStatus.yPos = msg->y_position;
 }
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)

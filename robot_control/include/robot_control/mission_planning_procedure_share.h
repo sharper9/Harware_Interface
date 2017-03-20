@@ -3,6 +3,7 @@
 #include <vector>
 #include <ros/ros.h>
 #include <robot_control/DriveSpeeds.h>
+#include <robot_control/Waypoint.h>
 #include <robot_control/cataglyphis_timer.h>
 #include "robot_status.h"
 #include "action_type_enum.h"
@@ -37,14 +38,9 @@ public:
     static bool execDequeEmpty;
     static PROC_TYPES_T execLastProcType;
     static unsigned int execLastSerialNum;
-	static messages::CollisionOut collisionMsg;
 	static bool initialized;
 	static bool recoverCondition;
 	static bool queueEmptyTimedOut;
-	static bool nb1Good;
-	static bool nb2Good;
-	static bool nb1Pause;
-	static bool nb2Pause;
 	static float distanceToDrive; // m
 	static float angleToTurn; // deg
 	static double missionTime;
@@ -53,6 +49,8 @@ public:
 	const float depositWaypointX = 5.0; // m
 	const float depositWaypointY = 0.0; // m
 	const float queueEmptyTimerPeriod = 30.0; // sec
+    const float defaultVMax = 1.0; // m/s
+    const float defaultRMax = 45.0; // deg/s
 };
 
 bool MissionPlanningProcedureShare::procsToExecute[NUM_PROC_TYPES];
@@ -76,14 +74,9 @@ int MissionPlanningProcedureShare::numWaypointsToTravel;
 bool MissionPlanningProcedureShare::execDequeEmpty;
 PROC_TYPES_T MissionPlanningProcedureShare::execLastProcType;
 unsigned int MissionPlanningProcedureShare::execLastSerialNum;
-messages::CollisionOut MissionPlanningProcedureShare::collisionMsg;
 bool MissionPlanningProcedureShare::initialized;
 bool MissionPlanningProcedureShare::recoverCondition;
 bool MissionPlanningProcedureShare::queueEmptyTimedOut;
-bool MissionPlanningProcedureShare::nb1Good;
-bool MissionPlanningProcedureShare::nb2Good;
-bool MissionPlanningProcedureShare::nb1Pause;
-bool MissionPlanningProcedureShare::nb2Pause;
 float MissionPlanningProcedureShare::distanceToDrive; // m
 float MissionPlanningProcedureShare::angleToTurn; // deg
 double MissionPlanningProcedureShare::missionTime;

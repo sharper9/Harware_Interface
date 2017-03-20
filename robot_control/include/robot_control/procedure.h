@@ -9,21 +9,16 @@ public:
     PROC_TYPES_T procType;
     PROC_STATE_T state;
 	unsigned int serialNum = 0;
-    std::vector<robot_control::Waypoint>::iterator intermWaypointsIt;
-    int initNumWaypointsToTravel;
-	int totalIntermWaypoints;
 	bool dequeClearFront = false;
     // Methods
     void reg(PROC_TYPES_T procTypeIn);
     bool run();
     virtual bool runProc() = 0;
     void clearAndResizeWTT();
-    void callIntermediateWaypoints();
 	void sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading);
 	void sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque);
-	void sendGrab();
-	void sendDrop();
-	void sendOpen();
+    void sendDig();
+    void sendDump();
 	void sendWait(float waitTime, bool pushToFront); // sec
 	void sendDequeClearFront();
 	void sendDequeClearAll();
@@ -56,50 +51,6 @@ void Procedure::clearAndResizeWTT()
     waypointsToTravel.resize(numWaypointsToTravel);
 }
 
-void Procedure::callIntermediateWaypoints()
-{
-    initNumWaypointsToTravel = numWaypointsToTravel;
-    totalIntermWaypoints = 0;
-	intermediateWaypointsSrv.request.start_x = robotStatus.xPos;
-	intermediateWaypointsSrv.request.start_y = robotStatus.yPos;
-	intermediateWaypointsSrv.request.current_heading = robotStatus.heading;
-	intermediateWaypointsSrv.request.waypointArrayIn.resize(numWaypointsToTravel);
-	intermediateWaypointsSrv.request.waypointArrayIn = waypointsToTravel;
-	if(intermediateWaypointsClient.call(intermediateWaypointsSrv)) ROS_DEBUG("intermediateWaypoints service call successful, size = %u", intermediateWaypointsSrv.response.waypointArrayOut.size());
-	else ROS_ERROR("intermediateWaypoints service call unsuccessful");
-	if(intermediateWaypointsSrv.response.waypointArrayOut.size() != numWaypointsToTravel)
-	{
-		waypointsToTravel.clear();
-		waypointsToTravel = intermediateWaypointsSrv.response.waypointArrayOut;
-		numWaypointsToTravel = waypointsToTravel.size();
-		//for(int i=0; i<numWaypointsToTravel; i++) ROS_INFO("waypointsToTravel(%i) = (%f,%f)",i,waypointsToTravel.at(i).x,waypointsToTravel.at(i).y);
-	}
-	/*for(int i = 0; i < initNumWaypointsToTravel; i++)
-    {
-        intermWaypointsIt = waypointsToTravel.begin() + i + totalIntermWaypoints;
-        if(i == 0)
-        {
-            intermediateWaypointsSrv.request.start.x = robotStatus.xPos;
-            intermediateWaypointsSrv.request.start.y = robotStatus.yPos;
-        }
-        else
-        {
-            intermediateWaypointsSrv.request.start.x = (*(intermWaypointsIt - 1)).x;
-            intermediateWaypointsSrv.request.start.y = (*(intermWaypointsIt - 1)).y;
-        }
-        intermediateWaypointsSrv.request.finish.x = (*intermWaypointsIt).x;
-        intermediateWaypointsSrv.request.finish.y = (*intermWaypointsIt).y;
-		if(intermediateWaypointsClient.call(intermediateWaypointsSrv)) ROS_DEBUG("intermediateWaypoints service call successful, size = %u", intermediateWaypointsSrv.response.waypointArray.size());
-        else ROS_ERROR("intermediateWaypoints service call unsuccessful");
-        if(intermediateWaypointsSrv.response.waypointArray.size() > 0)
-        {
-            waypointsToTravel.insert(intermWaypointsIt,intermediateWaypointsSrv.response.waypointArray.begin(),intermediateWaypointsSrv.response.waypointArray.end());
-            totalIntermWaypoints += intermediateWaypointsSrv.response.waypointArray.size();
-            numWaypointsToTravel += intermediateWaypointsSrv.response.waypointArray.size();
-        }
-	}*/
-}
-
 void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading)
 {
     for(int i=0; i<numWaypointsToTravel; i++)
@@ -117,8 +68,6 @@ void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float end
 		execActionSrv.request.float3 = endHeading;
 		execActionSrv.request.float4 = 0.0;
         execActionSrv.request.float5 = 0.0;
-		execActionSrv.request.float6 = 0.0;
-		execActionSrv.request.float7 = 0.0;
 		execActionSrv.request.int1 = waypointsToTravel.at(i).maxAvoids;
 		if(i==(numWaypointsToTravel-1)) execActionSrv.request.bool1 = endHeadingFlag;
 		else execActionSrv.request.bool1 = false;
@@ -151,8 +100,6 @@ void Procedure::sendDriveRel(float deltaDistance, float deltaHeading, bool endHe
 	execActionSrv.request.float3 = endHeading;
 	execActionSrv.request.float4 = 0.0;
 	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
     execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = endHeadingFlag;
 	execActionSrv.request.bool2 = frontOfDeque;
@@ -168,10 +115,10 @@ void Procedure::sendDriveRel(float deltaDistance, float deltaHeading, bool endHe
     else ROS_ERROR("exec action service call unsuccessful");
 }
 
-void Procedure::sendGrab()
+void Procedure::sendDig()
 {
 	this->serialNum++;
-	execActionSrv.request.nextActionType = _grab;
+    execActionSrv.request.nextActionType = _dig;
 	execActionSrv.request.newActionFlag = 1;
 	execActionSrv.request.pushToFrontFlag = false;
 	execActionSrv.request.clearDequeFlag = false;
@@ -183,8 +130,6 @@ void Procedure::sendGrab()
 	execActionSrv.request.float3 = 0.0;
 	execActionSrv.request.float4 = 0.0;
 	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
 	execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = false;
 	execActionSrv.request.bool2 = false;
@@ -200,10 +145,10 @@ void Procedure::sendGrab()
 	else ROS_ERROR("exec action service call unsuccessful");
 }
 
-void Procedure::sendDrop()
+void Procedure::sendDump()
 {
 	this->serialNum++;
-	execActionSrv.request.nextActionType = _drop;
+    execActionSrv.request.nextActionType = _dump;
 	execActionSrv.request.newActionFlag = 1;
 	execActionSrv.request.pushToFrontFlag = false;
 	execActionSrv.request.clearDequeFlag = false;
@@ -215,40 +160,6 @@ void Procedure::sendDrop()
 	execActionSrv.request.float3 = 0.0;
 	execActionSrv.request.float4 = 0.0;
 	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
-	execActionSrv.request.int1 = 0;
-	execActionSrv.request.bool1 = false;
-	execActionSrv.request.bool2 = false;
-	execActionSrv.request.bool3 = false;
-	execActionSrv.request.bool4 = false;
-	execActionSrv.request.bool5 = false;
-	execActionSrv.request.bool6 = false;
-	execActionSrv.request.bool7 = false;
-	execActionSrv.request.bool8 = false;
-	execActionSrv.request.procType = static_cast<uint8_t>(this->procType);
-	execActionSrv.request.serialNum = this->serialNum;
-	if(execActionClient.call(execActionSrv)) ROS_DEBUG("exec action service call successful");
-	else ROS_ERROR("exec action service call unsuccessful");
-}
-
-void Procedure::sendOpen()
-{
-	this->serialNum++;
-	execActionSrv.request.nextActionType = _open;
-	execActionSrv.request.newActionFlag = 1;
-	execActionSrv.request.pushToFrontFlag = false;
-	execActionSrv.request.clearDequeFlag = false;
-	execActionSrv.request.clearFrontFlag = false;
-	execActionSrv.request.pause = false;
-	execActionSrv.request.pauseUnchanged = true;
-	execActionSrv.request.float1 = 0.0;
-	execActionSrv.request.float2 = 0.0;
-	execActionSrv.request.float3 = 0.0;
-	execActionSrv.request.float4 = 0.0;
-	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
 	execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = false;
 	execActionSrv.request.bool2 = false;
@@ -279,8 +190,6 @@ void Procedure::sendWait(float waitTime, bool pushToFront)
 	execActionSrv.request.float3 = 0.0;
 	execActionSrv.request.float4 = 0.0;
 	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
 	execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = false;
 	execActionSrv.request.bool2 = false;
@@ -311,8 +220,6 @@ void Procedure::sendDequeClearFront()
 	execActionSrv.request.float3 = 0.0;
 	execActionSrv.request.float4 = 0.0;
 	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
 	execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = false;
 	execActionSrv.request.bool2 = false;
@@ -345,8 +252,6 @@ void Procedure::sendDequeClearAll()
 	execActionSrv.request.float3 = 0.0;
 	execActionSrv.request.float4 = 0.0;
 	execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
 	execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = false;
 	execActionSrv.request.bool2 = false;
@@ -377,8 +282,6 @@ void Procedure::sendPause()
     execActionSrv.request.float3 = 0.0;
     execActionSrv.request.float4 = 0.0;
     execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
     execActionSrv.request.int1 = 0;
     execActionSrv.request.bool1 = false;
     execActionSrv.request.bool2 = false;
@@ -409,8 +312,6 @@ void Procedure::sendUnPause()
     execActionSrv.request.float3 = 0.0;
     execActionSrv.request.float4 = 0.0;
     execActionSrv.request.float5 = 0.0;
-	execActionSrv.request.float6 = 0.0;
-	execActionSrv.request.float7 = 0.0;
     execActionSrv.request.int1 = 0;
     execActionSrv.request.bool1 = false;
     execActionSrv.request.bool2 = false;
@@ -428,29 +329,11 @@ void Procedure::sendUnPause()
 
 void Procedure::computeDriveSpeeds()
 {
-	if(collisionMsg.slowdown)
-	{
-		driveSpeedsMsg.vMax = slowVMax;
-		driveSpeedsMsg.rMax = defaultRMax;
-	}
-	else
-	{
-		driveSpeedsMsg.vMax = defaultVMax;
-		driveSpeedsMsg.rMax = defaultRMax;
-	}
+    driveSpeedsMsg.vMax = defaultVMax;
+    driveSpeedsMsg.rMax = defaultRMax;
 	if((driveSpeedsMsg.vMax != driveSpeedsMsgPrev.vMax) || (driveSpeedsMsg.rMax != driveSpeedsMsgPrev.rMax)) driveSpeedsPub.publish(driveSpeedsMsg);
 	driveSpeedsMsgPrev.vMax = driveSpeedsMsg.vMax;
 	driveSpeedsMsgPrev.rMax = driveSpeedsMsg.rMax;
-}
-
-void Procedure::serviceAvoidCounterDecrement()
-{
-	if(hypot(robotStatus.xPos - prevAvoidCountDecXPos, robotStatus.yPos - prevAvoidCountDecYPos) > metersPerAvoidCountDecrement)
-	{
-		if(avoidCount > 0) avoidCount--;
-		prevAvoidCountDecXPos = robotStatus.xPos;
-		prevAvoidCountDecYPos = robotStatus.yPos;
-	}
 }
 
 void Procedure::resetQueueEmptyCondition()

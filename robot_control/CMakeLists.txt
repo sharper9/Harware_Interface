@@ -51,6 +51,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    DriveSpeeds.msg
+   Waypoint.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -120,16 +121,23 @@ include_directories(
  add_library(bucket_halt src/bucket_halt.cpp)
  add_library(bucket_set_pos src/bucket_set_pos.cpp)
  
-# add_library(mission_planning src/mission_planning.cpp)
+ add_library(mission_planning src/mission_planning.cpp)
+ add_library(initialize src/initialize.cpp)
+ add_library(drive_to_dig src/drive_to_dig.cpp)
+ add_library(mine src/mine.cpp)
+ add_library(drive_to_deposit src/drive_to_deposit.cpp)
+ add_library(deposit src/deposit.cpp)
+ add_library(recover src/recover.cpp)
+ add_library(pause src/pause.cpp)
 
 ## Declare a cpp executable
  add_executable(exec_node src/exec_node.cpp)
-# add_executable(mission_planning_node src/mission_planning_node.cpp)
+ add_executable(mission_planning_node src/mission_planning_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
  add_dependencies(exec_node robot_control_generate_messages_cpp)
-# add_dependencies(mission_planning_node robot_control_generate_messages_cpp)
+ add_dependencies(mission_planning_node robot_control_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
  
@@ -154,10 +162,17 @@ include_directories(
    bucket_set_pos
  )
  
-# target_link_libraries(mission_planning_node
-#   ${catkin_LIBRARIES}
-#   mission_planning
-# )
+ target_link_libraries(mission_planning_node
+   ${catkin_LIBRARIES}
+   mission_planning
+   initialize
+   drive_to_dig
+   mine
+   drive_to_deposit
+   deposit
+   recover
+   pause
+ )
 
 #############
 ## Install ##
