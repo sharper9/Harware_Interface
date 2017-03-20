@@ -3,18 +3,7 @@
 MissionPlanning::MissionPlanning()
 {
     execActionClient = nh.serviceClient<messages::ExecAction>("control/exec/actionin");
-    poseSub = nh.subscribe<messages::RobotPose>("/hsm/masterexec/globalpose", 1, &MissionPlanning::poseCallback_, this);
     ExecActionEndedSub = nh.subscribe<messages::ExecActionEnded>("control/exec/actionended", 1, &MissionPlanning::ExecActionEndedCallback_, this);
-    intermediateWaypointsClient = nh.serviceClient<robot_control::IntermediateWaypoints>("/control/safepathing/intermediatewaypoints");
-    reqROIClient = nh.serviceClient<robot_control::RegionsOfInterest>("/control/mapmanager/regionsofinterest");
-    modROIClient = nh.serviceClient<robot_control::ModifyROI>("/control/mapmanager/modifyroi");
-    searchMapClient = nh.serviceClient<robot_control::SearchMap>("/control/mapmanager/searchlocalmap");
-    randomSearchWaypointsClient = nh.serviceClient<robot_control::RandomSearchWaypoints>("/control/mapmanager/randomsearchwaypoints");
-    globalMapPathHazardsClient = nh.serviceClient<messages::MapPathHazards>("/control/mapmanager/globalmappathhazards");
-    searchLocalMapPathHazardsClient = nh.serviceClient<messages::MapPathHazards>("/control/mapmanager/searchlocalmappathhazards");
-    navControlClient = nh.serviceClient<messages::NavFilterControl>("/navigation/navigationfilter/control");
-    nb1Sub = nh.subscribe<messages::nb1_to_i7_msg>("hw_interface/nb1in/nb1in", 1, &MissionPlanning::nb1Callback_, this);
-    nb2Sub = nh.subscribe<messages::nb2_3_to_i7_msg>("hw_interface/nb2in/nb2in", 1, &MissionPlanning::nb2Callback_, this);
     collisionSub = nh.subscribe<messages::CollisionOut>("lidar/collisiondetectionout/collisiondetectionout", 1, &MissionPlanning::collisionCallback_, this);
     execInfoSub = nh.subscribe<messages::ExecInfo>("control/exec/info", 1, &MissionPlanning::execInfoCallback_, this);
     lidarFilterSub = nh.subscribe<messages::LidarFilterOut>("lidar/lidarfilteringout/lidarfilteringout", 1, &MissionPlanning::lidarFilterCallback_, this);
