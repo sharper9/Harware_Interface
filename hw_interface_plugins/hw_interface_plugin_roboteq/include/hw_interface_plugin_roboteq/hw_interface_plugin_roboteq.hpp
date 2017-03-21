@@ -83,7 +83,7 @@ namespace hw_interface_plugin_roboteq {
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
       private:
-        bool dataHandler();
+        bool dataHandler(tokenizer::iterator tok_iter, tokenizer tokens);
 
    };
 }
