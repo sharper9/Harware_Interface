@@ -100,13 +100,14 @@ bool hw_interface_plugin_roboteq::roboteq_serial::implInit()
     return true;
 }
 
-std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::string initializationCmd)
+std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::string initializationCmd, int initCmdCycle)
 {
-  boost::char_separator<char> seperator(" :/");
+  boost::char_separator<char> seperator(" :/,");
   tokenizer tokens(initializationCmd, seperator);
   tokenizer::iterator tok_iter = tokens.begin();
 
   initializationCmd = "\r^ECHOF 1\r# C\r";
+  int numCmds = 0;
 
   while ( tok_iter != tokens.end() )
   {
@@ -119,12 +120,18 @@ std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::st
     else
     {
       initializationCmd += "?" + command_list[*tok_iter] + "\r";
+      numCmds++;
     }
 
     ++tok_iter;
   }
-
-  return initializationCmd += "# 20 \r";
+  if (!numCmds)
+  {
+    numCmds = 1;
+  }
+  initCmdCycle = initCmdCycle / numCmds;
+  std::string cycle = boost::lexical_cast<std::string>(initCmdCycle);
+  return initializationCmd += "# " + cycle + " \r";
 }
 
 void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()

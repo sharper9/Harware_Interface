@@ -36,7 +36,7 @@ namespace hw_interface_plugin_roboteq {
         ros::NodeHandlePtr nh;
 
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-        std::string getInitCommands(std::string initializationCmd);
+        std::string getInitCommands(std::string initializationCmd, int initCmdCycle);
 
         messages::ActuatorOut latestActuatorCmd;
         controller_t roboteqType;

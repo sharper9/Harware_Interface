@@ -1,6 +1,6 @@
 plugin_names:
     {
-        brushed : hw_interface_plugin_roboteq,
+        brushed : hw_interface_plugin_roboteq
     }
 
 brushed:
@@ -15,5 +15,6 @@ Arm_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/brushed/arm",
         controllerType     : "Arm_Roboteq",
-        initializationCmd  : "analog_inputs",
+        initializationCmd  : "motor_amps",
+        initCmdCycle       : 20,
     }

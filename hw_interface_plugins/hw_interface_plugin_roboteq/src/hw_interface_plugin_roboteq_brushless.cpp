@@ -19,9 +19,14 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
    * 3. send '# 20' to have runtime queries repeated at 20 ms delta (50 hz)
    */
   std::string initializationCmd = "";
+  int initCmdCycle = 0;
   if(ros::param::get(pluginName+"/initializationCmd", initializationCmd))
   {
-    initializationCmd = hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(initializationCmd);
+    if (!ros::param::get(pluginName+"/initCmdCycle", initCmdCycle))
+    {
+      initCmdCycle = 20;
+    }
+    initializationCmd = hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(initializationCmd, initCmdCycle);
   }
   else
   {
