@@ -59,8 +59,6 @@ namespace hw_interface_plugin_roboteq {
         bool implInit();
         void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn);
         std::string m_command;
-        std::string m_commandVal1;
-        std::string m_commandVal2;
 
         hw_interface_plugin_roboteq::Roboteq_Data roboteqData;
 

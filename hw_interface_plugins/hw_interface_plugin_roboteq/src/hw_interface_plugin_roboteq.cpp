@@ -295,7 +295,8 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterato
     }
     else if (!m_command.compare("FF"))
     {
-      roboteqData.fault_flags = boost::lexical_cast<uint8_t>(m_commandVal1);
+      uint8_t value = boost::lexical_cast<uint8_t>(tok_iter->c_str());
+      roboteqData.fault_flags = value;
     }
 
   }
