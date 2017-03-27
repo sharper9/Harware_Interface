@@ -80,7 +80,10 @@ namespace hw_interface_plugin_roboteq {
         };
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
+
       private:
+        int m_numInitCmds; // # of commands from launch file
+        int m_numCmdsMatched; // # of commands matched regex from roboteqs
         bool dataHandler(tokenizer::iterator tok_iter, tokenizer tokens);
 
    };
