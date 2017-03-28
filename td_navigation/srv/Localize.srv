@@ -1,0 +1,9 @@
+uint16 average_length
+---
+float64 x
+float64 y
+float64 heading
+float64 head_dev
+float64 bearing
+float64 bear_dev
+bool fail

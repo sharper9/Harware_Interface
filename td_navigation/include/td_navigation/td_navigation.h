@@ -11,6 +11,7 @@
 #include <hw_interface_plugin_timedomain/Range_Request.h>
 #include <hw_interface_plugin_timedomain/RCM_Range_Info.h>
 #include <td_navigation/Average_angle.h>
+#include <td_navigation/Localize.h>
 
 #include <td_navigation/radio_nav.hpp>
 
