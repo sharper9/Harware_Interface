@@ -1,16 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(messages)
+project(robot_control)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  message_runtime
-  grid_map_ros
-  grid_map_msgs
   roscpp
-  rospy
+  messages
+  geometry_msgs
+  sensor_msgs
+  hw_interface_plugin_roboteq
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,29 +48,14 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   ActuatorOut.msg
-   ExecInfo.msg
-   ExecActionEnded.msg
-   NavFilterOut.msg
-   Servo_command.msg
-   Servo_status.msg
-   RobotPose.msg
-   MissionPlanningInfo.msg
-   NextWaypointOut.msg
-   #added for Comm port, remove
-   nb1_to_i7_msg.msg
-   nb2_3_to_i7_msg.msg
-   i7_to_nb1_msg.msg
-   encoder_data.msg
+   DriveSpeeds.msg
+   Waypoint.msg
  )
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   ExecAction.srv
-   MissionPlanningControl.srv
-   ExecManualOverride.srv
- )
+# add_service_files(
+#   FILES
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -83,7 +67,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   grid_map_msgs
 #   std_msgs  # Or other packages containing msgs
  )
 
@@ -97,8 +80,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES messages
+  INCLUDE_DIRS include
+#  LIBRARIES robot_control
   CATKIN_DEPENDS message_generation message_runtime roscpp rospy
 #  DEPENDS system_lib
 )
@@ -113,25 +96,81 @@ add_definitions("-std=gnu++11")
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(messages
-#   src/${PROJECT_NAME}/messages.cpp
-# )
+ add_library(exec src/exec.cpp)
+ add_library(action src/action.cpp)
+ add_library(idle src/idle.cpp)
+ add_library(drive_global src/drive_global.cpp)
+ add_library(drive_relative src/drive_relative.cpp)
+ add_library(dig src/dig.cpp)
+ add_library(dump src/dump.cpp)
+ add_library(wait src/wait.cpp)
+ add_library(drive_halt src/drive_halt.cpp)
+ add_library(drive_straight src/drive_straight.cpp)
+ add_library(drive_pivot src/drive_pivot.cpp)
+ add_library(scoop_halt src/scoop_halt.cpp)
+ add_library(scoop_set_pos src/scoop_set_pos.cpp)
+ add_library(arm_halt src/arm_halt.cpp)
+ add_library(arm_set_pos src/arm_set_pos.cpp)
+ add_library(bucket_halt src/bucket_halt.cpp)
+ add_library(bucket_set_pos src/bucket_set_pos.cpp)
+
+ add_library(mission_planning src/mission_planning.cpp)
+ add_library(initialize src/initialize.cpp)
+ add_library(drive_to_dig src/drive_to_dig.cpp)
+ add_library(mine src/mine.cpp)
+ add_library(drive_to_deposit src/drive_to_deposit.cpp)
+ add_library(deposit src/deposit.cpp)
+ add_library(recover src/recover.cpp)
+ add_library(pause src/pause.cpp)
 
 ## Declare a cpp executable
-# add_executable(messages_node src/messages_node.cpp)
+ add_executable(exec_node src/exec_node.cpp)
+ add_executable(mission_planning_node src/mission_planning_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(messages_node messages_generate_messages_cpp)
+ add_dependencies(exec_node robot_control_generate_messages_cpp)
+ add_dependencies(mission_planning_node robot_control_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(messages_node
-#   ${catkin_LIBRARIES}
-# )
+
+ target_link_libraries(exec_node
+   ${catkin_LIBRARIES}
+   exec
+   action
+   idle
+   drive_global
+   drive_relative
+   dig
+   dump
+   wait
+   drive_halt
+   drive_straight
+   drive_pivot
+   scoop_halt
+   scoop_set_pos
+   arm_halt
+   arm_set_pos
+   bucket_halt
+   bucket_set_pos
+ )
+
+ target_link_libraries(mission_planning_node
+   ${catkin_LIBRARIES}
+   mission_planning
+   initialize
+   drive_to_dig
+   mine
+   drive_to_deposit
+   deposit
+   recover
+   pause
+ )
 
 #############
 ## Install ##
@@ -148,7 +187,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS messages messages_node
+# install(TARGETS robot_control robot_control_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -173,7 +212,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_messages.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_robot_control.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
