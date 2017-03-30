@@ -100,13 +100,14 @@ bool hw_interface_plugin_roboteq::roboteq_serial::implInit()
     return true;
 }
 
-std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::string initializationCmd)
+std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::string initializationCmd, int initCmdCycle)
 {
-  boost::char_separator<char> seperator(" :/");
+  boost::char_separator<char> seperator(" :/,");
   tokenizer tokens(initializationCmd, seperator);
   tokenizer::iterator tok_iter = tokens.begin();
 
   initializationCmd = "\r^ECHOF 1\r# C\r";
+  int numCmds = 0;
 
   while ( tok_iter != tokens.end() )
   {
@@ -119,12 +120,18 @@ std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::st
     else
     {
       initializationCmd += "?" + command_list[*tok_iter] + "\r";
+      numCmds++;
     }
 
     ++tok_iter;
   }
-
-  return initializationCmd += "# 20 \r";
+  if (!numCmds)
+  {
+    numCmds = 1;
+  }
+  initCmdCycle = initCmdCycle / numCmds;
+  std::string cycle = boost::lexical_cast<std::string>(initCmdCycle);
+  return initializationCmd += "# " + cycle + " \r";
 }
 
 void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
@@ -176,20 +183,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const siz
         ++tok_iter;
       }
 
-      if(tok_iter != tokens.end())
-      {
-          ROS_INFO("%s",tok_iter->c_str());
-          m_commandVal1 = tok_iter->c_str();
-          ++tok_iter;
-      }
-
-      if(tok_iter != tokens.end())
-      {
-          ROS_INFO("%s",tok_iter->c_str());
-          m_commandVal2 = tok_iter->c_str();
-          ++tok_iter;
-      }
-      if(!dataHandler())
+      if(!dataHandler(tok_iter, tokens))
       {
         ROS_ERROR("%s :: Implementation Data Handler returned a BAD Return", pluginName.c_str());
       }
@@ -205,58 +199,104 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const siz
     return true;
 }
 
-bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler()
+bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterator tok_iter, tokenizer tokens)
 {
   try{
 
     if (!m_command.compare("A"))
     {
-      roboteqData.c1_amps = boost::lexical_cast<int16_t>(m_commandVal1);
-      roboteqData.c2_amps = boost::lexical_cast<int16_t>(m_commandVal2);
+      roboteqData.motor_amps.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.motor_amps.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("AI"))
     {
-      roboteqData.c1_analog_inputs = boost::lexical_cast<int16_t>(m_commandVal1);
-      roboteqData.c2_analog_inputs = boost::lexical_cast<int16_t>(m_commandVal2);
+      roboteqData.analog_inputs.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.analog_inputs.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("AIC"))
     {
-      roboteqData.c1_analog_inputs_conversion = boost::lexical_cast<int16_t>(m_commandVal1);
-      roboteqData.c2_analog_inputs_conversion = boost::lexical_cast<int16_t>(m_commandVal2);
+      roboteqData.analog_inputs_conversion.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.analog_inputs_conversion.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("BA"))
     {
-      roboteqData.c1_battery_amps = boost::lexical_cast<int16_t>(m_commandVal1);
-      roboteqData.c2_battery_amps = boost::lexical_cast<int16_t>(m_commandVal2);
+      roboteqData.battery_amps.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.battery_amps.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("BCR"))
     {
-      roboteqData.c1_brushless_count_relative = boost::lexical_cast<int32_t>(m_commandVal1);
-      roboteqData.c2_brushless_count_relative = boost::lexical_cast<int32_t>(m_commandVal2);
+      roboteqData.brushless_count_relative.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int32_t value = boost::lexical_cast<int32_t>(tok_iter->c_str());
+        roboteqData.brushless_count_relative.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("BS"))
     {
-      roboteqData.c1_bl_motor_speed_rpm = boost::lexical_cast<int16_t>(m_commandVal1);
-      roboteqData.c2_bl_motor_speed_rpm = boost::lexical_cast<int16_t>(m_commandVal2);
+      roboteqData.bl_motor_speed_rpm.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.bl_motor_speed_rpm.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("CB"))
     {
-      roboteqData.c1_absolute_brushless_counter = boost::lexical_cast<int32_t>(m_commandVal1);
-      roboteqData.c2_absolute_brushless_counter = boost::lexical_cast<int32_t>(m_commandVal2);
+      roboteqData.absolute_brushless_counter.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int32_t value = boost::lexical_cast<int32_t>(tok_iter->c_str());
+        roboteqData.absolute_brushless_counter.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("DI"))
     {
-      roboteqData.c1_individual_digital_inputs = boost::lexical_cast<bool>(m_commandVal1);
-      roboteqData.c2_individual_digital_inputs = boost::lexical_cast<bool>(m_commandVal2);
+      roboteqData.individual_digital_inputs.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        bool value = boost::lexical_cast<bool>(tok_iter->c_str());
+        roboteqData.individual_digital_inputs.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("DR"))
     {
-      roboteqData.c1_destination_reached = boost::lexical_cast<uint8_t>(m_commandVal1);
-      roboteqData.c2_destination_reached = boost::lexical_cast<uint8_t>(m_commandVal2);
+      roboteqData.destination_reached.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        uint8_t value = boost::lexical_cast<uint8_t>(tok_iter->c_str());
+        roboteqData.destination_reached.push_back(value);
+        ++tok_iter;
+      }
     }
     else if (!m_command.compare("FF"))
     {
-      roboteqData.fault_flags = boost::lexical_cast<uint8_t>(m_commandVal1);
+      uint8_t value = boost::lexical_cast<uint8_t>(tok_iter->c_str());
+      roboteqData.fault_flags = value;
     }
 
   }
@@ -269,6 +309,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler()
   rosDataPub.publish(roboteqData);
   return true;
 }
+
 bool hw_interface_plugin_roboteq::roboteq_serial::verifyChecksum()
 {
     return true;

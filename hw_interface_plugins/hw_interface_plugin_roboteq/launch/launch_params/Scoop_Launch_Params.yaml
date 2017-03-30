@@ -1,6 +1,6 @@
 plugin_names:
     {
-        hw_interface_plugin_roboteq : brushed,
+        brushed : hw_interface_plugin_roboteq
     }
 
 brushed:
@@ -10,9 +10,10 @@ brushed:
 
 Scoop_Roboteq:
     {
-        deviceName         : "/dev/ttyS4",
+        deviceName         : "/dev/ttyS3",
         baudrate           : 115200,
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/brushed/scoop",
         controllerType     : "Scoop_Roboteq",
+        initializationCmd  : "analog_inputs",
     }
