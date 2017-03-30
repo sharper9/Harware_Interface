@@ -38,11 +38,6 @@ public:
     Pause pause;
 	bool multiProcLockout;
 	unsigned int lockoutSum;
-    bool initialized;
-    bool atMineLocation;
-    bool bucketFull;
-    bool atDepositLocation;
-    bool stuck;
 	bool pauseStarted;
 private:
 	void evalConditions_();

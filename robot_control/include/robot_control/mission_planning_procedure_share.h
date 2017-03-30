@@ -38,7 +38,6 @@ public:
     static bool execDequeEmpty;
     static PROC_TYPES_T execLastProcType;
     static unsigned int execLastSerialNum;
-	static bool initialized;
 	static bool recoverCondition;
 	static bool queueEmptyTimedOut;
 	static float distanceToDrive; // m
@@ -46,6 +45,11 @@ public:
 	static double missionTime;
 	static double prevTime;
 	static bool missionStarted;
+    static bool initialized;
+    static bool atMineLocation;
+    static bool bucketFull;
+    static bool atDepositLocation;
+    static bool stuck;
 	const float depositWaypointX = 5.0; // m
 	const float depositWaypointY = 0.0; // m
 	const float queueEmptyTimerPeriod = 30.0; // sec
@@ -75,6 +79,10 @@ bool MissionPlanningProcedureShare::execDequeEmpty;
 PROC_TYPES_T MissionPlanningProcedureShare::execLastProcType;
 unsigned int MissionPlanningProcedureShare::execLastSerialNum;
 bool MissionPlanningProcedureShare::initialized;
+bool MissionPlanningProcedureShare::atMineLocation;
+bool MissionPlanningProcedureShare::bucketFull;
+bool MissionPlanningProcedureShare::atDepositLocation;
+bool MissionPlanningProcedureShare::stuck;
 bool MissionPlanningProcedureShare::recoverCondition;
 bool MissionPlanningProcedureShare::queueEmptyTimedOut;
 float MissionPlanningProcedureShare::distanceToDrive; // m
