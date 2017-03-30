@@ -5,10 +5,8 @@ project(robot_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  message_generation
-  message_runtime
   roscpp
-  rospy
+  messages
   geometry_msgs
   sensor_msgs
   hw_interface_plugin_roboteq
@@ -120,7 +118,7 @@ include_directories(
  add_library(arm_set_pos src/arm_set_pos.cpp)
  add_library(bucket_halt src/bucket_halt.cpp)
  add_library(bucket_set_pos src/bucket_set_pos.cpp)
- 
+
  add_library(mission_planning src/mission_planning.cpp)
  add_library(initialize src/initialize.cpp)
  add_library(drive_to_dig src/drive_to_dig.cpp)
@@ -140,7 +138,7 @@ include_directories(
  add_dependencies(mission_planning_node robot_control_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
- 
+
  target_link_libraries(exec_node
    ${catkin_LIBRARIES}
    exec
@@ -161,7 +159,7 @@ include_directories(
    bucket_halt
    bucket_set_pos
  )
- 
+
  target_link_libraries(mission_planning_node
    ${catkin_LIBRARIES}
    mission_planning
