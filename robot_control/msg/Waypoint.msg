@@ -1,14 +1,3 @@
 float32 x
 float32 y
-float32 sampleProb
-bool searchable
-bool unskippable
-bool roiWaypoint
-uint16 maxAvoids
-float32 whiteProb
-float32 silverProb
-float32 blueOrPurpleProb
-float32 pinkProb
-float32 redProb
-float32 orangeProb
-float32 yellowProb
+bool driveBackwards

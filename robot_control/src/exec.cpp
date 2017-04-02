@@ -158,15 +158,6 @@ bool Exec::manualOverrideCallback_(messages::ExecManualOverride::Request &req, m
     return true;
 }
 
-// **** Need to get this from ranging radio nav
-/*void Exec::poseCallback_(const messages::RobotPose::ConstPtr& msg)
-{
-    robotStatus.xPos = msg->x;
-    robotStatus.yPos = msg->y;
-	robotStatus.heading = msg->heading;
-    robotStatus.bearing = RAD2DEG*atan2(msg->y, msg->x);
-}*/
-
 void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 {
     robotStatus.yawRate = msg->yaw_rate;
@@ -181,20 +172,20 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    robotStatus.scoopStatus = (msg->analog_inputs[0] + msg->analog_inputs[0])/2.0;
-    robotStatus.scoopPos = (msg->analog_inputs[0] + msg->analog_inputs[0])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.scoopStatus = msg->destination_reached[0] && msg->destination_reached[1];
+    robotStatus.scoopPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
 }
 
 void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    robotStatus.armStatus = (msg->analog_inputs[0] + msg->analog_inputs[0])/2.0;
-    robotStatus.armPos = (msg->analog_inputs[0] + msg->analog_inputs[0])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.armStatus = msg->destination_reached[0] && msg->destination_reached[1];
+    robotStatus.armPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
 }
 
 void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    robotStatus.bucketStatus = (msg->analog_inputs[0] + msg->analog_inputs[0])/2.0;
-    robotStatus.bucketPos = (msg->analog_inputs[0] + msg->analog_inputs[0])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.bucketStatus = msg->destination_reached[0] && msg->destination_reached[1];
+    robotStatus.bucketPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
 }
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)
