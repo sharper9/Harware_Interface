@@ -9,7 +9,6 @@
 #include "action_type_enum.h"
 #include <messages/ExecAction.h>
 #include <messages/ExecInfo.h>
-#include <armadillo>
 #include <math.h>
 #include <time.h>
 #include "mission_planning_types_defines.h"
@@ -17,42 +16,42 @@
 class MissionPlanningProcedureShare
 {
 public:
-	static bool procsToExecute[NUM_PROC_TYPES];
-	static bool procsToInterrupt[NUM_PROC_TYPES];
-	static bool procsBeingExecuted[NUM_PROC_TYPES];
-	static bool procsToResume[NUM_PROC_TYPES];
-	static unsigned int numProcsBeingOrToBeExecOrRes;
-	static unsigned int numProcsBeingOrToBeExec;
-	static unsigned int numProcsToBeExecAndNotInterrupt;
+    static bool procsToExecute[NUM_PROC_TYPES];
+    static bool procsToInterrupt[NUM_PROC_TYPES];
+    static bool procsBeingExecuted[NUM_PROC_TYPES];
+    static bool procsToResume[NUM_PROC_TYPES];
+    static unsigned int numProcsBeingOrToBeExecOrRes;
+    static unsigned int numProcsBeingOrToBeExec;
+    static unsigned int numProcsToBeExecAndNotInterrupt;
     static ros::ServiceClient execActionClient;
     static messages::ExecAction execActionSrv;
-	static ros::Subscriber execInfoSub;
-	static messages::ExecInfo execInfoMsg;
-	static ros::Publisher driveSpeedsPub;
-	static robot_control::DriveSpeeds driveSpeedsMsg;
-	static robot_control::DriveSpeeds driveSpeedsMsgPrev;
+    static ros::Subscriber execInfoSub;
+    static messages::ExecInfo execInfoMsg;
+    static ros::Publisher driveSpeedsPub;
+    static robot_control::DriveSpeeds driveSpeedsMsg;
+    static robot_control::DriveSpeeds driveSpeedsMsgPrev;
     static RobotStatus robotStatus;
-	static CataglyphisTimerBase* timers[NUM_TIMERS];
+    static CataglyphisTimerBase* timers[NUM_TIMERS];
     static std::vector<robot_control::Waypoint> waypointsToTravel;
     static int numWaypointsToTravel;
     static bool execDequeEmpty;
     static PROC_TYPES_T execLastProcType;
     static unsigned int execLastSerialNum;
-	static bool recoverCondition;
-	static bool queueEmptyTimedOut;
-	static float distanceToDrive; // m
-	static float angleToTurn; // deg
-	static double missionTime;
-	static double prevTime;
-	static bool missionStarted;
+    static bool recoverCondition;
+    static bool queueEmptyTimedOut;
+    static float distanceToDrive; // m
+    static float angleToTurn; // deg
+    static double missionTime;
+    static double prevTime;
+    static bool missionStarted;
     static bool initialized;
     static bool atMineLocation;
     static bool bucketFull;
     static bool atDepositLocation;
     static bool stuck;
-	const float depositWaypointX = 5.0; // m
-	const float depositWaypointY = 0.0; // m
-	const float queueEmptyTimerPeriod = 30.0; // sec
+    const float depositWaypointX = 5.0; // m
+    const float depositWaypointY = 0.0; // m
+    const float queueEmptyTimerPeriod = 30.0; // sec
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 };
