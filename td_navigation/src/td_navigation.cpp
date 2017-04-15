@@ -25,10 +25,10 @@ td_navigation::worker::worker()
   rad105_DistL = 0;
   rad105_DistR = 0;
 
-  headings[average_length];
-  bearings[average_length];
-  x[average_length];
-  y[average_length];
+  headings.reserve(average_length);
+  bearings.reserve(average_length);
+  x.reserve(average_length);
+  y.reserve(average_length);
 
   x_sum = 0;
   y_sum = 0;
@@ -43,7 +43,7 @@ bool td_navigation::worker::send_and_recieve(int& to, hw_interface_plugin_timedo
   int wait = 0;
   int timeout = 0;
   //TODO: change back to about 200
-  ros::Rate loop_rate(150);
+  ros::Rate loop_rate(500);
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -158,12 +158,28 @@ void td_navigation::worker::set_current_pos_y(double pos_y){
   y[count%average_length] = pos_y;
 }
 
-void td_navigation::worker::update_sums(double bot_x, double bot_y){
-  head_sum += headings[count%average_length];
-  bear_sum += headings[count%average_length];
+double td_navigation::worker::get_current_heading(){
+  return headings[count%average_length];
+}
 
-  x_sum += bot_x;
-  y_sum += bot_y;
+double td_navigation::worker::get_current_bearing(){
+  return bearings[count%average_length];
+}
+
+double td_navigation::worker::get_current_pos_x(){
+  return x[count%average_length];
+}
+
+double td_navigation::worker::get_current_pos_y(){
+  return y[count%average_length];
+}
+
+void td_navigation::worker::update_sums(){
+  head_sum += headings[count%average_length];
+  bear_sum += bearings[count%average_length];
+
+  x_sum += x[count%average_length];
+  y_sum += y[count%average_length];
 }
 
 double td_navigation::worker::get_avg_heading(){
@@ -182,6 +198,9 @@ double td_navigation::worker::get_avg_y(){
   return y_sum/average_length;
 }
 
+void td_navigation::worker::update_count(){
+  count++;
+}
 
 int main(int argc, char **argv)
 {
@@ -274,7 +293,7 @@ int main(int argc, char **argv)
         worker.subtract_oldest();
       }
 
-
+      ROS_DEBUG("RadNavHead: %lf, RadNavBear: %lf", rad_nav.get_heading() * 180.0 / PI, rad_nav.get_bearing() * 180.0 / PI);
       //put the most recent measurement into the array
       //angle the bot is looking
       worker.set_current_heading(rad_nav.get_heading() * 180.0 / PI);
@@ -283,7 +302,10 @@ int main(int argc, char **argv)
       worker.set_current_pos_x( ( rad_nav.get_rad0_x() + rad_nav.get_rad1_x() ) / (2.0) );
       worker.set_current_pos_y( ( rad_nav.get_rad0_y() + rad_nav.get_rad1_y() ) / (2.0) );
 
-      worker.update_sums( ( rad_nav.get_rad0_x() + rad_nav.get_rad1_x() ) / 2.0 , ( rad_nav.get_rad0_y() + rad_nav.get_rad1_y() ) / 2.0);
+      worker.update_sums();
+
+      ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", worker.get_current_heading(), worker.get_current_bearing(),
+                worker.get_current_pos_x(), worker.get_current_pos_y() );
 
       td_navigation::Average_angle aa;
 
@@ -296,7 +318,7 @@ int main(int argc, char **argv)
 
 
   //update count
-  worker.count += 1;
+  worker.update_count();
   if(worker.count >= 32000){
       worker.count = 0;
   }

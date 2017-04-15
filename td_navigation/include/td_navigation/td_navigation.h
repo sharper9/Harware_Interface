@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <pluginlib/class_list_macros.h>
 #include <hw_interface/base_interface.hpp>
+#include <vector>
 
 #include <boost/scoped_ptr.hpp>
 #include <math.h>
@@ -38,10 +39,10 @@ namespace td_navigation
     double rad105_DistL;
     double rad105_DistR;
 
-    double headings[];
-    double bearings[];
-    double x[];
-    double y[];
+    std::vector<double> headings;
+    std::vector<double> bearings;
+    std::vector<double> x;
+    std::vector<double> y;
 
     double x_sum = 0;
     double y_sum = 0;
@@ -58,11 +59,16 @@ namespace td_navigation
     void set_current_bearing(double bearing);
     void set_current_pos_x(double pos_x);
     void set_current_pos_y(double pos_y);
-    void update_sums(double bot_x, double bot_y);
+    double get_current_heading();
+    double get_current_bearing();
+    double get_current_pos_x();
+    double get_current_pos_y();
+    void update_sums();
     double get_avg_heading();
     double get_avg_bearing();
     double get_avg_x();
     double get_avg_y();
+    void update_count();
 
 
   };
