@@ -67,8 +67,8 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     }
     else if(roboteqType == controller_t::Arm_Roboteq)
     {
-        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->scoop_pos_cmd) + "\r";
-        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->scoop_pos_cmd) + "\r";
+        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
+        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else if(roboteqType == controller_t::Scoop_Roboteq)
