@@ -27,15 +27,8 @@ float32 heading
 float32 human_heading
 float32 bearing
 float32 velocity
+float32 delta_distance
 uint8 update
-float32 sun_angle_x
-float32 sun_angle_y
-float32 estimated_zenith
-float32 sun_zenith
-float32 sun_azimuth
 float32 roll_init
 float32 pitch_init
 float32 heading_init
-float32 sun_north_angle
-float32 north_angle
-float32 drop_off_distance

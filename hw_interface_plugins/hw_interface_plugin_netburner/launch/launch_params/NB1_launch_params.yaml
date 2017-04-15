@@ -1,6 +1,6 @@
 plugin_names: 
     {
-        hw_interface_plugin_netburner: netburner_UDP,
+        netburner_UDP : hw_interface_plugin_netburner,
     }
     
 netburner_UDP:

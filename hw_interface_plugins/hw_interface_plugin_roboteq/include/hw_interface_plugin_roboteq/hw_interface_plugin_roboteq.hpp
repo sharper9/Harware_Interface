@@ -15,7 +15,6 @@
 
 #include <messages/ActuatorOut.h>
 #include <messages/encoder_data.h>
-#include <messages/GrabberFeedback.h>
 
 #include <hw_interface_plugin_roboteq/Roboteq_Data.h>
 #include <hw_interface_plugin_roboteq/Analog_Input_Conversion_Info.h>
@@ -34,6 +33,9 @@ namespace hw_interface_plugin_roboteq {
 
     protected:
         ros::NodeHandlePtr nh;
+
+        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+        std::string getInitCommands(std::string initializationCmd, int initCmdCycle);
 
         messages::ActuatorOut latestActuatorCmd;
         controller_t roboteqType;
@@ -56,8 +58,6 @@ namespace hw_interface_plugin_roboteq {
         bool implInit();
         void rosMsgCallback(const messages::ActuatorOut::ConstPtr &msgIn);
         std::string m_command;
-        std::string m_commandVal1;
-        std::string m_commandVal2;
 
         hw_interface_plugin_roboteq::Roboteq_Data roboteqData;
 
@@ -80,7 +80,7 @@ namespace hw_interface_plugin_roboteq {
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
       private:
-        bool dataHandler();
+        bool dataHandler(tokenizer::iterator tok_iter, tokenizer tokens);
 
    };
 }
