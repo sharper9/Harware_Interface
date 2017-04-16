@@ -1,14 +1,10 @@
 #include <td_navigation/td_navigation.h>
 
 #define PI 3.14159265
+#define ERRNUM -200000000.1
 
 td_navigation::worker::worker()
 {
-  // ros::param::get("average_length", average_length);
-  // ros::param::get("dStation", dStation);
-  // ros::param::get("rad_L", rad_L);
-  // ros::param::get("rad_R", rad_R);
-
   average_length = 20;
   dStation =  1930.4;
   rad_L =  101;
@@ -29,13 +25,6 @@ td_navigation::worker::worker()
   bearings.reserve(average_length);
   x.reserve(average_length);
   y.reserve(average_length);
-
-  x_sum = 0;
-  y_sum = 0;
-  head_sum = 0;
-  bear_sum = 0;
-  h_dev_sum = 0;
-  b_dev_sum = 0;
 }
 
 
@@ -116,30 +105,34 @@ void td_navigation::worker::radCallBack(const hw_interface_plugin_timedomain::RC
 }
 
 bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res){
+  int non_err = 0;
 
+  double h_dev_sum = 0;
+  double b_dev_sum = 0;
 //get the standard deviation
   for(int i = 0; i < average_length; i++){
-    h_dev_sum += pow(headings[i], 2.0);
-    b_dev_sum += pow(bearings[i], 2.0);
+    if (headings[i] != ERRNUM){
+      h_dev_sum += pow(headings[i] - this->get_avg_heading(), 2.0);
+      b_dev_sum += pow(bearings[i] - this->get_avg_bearing(), 2.0);
+      non_err++;
+    }
   }
 
+if (non_err == 0){
+  res.fail = true;
+  return false;
+}
+
 //service response
-res.x = x_sum/average_length;
-res.y = y_sum/average_length;
-res.heading = head_sum/average_length;
-res.head_dev = sqrtl(h_dev_sum/average_length);
-res.bearing = bear_sum/average_length;
-res.bear_dev = sqrtl(b_dev_sum/average_length);
+res.x = this->get_avg_x();
+res.y = this->get_avg_y();
+res.heading = this->get_avg_heading();
+res.head_dev = sqrtl(h_dev_sum/non_err);
+res.bearing = this->get_avg_bearing();
+res.bear_dev = sqrtl(b_dev_sum/non_err);
 res.fail = false;
 
 return true;
-}
-
-void td_navigation::worker::subtract_oldest(){
-  head_sum -= headings[count%average_length];
-  bear_sum -= bearings[count%average_length];
-  x_sum -= x[count%average_length];
-  y_sum -= y[count%average_length];
 }
 
 void td_navigation::worker::set_current_heading(double heading){
@@ -174,32 +167,95 @@ double td_navigation::worker::get_current_pos_y(){
   return y[count%average_length];
 }
 
-void td_navigation::worker::update_sums(){
-  head_sum += headings[count%average_length];
-  bear_sum += bearings[count%average_length];
-
-  x_sum += x[count%average_length];
-  y_sum += y[count%average_length];
-}
-
 double td_navigation::worker::get_avg_heading(){
-  return head_sum/average_length;
+  int non_err = 0;
+  double head_sum = 0;
+
+  for(int i = 0; i < average_length; i++){
+    if (headings[i] != ERRNUM){
+      head_sum += headings[i];
+      non_err++;
+    }
+  }
+
+  if (non_err == 0){
+    return ERRNUM;
+  }
+
+  return head_sum/non_err;
 }
 
 double td_navigation::worker::get_avg_bearing(){
-  return bear_sum/average_length;
+  int non_err = 0;
+  double bear_sum = 0;
+
+  for(int i = 0; i < average_length; i++){
+    if (bearings[i] != ERRNUM){
+      bear_sum += bearings[i];
+      non_err++;
+    }
+  }
+
+  if (non_err == 0){
+    return ERRNUM;
+  }
+
+  return bear_sum/non_err;
 }
 
 double td_navigation::worker::get_avg_x(){
-  return x_sum/average_length;
+  int non_err = 0;
+  double x_sum = 0;
+
+  for(int i = 0; i < average_length; i++){
+    if (x[i] != ERRNUM){
+      x_sum += x[i];
+      non_err++;
+    }
+  }
+
+  if (non_err == 0){
+    return ERRNUM;
+  }
+
+  return x_sum/non_err;
 }
 
 double td_navigation::worker::get_avg_y(){
-  return y_sum/average_length;
+  int non_err = 0;
+  double y_sum = 0;
+
+  for(int i = 0; i < average_length; i++){
+    if (y[i] != ERRNUM){
+      y_sum += y[i];
+      non_err++;
+    }
+  }
+
+  if (non_err == 0){
+    return ERRNUM;
+  }
+
+  return y_sum/non_err;
 }
 
 void td_navigation::worker::update_count(){
   count++;
+}
+
+int td_navigation::worker::set_error(){
+  headings[count%average_length] = ERRNUM;
+  bearings[count%average_length] = ERRNUM;
+  x[count%average_length] = ERRNUM;
+  y[count%average_length] = ERRNUM;
+
+  int num_of_errors;
+  for (int i = 0; i < average_length; i++){
+    if (headings[i] == ERRNUM){
+      num_of_errors++;
+    }
+  }
+  return num_of_errors;
 }
 
 int main(int argc, char **argv)
@@ -282,40 +338,38 @@ int main(int argc, char **argv)
       rad_nav.set_all(worker.dStation, worker.rad104_DistL, worker.rad104_DistR, worker.rad105_DistL, worker.rad105_DistR);
       rad_nav.triangulate();
 
+      if (rad_nav.success()){
 
+        if (worker.count == worker.average_length){
+          begin_avg = true;
+        }
 
-      if (worker.count == worker.average_length){
-        begin_avg = true;
+        ROS_DEBUG("RadNavHead: %lf, RadNavBear: %lf", rad_nav.get_heading() * 180.0 / PI, rad_nav.get_bearing() * 180.0 / PI);
+        //put the most recent measurement into the array
+        //angle the bot is looking
+        worker.set_current_heading(rad_nav.get_heading() * 180.0 / PI);
+        worker.set_current_bearing(rad_nav.get_bearing() * 180.0 / PI);
+
+        worker.set_current_pos_x( ( rad_nav.get_rad0_x() + rad_nav.get_rad1_x() ) / (2.0) );
+        worker.set_current_pos_y( ( rad_nav.get_rad0_y() + rad_nav.get_rad1_y() ) / (2.0) );
+
+        ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", worker.get_current_heading(), worker.get_current_bearing(),
+                  worker.get_current_pos_x(), worker.get_current_pos_y() );
+
+        if(begin_avg){
+          td_navigation::Average_angle aa;
+
+          aa.heading = worker.get_avg_heading();
+          aa.bearing = worker.get_avg_bearing();
+          aa.x = worker.get_avg_x();
+          aa.y = worker.get_avg_y();
+
+          aa_p.publish(aa);
+        }
+
+      }else {
+        ROS_DEBUG("NumberOfErrorsInLast%d: %d", worker.average_length, worker.set_error());
       }
-
-      //take away the oldest value from the sum (only happens once we've started averaging)
-      if(begin_avg){
-        worker.subtract_oldest();
-      }
-
-      ROS_DEBUG("RadNavHead: %lf, RadNavBear: %lf", rad_nav.get_heading() * 180.0 / PI, rad_nav.get_bearing() * 180.0 / PI);
-      //put the most recent measurement into the array
-      //angle the bot is looking
-      worker.set_current_heading(rad_nav.get_heading() * 180.0 / PI);
-      worker.set_current_bearing(rad_nav.get_bearing() * 180.0 / PI);
-
-      worker.set_current_pos_x( ( rad_nav.get_rad0_x() + rad_nav.get_rad1_x() ) / (2.0) );
-      worker.set_current_pos_y( ( rad_nav.get_rad0_y() + rad_nav.get_rad1_y() ) / (2.0) );
-
-      worker.update_sums();
-
-      ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", worker.get_current_heading(), worker.get_current_bearing(),
-                worker.get_current_pos_x(), worker.get_current_pos_y() );
-
-      td_navigation::Average_angle aa;
-
-      aa.heading = worker.get_avg_heading();
-      aa.bearing = worker.get_avg_bearing();
-      aa.x = worker.get_avg_x();
-      aa.y = worker.get_avg_y();
-
-      aa_p.publish(aa);
-
 
   //update count
   worker.update_count();

@@ -44,17 +44,9 @@ namespace td_navigation
     std::vector<double> x;
     std::vector<double> y;
 
-    double x_sum = 0;
-    double y_sum = 0;
-    double head_sum = 0;
-    double bear_sum = 0;
-    double h_dev_sum = 0;
-    double b_dev_sum = 0;
-
     bool send_and_recieve(int& to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub);
     void radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
     bool srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res);
-    void subtract_oldest();
     void set_current_heading(double heading);
     void set_current_bearing(double bearing);
     void set_current_pos_x(double pos_x);
@@ -69,6 +61,7 @@ namespace td_navigation
     double get_avg_x();
     double get_avg_y();
     void update_count();
+    int set_error();
 
 
   };
