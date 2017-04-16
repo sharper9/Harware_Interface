@@ -1,6 +1,6 @@
 plugin_names:
     {
-        hw_interface_plugin_roboteq : brushed,
+        brushed : hw_interface_plugin_roboteq
     }
 
 brushed:

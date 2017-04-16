@@ -368,7 +368,7 @@ int main(int argc, char **argv)
         }
 
       }else {
-        ROS_DEBUG("NumberOfErrorsInLast%d: %d", worker.average_length, worker.set_error());
+        ROS_ERROR("NumberOfErrorsInLast%d: %d", worker.average_length, worker.set_error());
       }
 
   //update count

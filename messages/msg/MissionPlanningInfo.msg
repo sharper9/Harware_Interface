@@ -1,0 +1,13 @@
+bool initialized
+bool atMineLocation
+bool bucketFull
+bool atDepositLocation
+bool stuck
+bool pause
+uint8 numProcs
+bool[] procsToExecute
+bool[] procsToInterrupt
+bool[] procsBeingExecuted
+bool[] procsToResume
+int32[] procStates
+float64 missionTime

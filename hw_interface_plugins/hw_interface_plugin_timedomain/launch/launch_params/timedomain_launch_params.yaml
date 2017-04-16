@@ -1,6 +1,6 @@
 plugin_names:
     {
-        hw_interface_plugin_timedomain: timedomain_serial,
+        timedomain_serial : hw_interface_plugin_timedomain,
     }
 
 timedomain_serial:

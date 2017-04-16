@@ -35,6 +35,10 @@ public:
   void set_rad0_distr(double& distance_to_right_rad);
   void set_rad1_distl(double& distance_to_left_rad);
   void set_rad1_distr(double& distance_to_right_rad);
+  double get_rad0_distl();
+  double get_rad0_distr();
+  double get_rad1_distl();
+  double get_rad1_distr();
   void set_all(double& dist_base_station, double& dist0_l, double& dist0_r, double& dist1_l, double& dist1_r);
   void triangulate();
   double get_rad0_x();
@@ -74,6 +78,21 @@ void radio_nav::set_rad1_distr(double& distance_to_right_rad){
   rad1.distr = distance_to_right_rad;
 }
 
+  double radio_nav::get_rad0_distl(){
+  return rad0.distl;
+  }
+  
+  double radio_nav::get_rad0_distr(){
+  return rad0.distr;
+  }
+  
+  double radio_nav::get_rad1_distl(){
+  return rad1.distl;
+  }  
+   double radio_nav::get_rad1_distr(){
+  return rad1.distr;
+  }
+
 void radio_nav::set_all(double& dist_base_station, double& dist0_l, double& dist0_r, double& dist1_l, double& dist1_r){
   base_station = dist_base_station;
   rad0.distl = dist0_l;
@@ -88,6 +107,7 @@ void radio_nav::triangulate(){
 
   //triangulation of rad 0
   temp = pow(rad0.distr,2.0) + pow(base_station,2.0) - pow(rad0.distl,2.0);
+
   if (temp/(2.0 * base_station * rad0.distr) >= -1 && temp/(2.0 * base_station * rad0.distr) <= 1){
     rad0.angle = acos(temp/(2.0 * base_station * rad0.distr));
     rad0.x = (rad0.distr * cos(rad0.angle)) - (base_station/(2.0));
@@ -108,6 +128,7 @@ void radio_nav::triangulate(){
 
   //triangulation of rad_1
   temp = (pow(rad1.distr,2.0) + pow(base_station,2.0) - pow(rad1.distl,2.0));
+
   if (temp/(2.0 * base_station * rad1.distr) >= -1 && temp/(2.0 * base_station * rad1.distr) <= 1){
     rad1.angle = acos(temp/(2.0 * base_station * rad1.distr));
     rad1.x = (rad1.distr * cos(rad1.angle)) - (base_station/(2.0));
