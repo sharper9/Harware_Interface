@@ -1,2 +1,0 @@
-uint8 collision
-float32 distance_to_collision

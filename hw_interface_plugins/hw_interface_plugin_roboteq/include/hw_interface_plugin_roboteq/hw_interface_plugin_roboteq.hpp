@@ -15,7 +15,6 @@
 
 #include <messages/ActuatorOut.h>
 #include <messages/encoder_data.h>
-#include <messages/GrabberFeedback.h>
 
 #include <hw_interface_plugin_roboteq/Roboteq_Data.h>
 #include <hw_interface_plugin_roboteq/Analog_Input_Conversion_Info.h>
