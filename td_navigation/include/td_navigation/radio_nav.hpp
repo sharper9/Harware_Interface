@@ -3,6 +3,8 @@
 
 #include <math.h>
 
+#define PI 3.14159265
+
 class radio_nav
 {
   class radio
@@ -33,6 +35,10 @@ public:
   void set_rad0_distr(double& distance_to_right_rad);
   void set_rad1_distl(double& distance_to_left_rad);
   void set_rad1_distr(double& distance_to_right_rad);
+  double get_rad0_distl();
+  double get_rad0_distr();
+  double get_rad1_distl();
+  double get_rad1_distr();
   void set_all(double& dist_base_station, double& dist0_l, double& dist0_r, double& dist1_l, double& dist1_r);
   void triangulate();
   double get_rad0_x();
@@ -68,6 +74,21 @@ void radio_nav::set_rad1_distr(double& distance_to_right_rad){
   rad1.distr = distance_to_right_rad;
 }
 
+  double radio_nav::get_rad0_distl(){
+  return rad0.distl;
+  }
+  
+  double radio_nav::get_rad0_distr(){
+  return rad0.distr;
+  }
+  
+  double radio_nav::get_rad1_distl(){
+  return rad1.distl;
+  }  
+   double radio_nav::get_rad1_distr(){
+  return rad1.distr;
+  }
+
 void radio_nav::set_all(double& dist_base_station, double& dist0_l, double& dist0_r, double& dist1_l, double& dist1_r){
   base_station = dist_base_station;
   rad0.distl = dist0_l;
@@ -85,14 +106,26 @@ void radio_nav::triangulate(){
   rad0.angle = acos(temp/(2.0 * base_station * rad0.distr));
   rad0.x = (rad0.distr * cos(rad0.angle)) - (base_station/(2.0));
   rad0.y = rad0.distr * sin(rad0.angle);
-  rad0.angle = atan(rad0.y/rad0.x);
+  if(rad0.x == 0 && rad0.y >= 1){
+    rad0.angle = PI / 2.0;
+  } else if (rad0.x == 0 && rad0.y < 1){
+    rad0.angle = -1 * PI / 2.0;
+  }else{
+    rad0.angle = atan(rad0.y/rad0.x);
+  }
 
   //triangulation of rad_1
   temp = (pow(rad1.distr,2.0) + pow(base_station,2.0) - pow(rad1.distl,2.0));
   rad1.angle = acos(temp/(2.0 * base_station * rad1.distr));
   rad1.x = (rad1.distr * cos(rad1.angle)) - (base_station/(2.0));
   rad1.y = rad1.distr * sin(rad1.angle);
-  rad1.angle = atan(rad1.y/rad1.x);
+  if(rad1.x == 0 && rad1.y >= 1){
+    rad1.angle = PI / 2.0;
+  } else if (rad1.x == 0 && rad1.y < 1){
+    rad1.angle = -1 * PI / 2.0;
+  }else{
+    rad1.angle = atan(rad1.y/rad1.x);
+  }
 
   bearing = atan(((rad1.y + rad0.y)/2.0) / ((rad1.x - rad0.x)/2.0));
   heading = atan((rad1.y - rad0.y) / (rad1.x - rad0.x));

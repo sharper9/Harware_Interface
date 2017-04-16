@@ -29,6 +29,11 @@ td_navigation::worker::worker()
   bearings.reserve(average_length);
   x.reserve(average_length);
   y.reserve(average_length);
+  
+  headings.resize(average_length);
+  bearings.resize(average_length);
+  x.resize(average_length);
+  y.resize(average_length);
 
   x_sum = 0;
   y_sum = 0;
@@ -119,8 +124,8 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req, t
 
 //get the standard deviation
   for(int i = 0; i < average_length; i++){
-    h_dev_sum += pow(headings[i], 2.0);
-    b_dev_sum += pow(bearings[i], 2.0);
+    h_dev_sum += pow(headings[i] - head_sum/average_length, 2.0);
+    b_dev_sum += pow(bearings[i] - bear_sum/average_length, 2.0);
   }
 
 //service response
@@ -289,12 +294,12 @@ int main(int argc, char **argv)
       }
 
       //take away the oldest value from the sum (only happens once we've started averaging)
-      if(begin_avg){
+      if(begin_avg == true){
         worker.subtract_oldest();
       }
 
       ROS_DEBUG("RadNavHead: %lf, RadNavBear: %lf", rad_nav.get_heading() * 180.0 / PI, rad_nav.get_bearing() * 180.0 / PI);
-      //put the most recent measurement into the array
+      //put the most recent measurement into the vector
       //angle the bot is looking
       worker.set_current_heading(rad_nav.get_heading() * 180.0 / PI);
       worker.set_current_bearing(rad_nav.get_bearing() * 180.0 / PI);
@@ -306,16 +311,24 @@ int main(int argc, char **argv)
 
       ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", worker.get_current_heading(), worker.get_current_bearing(),
                 worker.get_current_pos_x(), worker.get_current_pos_y() );
+                
+      ROS_DEBUG("HeadSum: %lf, BearSum: %lf", worker.get_avg_heading() * worker.average_length, worker.get_avg_bearing() * worker.average_length);
+      
 
-      td_navigation::Average_angle aa;
+      if (begin_avg == true){
+        td_navigation::Average_angle aa;
 
-      aa.heading = worker.get_avg_heading();
-      aa.bearing = worker.get_avg_bearing();
-      aa.x = worker.get_avg_x();
-      aa.y = worker.get_avg_y();
+        aa.heading = worker.get_avg_heading();
+        aa.bearing = worker.get_avg_bearing();
+        aa.x = worker.get_avg_x();
+        aa.y = worker.get_avg_y();
+        aa.rad0toL = rad_nav.get_rad0_distl();
+        aa.rad0toR = rad_nav.get_rad0_distr();
+        aa.rad1toL = rad_nav.get_rad1_distl();
+        aa.rad1toR = rad_nav.get_rad1_distr();
 
-      aa_p.publish(aa);
-
+        aa_p.publish(aa);
+    }
 
   //update count
   worker.update_count();
