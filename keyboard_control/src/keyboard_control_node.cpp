@@ -36,10 +36,12 @@ int main(int argc, char **argv)
 	
 	int right[3] = {0}; //index 0 is the front wheel, 1 is middle, 2 is rear
 	int left[3] = {0};
-	int speed = 1000;	
+	int speed = 100;	
 	
 	int grabberSlidePos = fully_open;
 	int grabberDropPos  = fully_raised;
+	
+	int arm = 0;
 	
 	float servoIncrement = 45.0;
 	float servoAngleCmd = 180.0;
@@ -104,27 +106,27 @@ int main(int argc, char **argv)
     		        left[0] = -speed; left[1] = -speed; left[2] = -speed;
 				    break;
 				    
-			//grabber control
-				case 119: //w grabber down
+			//arm control
+				case 119: //w arm up
 					numTimeOuts = 0;
-                    exec_msg.stopFlag = true;
+                    exec_msg.stopFlag = false;
                     exec_msg.turnFlag = false;
-					clear();printw("Grabber Down");
-					grabberDropPos = fully_dropped; //gets these #define's from robot_actions
+					clear();printw("Arm Up");
+					arm = speed;
 					break;
-				case 115: //s grabber up
+				case 115: //s arm down
 					numTimeOuts = 0;
-                    exec_msg.stopFlag = true;
+                    exec_msg.stopFlag = false;
                     exec_msg.turnFlag = false;
-					clear();printw("Grabber Up");
-					grabberDropPos = fully_raised;
+					clear();printw("Arm Down");
+          arm = -speed;
 					break;
 				case 101: //e grabber slides open
 					numTimeOuts = 0;
                     exec_msg.stopFlag = true;
                     exec_msg.turnFlag = false;
 					clear();printw("Grabber Slides Open");
-					grabberSlidePos = fully_open;
+          grabberSlidePos = fully_open;
 					break;
 				case 100: //d grabber slides closed
     				numTimeOuts = 0;
@@ -204,13 +206,14 @@ int main(int argc, char **argv)
                         //printw("Key 'x' toggles Stop Flag");
 				        printw("Spacebar will take a picture and store it\n\n");
    				        printw("Arrow keys drive the robot\n");
-				        printw("Key 'w' lowers the grabber, Key 's' raises the grabber\n");
+				        printw("Key 'w' raises the arm, Key 's' lowers the arm\n");
 				        printw("Key 'e' opens grabber slides, Key 'd' closes grabber slides\n\n");
 				        printw("Key 'q' will close all rosnodes and end keyboard control\n");
 				        printw("'Control + c' will close just keyboard control\n");
 				    } 
     		        right[0] = 0; right[1] = 0; right[2] = 0;
     		        left[0] = 0; left[1] = 0; left[2] = 0;
+    		        arm = 0;
     		        //keys_msg.spacebar = false;
 				    break;
 				    
@@ -222,6 +225,7 @@ int main(int argc, char **argv)
 				    clear();printw("The pressed key is unknown %i", ch);
     		        right[0] = 0; right[1] = 0; right[2] = 0;
     		        left[0] = 0; left[1] = 0; left[2] = 0;
+    		        arm = 0;
     	//	        keys_msg.spacebar = false;
     		        break;
 		    }
@@ -243,6 +247,8 @@ int main(int argc, char **argv)
 //			actuator_msg.mr_speed_cmd = right[1];
 			actuator_msg.bl_speed_cmd = left[2];
 			actuator_msg.br_speed_cmd = right[2];
+			
+			actuator_msg.arm_pos_cmd = arm;
 //	        actuator_msg.slide_pos_cmd = grabberSlidePos;
 //	        actuator_msg.drop_pos_cmd = grabberDropPos;
 	        
