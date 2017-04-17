@@ -12,6 +12,27 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
 {
   ROS_INFO("%s:: Plugin start!", pluginName.c_str());
 
+  std::string filename;
+
+  if (roboteqType == controller_t::Left_Drive_Roboteq)
+    filename = "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/left-drive-closed-loop-script.txt";
+  else
+    filename = "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/right-drive-closed-loop-script.txt";
+
+  std::ifstream roboteqInitFile (filename, std::ifstream::in);
+  if (!roboteqInitFile)
+  {
+    ROS_ERROR("Error locating RoboteQ startup script file");
+  }
+  else
+  {
+    //TODO: if roboteq disconnects do this again
+    roboteqInit.assign( (std::istreambuf_iterator<char>(roboteqInitFile)),
+                        (std::istreambuf_iterator<char>()) );
+    postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(roboteqInit));
+  }
+
+
   /*
    * Roboteq usage
    * 1. send '# C' to clear history buffer

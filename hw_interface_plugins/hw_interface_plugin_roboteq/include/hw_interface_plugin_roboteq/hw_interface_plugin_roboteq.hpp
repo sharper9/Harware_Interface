@@ -13,11 +13,12 @@
 #include <boost/regex.hpp>
 #include <map>
 
+#include <fstream> // std::ifstream
+
 #include <messages/ActuatorOut.h>
 #include <messages/encoder_data.h>
 
 #include <hw_interface_plugin_roboteq/Roboteq_Data.h>
-#include <hw_interface_plugin_roboteq/Analog_Input_Conversion_Info.h>
 
 namespace hw_interface_plugin_roboteq {
 
@@ -80,6 +81,7 @@ namespace hw_interface_plugin_roboteq {
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
 
+        std::string roboteqInit;
       private:
         int m_numInitCmds; // # of commands from launch file
         int m_numCmdsMatched; // # of commands matched regex from roboteqs
