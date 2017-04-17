@@ -71,12 +71,7 @@ public:
 	void clear_accelerometer_values();
 	void blind_dead_reckoning(double p, double q, double r, double delta_distance, double dt);
 	void blind_turning(double p, double q, double r, double dt);
-	void which_nb_to_keep(int nb1_drive_counter, bool nb1_current, bool nb1_good, bool nb1_good_prev, int nb2_drive_counter, bool nb2_current, bool nb2_good, bool nb2_good_prev, bool nbS_current, bool nbS_good, bool nbS_good_prev);
-	void homing_update(double homing_heading, double homing_x, double homing_y, double dull_x, double dull_y, double shiny_x, double shiny_y, double cylinder_std, bool possibly_lost, bool square_update);
-	void clear_cylinder_vec();
-	void find_Kens_north_angle();
-	void check_Kens_north_angle();
-
+	// TODO: add a function for updating from ranging radio solution
 };
 
 #endif

@@ -15,10 +15,6 @@ Filter::Filter()
 	ax_values.clear();
 	ay_values.clear();
 	az_values.clear();
-	dull_x_vec.clear();
-	dull_y_vec.clear();
-	shiny_x_vec.clear();
-	shiny_y_vec.clear();
 	P_x = 1.0;
 	P_y = 1.0;
 	P_phi = 0.05;
@@ -28,21 +24,12 @@ Filter::Filter()
 	Q_phi = 2.2847e-008;
 	Q_theta = 2.2847e-008;
 	Q_psi = 2.2847e-008;
-	Kens_angle = 0.0;
-	Kens_north_angle = 0.0;
-	north_angle = 0.0;
-	P_north_angle = 25.0;
-	keep_nb = 3;
-	homing_verified = false;
-	E_north_angle = 111.0*PI/180.0;
-	north_angle_thresh = 75.0*PI/180.0;
 	heading_update = 0.0;
 	b_h_diff_k = 0.0; 
 	heading_est_k = 0.0;
 	heading_est_k_prev = 0.0;
 	heading_prev = 0.0;
 	l_dist = 0.44;
-	platform_number = 0;
 }
 
 void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
@@ -266,14 +253,6 @@ void Filter::roll_pitch_G_update()
 	}
 	az_est = arma::mean(arma::mean(az_meds));
 
-	/*
-	arma::mat m_temp = arma::median(arma::median(ax_values));
-	double ax_est = m_temp(0,0);
-	m_temp = arma::median(arma::median(ay_values));
-	double ay_est = m_temp(0,0);
-	m_temp = arma::median(arma::median(az_values));
-	double az_est = m_temp(0,0);*/
-
 	if (ax_est!=0 && ay_est!=0 && az_est!=0)
 	{
 		arma::mat X(2,1);
@@ -334,267 +313,4 @@ void Filter::blind_turning(double p, double q, double r, double dt)
 	P_phi = P_phi+p*p*dt*dt;
 	P_theta = P_theta+q*q*dt*dt;
 	P_psi = P_psi+r*r*dt*dt;
-}
-
-void Filter::homing_update(double homing_heading, double homing_x, double homing_y, double dull_x, double dull_y, double shiny_x, double shiny_y, double cylinder_std, bool possibly_lost, bool square_update)
-{
-	int keep1 = 1;
-	int keep2 = 2;
-	double dull_x_mean, dull_y_mean, shiny_x_mean, shiny_y_mean;
-	double x_mean, y_mean, d, bearing;
-	double v1_x, v1_y, v2_x, v2_y, v1_mag, v2_mag, v_dot;
-	double r = 6.0*0.0254;
-	double dist = 1.8325-2*r;
-	heading_est_k_prev = heading_est_k;
-	double heading_diff, heading_est_diff;
-
-	if (shiny_x_vec.size()>=3)
-	{
-		double diff_thresh = 0.4;
-
-		double dist_dull_12 = sqrt((dull_x_vec(0,0)-dull_x_vec(1,0))*(dull_x_vec(0,0)-dull_x_vec(1,0)) + (dull_y_vec(0,0)-dull_y_vec(1,0))*(dull_y_vec(0,0)-dull_y_vec(1,0)));
-		double dist_dull_13 = sqrt((dull_x_vec(0,0)-dull_x_vec(2,0))*(dull_x_vec(0,0)-dull_x_vec(2,0)) + (dull_y_vec(0,0)-dull_y_vec(2,0))*(dull_y_vec(0,0)-dull_y_vec(2,0)));
-		double dist_dull_23 = sqrt((dull_x_vec(1,0)-dull_x_vec(2,0))*(dull_x_vec(1,0)-dull_x_vec(2,0)) + (dull_y_vec(1,0)-dull_y_vec(2,0))*(dull_y_vec(1,0)-dull_y_vec(2,0)));
-
-		double dist_shiny_12 = sqrt((shiny_x_vec(0,0)-shiny_x_vec(1,0))*(shiny_x_vec(0,0)-shiny_x_vec(1,0)) + (shiny_y_vec(0,0)-shiny_y_vec(1,0))*(shiny_y_vec(0,0)-shiny_y_vec(1,0)));
-		double dist_shiny_13 = sqrt((shiny_x_vec(0,0)-shiny_x_vec(2,0))*(shiny_x_vec(0,0)-shiny_x_vec(2,0)) + (shiny_y_vec(0,0)-shiny_y_vec(2,0))*(shiny_y_vec(0,0)-shiny_y_vec(2,0)));
-		double dist_shiny_23 = sqrt((shiny_x_vec(1,0)-shiny_x_vec(2,0))*(shiny_x_vec(1,0)-shiny_x_vec(2,0)) + (shiny_y_vec(1,0)-shiny_y_vec(2,0))*(shiny_y_vec(1,0)-shiny_y_vec(2,0)));
-
-		if (dist_dull_12 < diff_thresh && dist_dull_13 < diff_thresh && dist_dull_23 < diff_thresh && dist_shiny_12 < diff_thresh && dist_shiny_13 < diff_thresh && dist_shiny_23 < diff_thresh)
-		{
-			int keep_1 = 0;
-			int keep_2 = 0;
-
-			if (dist_dull_12*dist_dull_12+dist_shiny_12*dist_shiny_12<dist_dull_13*dist_dull_13+dist_shiny_13*dist_shiny_13 && dist_dull_12*dist_dull_12+dist_shiny_12*dist_shiny_12<dist_dull_23*dist_dull_23+dist_shiny_23*dist_shiny_23)
-			{
-				keep_1 = 0;
-				keep_2 = 1;
-			}
-			else if (dist_dull_13*dist_dull_13+dist_shiny_13*dist_shiny_13<dist_dull_12*dist_dull_12+dist_shiny_12*dist_shiny_12 && dist_dull_13*dist_dull_13+dist_shiny_13*dist_shiny_13<dist_dull_23*dist_dull_23+dist_shiny_23*dist_shiny_23)
-			{
-				keep_1 = 0;
-				keep_2 = 2;
-			}
-			else
-			{
-				keep_1 = 1;
-				keep_2 = 2;
-			}
-
-
-			dull_x_mean = (dull_x_vec(keep_1)+dull_x_vec(keep_2))/2.0;
-			dull_y_mean = (dull_y_vec(keep_1)+dull_y_vec(keep_2))/2.0;
-			shiny_x_mean = (shiny_x_vec(keep_1)+shiny_x_vec(keep_2))/2.0;
-			shiny_y_mean = (shiny_y_vec(keep_1)+shiny_y_vec(keep_2))/2.0;
-
-
-
-			x_mean = (shiny_x_mean+dull_x_mean)/2;
-			y_mean = (shiny_y_mean+dull_y_mean)/2;
-
-			d = sqrt(x_mean*x_mean+y_mean*y_mean);
-
-			v2_x = shiny_x_mean-dull_x_mean;
-			v2_y = shiny_y_mean-dull_y_mean;
-
-			v1_mag = sqrt(x_mean*x_mean+y_mean*y_mean); 
-			v2_mag = sqrt(v2_x*v2_x+v2_y*v2_y); 
-			v1_x = x_mean/v1_mag;
-			v1_y = y_mean/v1_mag;
-			v2_x = v2_x/v2_mag;
-			v2_y = v2_y/v2_mag;
-
-			v_dot = v1_x*v2_x+v1_y*v2_y;
-
-			double x_est, y_est, x_est_k, y_est_k;
-			if (shiny_x_mean*dull_y_mean-shiny_y_mean*dull_x_mean<0)
-			{
-				bearing = -acos(v_dot)+PI/2.0;
-				x_est_k = d*cos(bearing);
-				y_est_k = d*sin(bearing);
-			}
-			else
-			{
-				bearing = acos(v_dot)+PI/2.0;
-				x_est_k = d*cos(bearing);
-				y_est_k = d*sin(bearing);
-			}
-			b_h_diff_k = atan2(-v1_y,-v1_x); 
-			heading_est_k = -(b_h_diff_k-bearing);
-
-			if (heading_est_k<psi)
-			{
-				while (heading_est_k<psi)
-				{
-					heading_est_k = heading_est_k+2*PI;
-				}
-				if (fabs(heading_est_k-psi)>fabs((heading_est_k-2*PI)-psi))
-				{
-					heading_est_k = heading_est_k-2*PI;
-				}
-			}
-			if (heading_est_k>psi)
-			{
-				while (heading_est_k>psi)
-				{
-					heading_est_k = heading_est_k-2*PI;
-				}
-				if (fabs(heading_est_k-psi)>fabs((heading_est_k+2*PI)-psi))
-				{
-					heading_est_k = heading_est_k+2*PI;
-				}
-			}
-
-			double heading_est_k_std = atan(cylinder_std/(dist/2));
-
-			double P_heading_update = 0;
-			if(fabs(heading_est_k-psi)<5.0*PI/180.0)
-			{
-				homing_verified = true;
-				if (heading_est_k_std>0.0 && P_psi >0.0)
-				{
-					P_heading_update = 1/(1/(heading_est_k_std*heading_est_k_std)+1/P_psi);
-					heading_update = (heading_est_k/(heading_est_k_std*heading_est_k_std)+psi/P_psi)*P_heading_update;
-				}
-
-			}
-			else
-			{
-				homing_verified = false;
-			}
-
-			if(sqrt((homing_x-x)*(homing_x-x)+(homing_y-y)*(homing_y-y))>30.0)
-			{
-				homing_verified = false;
-			}
-
-			if (homing_verified)
-			{
-				P_psi = P_heading_update;
-				psi = heading_update;
-				bearing = psi+b_h_diff_k;
-				x_est = d*cos(bearing);
-				y_est = d*sin(bearing);
-				x = x_est-l_dist*cos(heading_update);
-				y = y_est-l_dist*sin(heading_update);
-			}
-
-			if(possibly_lost)
-			{
-				x = x_est_k-l_dist*cos(heading_est_k);
-				y = y_est_k-l_dist*sin(heading_est_k);
-				psi = heading_est_k;
-				homing_verified = true;
-			}
-
-			if (square_update && !homing_verified)
-			{
-				heading_diff = psi-heading_prev;
-				heading_est_diff = heading_est_k-heading_est_k_prev;
-				if (heading_est_diff<heading_diff)
-				{
-					while (heading_est_diff<heading_diff)
-					{
-						heading_est_diff = heading_est_diff+2*PI;
-					}
-					if (fabs(heading_est_diff-heading_diff)>fabs((heading_est_diff-2*PI)-heading_diff))
-					{
-						heading_est_diff = heading_est_diff-2*PI;
-					}
-				}
-				if (heading_est_diff>heading_diff)
-				{
-					while (heading_est_diff>heading_diff)
-					{
-						heading_est_diff = heading_est_diff-2*PI;
-					}
-					if (fabs(heading_est_diff-heading_diff)>fabs((heading_est_diff+2*PI)-heading_diff))
-					{
-						heading_est_diff = heading_est_diff+2*PI;
-					}
-				}
-				if (fabs(heading_diff-heading_est_diff)<2.0*PI/180)
-				{
-					x = x_est_k-l_dist*cos(heading_est_k);
-					y = y_est_k-l_dist*sin(heading_est_k);
-					psi = heading_est_k;
-					homing_verified = true;
-				}
-			}
-
-			heading_prev = psi;
-		}
-
-	}
-	else
-	{
-		dull_x_vec = arma::join_vert(dull_x_vec,arma::mat(1,1,arma::fill::ones)*dull_x);
-		dull_y_vec = arma::join_vert(dull_y_vec,arma::mat(1,1,arma::fill::ones)*dull_y);
-		shiny_x_vec = arma::join_vert(shiny_x_vec,arma::mat(1,1,arma::fill::ones)*shiny_x);
-		shiny_y_vec = arma::join_vert(shiny_y_vec,arma::mat(1,1,arma::fill::ones)*shiny_y);
-	}
-	
-
-}
-
-void Filter::clear_cylinder_vec()
-{
-	dull_x_vec.clear();
-	dull_y_vec.clear();
-	shiny_x_vec.clear();
-	shiny_y_vec.clear();
-}
-
-void Filter::find_Kens_north_angle()
-{
-	double base_angle;
-	double platform_1_angle = 103.1045*PI/180;
-	double platform_2_angle = 108.7460*PI/180;
-	double platform_3_angle = 113.7225*PI/180;
-
-	if (platform_number == 1)
-	{
-		base_angle = platform_1_angle;
-	}
-	else if (platform_number == 2)
-	{
-		base_angle = platform_2_angle;
-	}
-	else if (platform_number == 3)
-	{
-		base_angle = platform_3_angle;
-	}
-
-	Kens_north_angle = base_angle+Kens_angle;
-}
-
-void Filter::check_Kens_north_angle()
-{
-	if (north_angle<Kens_north_angle)
-	{
-		while (north_angle<Kens_north_angle)
-		{
-			north_angle = north_angle+2*PI;
-		}
-		if (fabs(north_angle-Kens_north_angle)>fabs((north_angle-2*PI)-Kens_north_angle))
-		{
-			north_angle = north_angle-2*PI;
-		}
-	}
-	if (north_angle>Kens_north_angle)
-	{
-		while (north_angle>Kens_north_angle)
-		{
-			north_angle = north_angle-2*PI;
-		}
-		if (fabs(north_angle-Kens_north_angle)>fabs((north_angle+2*PI)-Kens_north_angle))
-		{
-			north_angle = north_angle+2*PI;
-		}
-	}
-	if (fabs(north_angle-Kens_north_angle)<5.0*PI/180.0)
-	{
-
-		north_angle = (north_angle+Kens_north_angle)/2.0;
-	} 
 }

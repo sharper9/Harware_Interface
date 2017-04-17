@@ -7,26 +7,7 @@ NavigationFilter::NavigationFilter()
 	stopFlag = false;
 	turnFlag = false;
 
-	sub_mission = nh.subscribe("/control/missionplanning/info", 1, &NavigationFilter::getMissionPlanningInfoCallback, this);
-
-	sub_lidar = nh.subscribe("lidar/lidarfilteringout/lidarfilteringout", 1, &NavigationFilter::getLidarFilterOutCallback, this);
-    homing_x=0.0;
-	homing_y=0.0;
-	homing_heading=0.0;
-    homing_found=false;
-    dull_x=0.0;
-	dull_y=0.0;
-	shiny_x=0.0;
-	shiny_y=0.0;
-	cylinder_std = 100.0;
-	registration_counter = 0;
-	registration_counter_prev = 0;
-
 	filter.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
-	init_filter.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
-	filter1.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
-	filter2.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
-	filterS.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
 
 	encoders.set_wheel_radius(0.2286/2);
 	encoders.set_counts_per_revolution(4476.16*1.062);
