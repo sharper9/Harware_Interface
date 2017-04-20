@@ -18,8 +18,8 @@ Encoders::Encoders()
 	fr_diff=0;
 	bl_diff=0;
 	br_diff=0;
-    encoder_max_count=61566; // TODO: update this for new feedback format
-	impossible_encoder_diff=10000;
+    encoder_max_count=2147483648;
+  impossible_encoder_diff=10000; // TODO: check this
 	spike_diff = 1000;
 	wheel_radius=0;
 	counts_per_revolution=1;
@@ -36,7 +36,7 @@ void Encoders::set_counts_per_revolution(double set_counts)
 {
 	counts_per_revolution=set_counts;
 }
-
+// TODO
 void Encoders::adjustEncoderWrapError()
 {
 	if(abs(fl_diff)>impossible_encoder_diff)

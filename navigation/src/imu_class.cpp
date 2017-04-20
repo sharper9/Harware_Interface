@@ -21,9 +21,8 @@ IMU::IMU()
 	nb1_ax=0;
 	nb1_ay=0;
 	nb1_az=0;
-    nb1_num_imus=0;
-	nb1_imu_nums=0;
-	nb1_counter=0;
+  nb1_num_imus=0;
+  nb1_counter=0;
 	nb1_counter_prev = 0;
 	nb1_diff_prev = 1;
 	nb1_drive_counter = 0;
@@ -34,7 +33,7 @@ IMU::IMU()
 	prev_time1 = 0;
 	dt1 = 0;
 	new_nb1 = 0;
-	subscriber_imu1 = node.subscribe("hw_interface/nb1in/nb1in", 1, &IMU::getIMU1Callback,this);
+  subscriber_imu = node.subscribe("hw_interface/nb1in/nb1in", 1, &IMU::getIMUCallback,this);
 
 	//imu1
 	p1=0;

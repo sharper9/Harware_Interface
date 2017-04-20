@@ -12,17 +12,17 @@ private:
 	ros::Subscriber subscriber_imu;
 	ros::NodeHandle node;
 	
-	//netburner1 imu callback function
+  //netburner imu callback function
 	void getIMUCallback(const messages::nb1_to_i7_msg::ConstPtr &msg)
 	{
 		//ROS_INFO("imu_callback 1 \n");
-		this->p1 = msg->rate_p1*3.1419527/180; //radians
-		this->q1 = msg->rate_q1*3.1419527/180; //radians
-		this->r1 = msg->rate_r1*3.1419527/180; //radians
-		this->ax1 = msg->acc_x1; //G's
-		this->ay1 = msg->acc_y1; //G's
-		this->az1 = msg->acc_z1; //G's
-		this->imu_1_good = msg->imu_1_good; //G's
+    this->p1 = msg->rate_p*3.1419527/180; //radians // TODO: Check this - quick fix to compile
+    this->q1 = msg->rate_q*3.1419527/180; //radians // TODO: Check this
+    this->r1 = msg->rate_r*3.1419527/180; //radians // TODO: Check this
+    this->ax1 = msg->acc_x; //G's // TODO: Check this
+    this->ay1 = msg->acc_y; //G's // TODO: Check this
+    this->az1 = msg->acc_z; //G's // TODO: Check this
+    this->imu_1_good = msg->pause_switch; //G's // TODO: Check this
 		this->nb1_counter=msg->counter; //counter from nb
 		this->call_counter1=this->call_counter1+1; //increments each time function executed
 		this->time1=msg->nb_clock; //time since object instantiated

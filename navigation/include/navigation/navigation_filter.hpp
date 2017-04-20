@@ -7,9 +7,8 @@
 #include <messages/ExecInfo.h>
 #include <messages/MissionPlanningInfo.h>
 #include <messages/NavFilterOut.h>
-#include <messages/LidarFilterOut.h>
- 
-#include <messages/NavFilterControl.h> //added for new User Interface -Matt G.
+
+//#include <messages/NavFilterControl.h> //added for new User Interface -Matt G.
 
 #define DEG_2_RAD (PI/180.0)
 #define RAD_2_DEG (180.0/PI)
@@ -20,16 +19,19 @@ class NavigationFilter
 		// Methods
 		NavigationFilter();
 		void update_time();
-		void waiting(User_Input_Nav_Act user_input_nav_act);
-		void forklift_drive(User_Input_Nav_Act user_input_nav_act);
-	    void run(User_Input_Nav_Act user_input_nav_act);
+    // TODO: Check this, User_Input_Nav_Act from cataglyphis hsm - commented out for compiling
+//		void waiting(User_Input_Nav_Act user_input_nav_act);
+//		void forklift_drive(User_Input_Nav_Act user_input_nav_act);
+//    void run(User_Input_Nav_Act user_input_nav_act);
+    void run();
 	    //added for new User Interface -Matt G.
-	    bool navFilterControlServiceCallback(messages::NavFilterControl::Request request, messages::NavFilterControl::Response response);
+//	    bool navFilterControlServiceCallback(messages::NavFilterControl::Request request, messages::NavFilterControl::Response response);
 		// Members
 		ros::NodeHandle nh;
 
 	    ros::ServiceServer nav_control_server;
-	    messages::NavFilterControl::Request latest_nav_control_request;
+      // TODO: Check this - commented out to compile
+//	    messages::NavFilterControl::Request latest_nav_control_request;
 
 		ros::Subscriber sub_exec;
 		bool pause_switch;
@@ -39,6 +41,7 @@ class NavigationFilter
 		Encoders encoders;
 		IMU imu;
 		Filter filter;
+    Filter init_filter; // TODO: check this - added for lines 68-70 in navigation_filter_node.cpp
 
 		double current_time;
 		double stop_time;
@@ -59,7 +62,7 @@ class NavigationFilter
 		void getExecInfoCallback(const messages::ExecInfo::ConstPtr &msg);
 
 	    //added for new User Interface -Matt G.
-	    bool navFilterControlServiceCallback(messages::NavFilterControl::Request &request, messages::NavFilterControl::Response &response);
+//	    bool navFilterControlServiceCallback(messages::NavFilterControl::Request &request, messages::NavFilterControl::Response &response);
 };
 
 #endif // NAVIGATION_FILTER_H

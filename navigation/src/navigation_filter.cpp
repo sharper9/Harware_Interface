@@ -1,7 +1,7 @@
 #include <navigation/navigation_filter.hpp>
 
 NavigationFilter::NavigationFilter()
-{ 
+{
 	sub_exec = nh.subscribe("/control/exec/info", 1, &NavigationFilter::getExecInfoCallback, this);
 	pause_switch = false;
 	stopFlag = false;
@@ -9,8 +9,8 @@ NavigationFilter::NavigationFilter()
 
 	filter.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
 
-	encoders.set_wheel_radius(0.2286/2);
-	encoders.set_counts_per_revolution(4476.16*1.062);
+	encoders.set_wheel_radius(0.2286/2); //TODO
+	encoders.set_counts_per_revolution(4476.16*1.062); //TODO
 	current_time = ros::Time::now().toSec();
 
     //added for new User Interface -Matt G.
@@ -20,9 +20,9 @@ NavigationFilter::NavigationFilter()
         //if the parameter does not exist, use this default one
         tempServiceName = "/navigation/navigationfilter/control";
     }
-    nav_control_server = nh.advertiseService(tempServiceName,
-                                                &NavigationFilter::navFilterControlServiceCallback,
-                                                    this);
+//    nav_control_server = nh.advertiseService(tempServiceName,
+//                                                &NavigationFilter::navFilterControlServiceCallback,
+//                                                    this);
 
 }
 
@@ -44,11 +44,13 @@ void NavigationFilter::run()
 
 		if (imu.new_nb1!=0)
 		{
-			filter1.turning(imu.nb1_p,imu.nb1_q,imu.nb1_r,imu.dt1);
+      // TODO: Check this - changed from filter1 to filter
+      filter.turning(imu.nb1_p,imu.nb1_q,imu.nb1_r,imu.dt1);
 		}
 		else
 		{
-			filter1.blind_turning(imu.nb1_p,imu.nb1_q,imu.nb1_r,imu.dt1);
+      // TODO: Check this - changed from filter1 to filter
+      filter.blind_turning(imu.nb1_p,imu.nb1_q,imu.nb1_r,imu.dt1);
 		}
 
 		filter.clear_accelerometer_values();
@@ -69,7 +71,7 @@ void NavigationFilter::run()
 		{
 			collecting_accelerometer_data = true;
 		}
-	
+
 		if ((fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.05 && sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.005) && encoders.delta_distance == 0)
 		{
 			if (collecting_accelerometer_data)
@@ -88,14 +90,15 @@ void NavigationFilter::run()
 					}
 				}
 			}
-			if (latest_nav_control_request.runBiasRemoval)
-			{
-				if (imu.p1_values.size() > 500 && collected_gyro1_data!=true)
+      // TODO: latest_nav_control_request compile error
+      if (latest_nav_control_request.runBiasRemoval) // TODO: Check this
+      {
+        if (imu.p1_values.size() > 500 && collected_gyro_data!=true)
 				{
 					imu.calculate_gyro1_offset();
 					if(imu.good_bias1)
 					{
-						collected_gyro1_data = true;
+            collected_gyro_data = true;
 						imu.set_gyro1_offset();
                                                 filter.Q_phi = 2.2847e-008;
                                                 filter.Q_theta = 2.2847e-008;
@@ -106,14 +109,14 @@ void NavigationFilter::run()
 						imu.clear_gyro1_values();
 					}
 				}
-				else if (collected_gyro1_data==true)
+        else if (collected_gyro_data==true)
 				{
-					collected_gyro1_data = true;
+          collected_gyro_data = true;
 				}
 				else
 				{
 					imu.collect_gyro1_data();
-					collected_gyro1_data = false;
+          collected_gyro_data = false;
 				}
 			}
 		}
@@ -174,8 +177,9 @@ void NavigationFilter::run()
             stop_time = ros::Time::now().toSec();
 	}
 
-	if (latest_nav_control_request.runBiasRemoval && collected_gyro_data)
-	{
+   // TODO: latest_nav_control_request compile error
+  if (latest_nav_control_request.runBiasRemoval && collected_gyro_data)
+  {
             nav_status_output = 1;
 	}
 	else
@@ -193,20 +197,20 @@ void NavigationFilter::getExecInfoCallback(const messages::ExecInfo::ConstPtr &m
 	this->stopFlag = msg->stopFlag;
 }
 
-//added for new User Interface -Matt G.
-bool NavigationFilter::navFilterControlServiceCallback(messages::NavFilterControl::Request &request, messages::NavFilterControl::Response &response)
-{
-    this->latest_nav_control_request = request;
-    response.pOffset = imu.p_offset;
-    response.qOffset = imu.q_offset;
-    response.rOffset = imu.r_offset;
-    
-    if(request.setGlobalPose)
-    {
-        ROS_INFO("Teleporting to new Location");
-        filter.initialize_states(filter.phi,filter.theta,request.newHeading*DEG_2_RAD,request.newX,request.newY,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y); //phi,theta,psi,x,y,P_phi,P_theta,P_psi,P_x,P_y    	
-        homing_updated = true;
-    }
-    
-    return true;
-}
+////added for new User Interface -Matt G.
+//bool NavigationFilter::navFilterControlServiceCallback(messages::NavFilterControl::Request &request, messages::NavFilterControl::Response &response)
+//{
+//    this->latest_nav_control_request = request;
+//    response.pOffset = imu.p_offset;
+//    response.qOffset = imu.q_offset;
+//    response.rOffset = imu.r_offset;
+
+//    if(request.setGlobalPose)
+//    {
+//        ROS_INFO("Teleporting to new Location");
+//        filter.initialize_states(filter.phi,filter.theta,request.newHeading*DEG_2_RAD,request.newX,request.newY,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y); //phi,theta,psi,x,y,P_phi,P_theta,P_psi,P_x,P_y
+//        homing_updated = true;
+//    }
+
+//    return true;
+//}

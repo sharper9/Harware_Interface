@@ -71,6 +71,7 @@ find_package(catkin REQUIRED COMPONENTS
    ExecAction.srv
    MissionPlanningControl.srv
    ExecManualOverride.srv
+   NavFilterControl.srv
  )
 
 ## Generate actions in the 'action' folder

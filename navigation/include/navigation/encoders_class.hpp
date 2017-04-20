@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <messages/encoder_data.h>
+#include <hw_interface_plugin_roboteq/Roboteq_Data.h>
 
 #ifndef ENCODERS_CLASS_HPP
 #define ENCODERS_CLASS_HPP
@@ -11,31 +12,24 @@ private:
 	ros::Subscriber subscriber_encoder_right;
 	ros::NodeHandle node;
 
-	// TODO: This callback needs to be updated for new roboteq feedback format
-	void getEncoderLeftCallback(const messages::encoder_data::ConstPtr &msg)
+  void getEncoderLeftCallback(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr &msg)
 	{
 		this->fl_prev = this->fl;
 		this->bl_prev = this->bl;
-		this->fl = msg->motor_1_encoder_count;
-		this->ml = msg->motor_2_encoder_count;
-		this->bl = msg->motor_3_encoder_count;
+		this->fl = msg->absolute_brushless_counter[1]; // TODO: double check roboteq channel
+		this->bl = msg->absolute_brushless_counter[0]; // TODO
 		this->fl_diff = this->fl - this->fl_prev;
-		this->ml_diff = this->ml - this->ml_prev;
 		this->bl_diff = this->bl - this->bl_prev;
 		this->counter_left=this->counter_left+1;
 	}
 
-	// TODO: This callback needs to be updated for new roboteq feedback format
-	void getEncoderRightCallback(const messages::encoder_data::ConstPtr &msg)
+  void getEncoderRightCallback(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr &msg)
 	{
 		this->fr_prev = this->fr;
-		this->mr_prev = this->mr;
 		this->br_prev = this->br;
-		this->fr = msg->motor_1_encoder_count;
-		this->mr = msg->motor_2_encoder_count;
-		this->br = msg->motor_3_encoder_count;
+		this->fr = msg->absolute_brushless_counter[1]; //TODO: double check roboteq channel
+		this->br = msg->absolute_brushless_counter[0]; //TODO
 		this->fr_diff = this->fr - this->fr_prev;
-		this->mr_diff = this->mr - this->mr_prev;
 		this->br_diff = this->br - this->br_prev;
 		this->counter_right=this->counter_right+1;
 	}
