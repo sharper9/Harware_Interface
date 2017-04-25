@@ -200,10 +200,10 @@ void Exec::packActuatorMsgOut_()
 	actuatorMsgOut_.fr_speed_cmd = robotOutputs.frMotorSpeed;
 	actuatorMsgOut_.bl_speed_cmd = robotOutputs.blMotorSpeed;
 	actuatorMsgOut_.br_speed_cmd = robotOutputs.brMotorSpeed;
-    actuatorMsgOut_.scoop_pos_cmd = robotOutputs.scoopPosCmd;
+    actuatorMsgOut_.wrist_pos_cmd = robotOutputs.scoopPosCmd;
     actuatorMsgOut_.arm_pos_cmd = robotOutputs.armPosCmd;
     actuatorMsgOut_.bucket_pos_cmd = robotOutputs.bucketPosCmd;
-    actuatorMsgOut_.scoop_stop_cmd = robotOutputs.scoopStopCmd;
+    actuatorMsgOut_.wrist_stop_cmd = robotOutputs.scoopStopCmd;
     actuatorMsgOut_.arm_stop_cmd = robotOutputs.armStopCmd;
     actuatorMsgOut_.bucket_stop_cmd = robotOutputs.bucketStopCmd;
 }
