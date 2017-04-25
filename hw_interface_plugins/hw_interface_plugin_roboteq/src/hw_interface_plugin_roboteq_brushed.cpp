@@ -20,15 +20,14 @@ bool hw_interface_plugin_roboteq::brushed::implStart()
    * 4. send '# 20' to have runtime queries repeated at 20 ms delta (50 hz)
    */
   std::string initializationCmd = "";
+  int initCmdCycle = 0;
   if(ros::param::get(pluginName+"/initializationCmd", initializationCmd))
   {
-    if (!command_list[initializationCmd].length())
+    if (!ros::param::get(pluginName+"/initCmdCycle", initCmdCycle))
     {
-      ROS_WARN("Roboteq initialization command was not found, defaulting...");
-      initializationCmd = "\r^ECHOF 1\r# C\r?AIC\r# 20\r";
+      initCmdCycle = 20;
     }
-
-    initializationCmd = "?" + command_list[initializationCmd] + "\r# 20 \r";
+    initializationCmd = hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(initializationCmd, initCmdCycle);
   }
   else
   {

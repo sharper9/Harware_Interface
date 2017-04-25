@@ -101,12 +101,11 @@ void hw_interface::addInterfacePlugins()
         {
             try
             {
-                ROS_INFO("Found Plugin Class %s::%s", mapIterator->first.c_str(), mapIterator->second.c_str());
-                std::string pluginClassName = "";
-                pluginClassName += mapIterator->first + "::" + mapIterator->second;
+                std::string pluginClassName = mapIterator->second + "::" + mapIterator->first;
+                ROS_INFO("Found Plugin Class %s", pluginClassName.c_str());
                 ROS_INFO("Description: %s", pluginLoader.getClassDescription(pluginClassName).c_str());
                 std::map<std::string, std::string> instanceNameMap;
-                if(ros::param::get(mapIterator->second, instanceNameMap))
+                if(ros::param::get(mapIterator->first, instanceNameMap))
                 {
                     for(std::map<std::string, std::string>::iterator nameIterator = instanceNameMap.begin();
                             nameIterator != instanceNameMap.end();

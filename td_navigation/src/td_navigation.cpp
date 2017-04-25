@@ -432,7 +432,11 @@ int main(int argc, char **argv)
 
 
       }else {
+<<<<<<< HEAD
         ROS_DEBUG("Problem encountered with triangulation!");
+=======
+        ROS_ERROR("NumberOfErrorsInLast%d: %d", worker.average_length, worker.set_error());
+>>>>>>> 145f008bc080411e1d74e2f5b979e143061a41a9
       }
 
   //update count

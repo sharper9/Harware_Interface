@@ -1,7 +1,0 @@
-float32 globalX
-float32 globalY
-float32 globalHeading
-int32 keyframeIndex
-float32 keyframeRelX
-float32 keyframeRelY
-float32 keyframeRelHeading

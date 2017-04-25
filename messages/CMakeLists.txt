@@ -55,39 +55,22 @@ find_package(catkin REQUIRED COMPONENTS
    NavFilterOut.msg
    Servo_command.msg
    Servo_status.msg
-   GrabberFeedback.msg
-   SimControl.msg
-   CVSampleProps.msg
-   CVSamplesFound.msg
-   Keyframe.msg
-   KeyframeList.msg
-   LidarFilterOut.msg
-   CollisionOut.msg
-   SLAMPoseOut.msg
    RobotPose.msg
-   DriveabilityHazards.msg
+   MissionPlanningInfo.msg
+   NextWaypointOut.msg
    #added for Comm port, remove
    nb1_to_i7_msg.msg
    nb2_3_to_i7_msg.msg
    i7_to_nb1_msg.msg
    encoder_data.msg
-   LidarFilterOut.msg
-   CollisionOut.msg
-   SLAMPoseOut.msg
-   LocalMap.msg
  )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
    ExecAction.srv
-   CVSearchCmd.srv
-   MapSegment.srv
-   NavFilterControl.srv
-   CreateROIKeyframe.srv
-   SearchLocalMapInfo.srv
-   GlobalMapPathHazards.srv
-   EmergencyEscapeTrigger.srv
+   MissionPlanningControl.srv
+   ExecManualOverride.srv
  )
 
 ## Generate actions in the 'action' folder

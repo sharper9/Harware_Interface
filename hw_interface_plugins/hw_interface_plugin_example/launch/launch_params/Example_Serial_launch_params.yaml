@@ -1,6 +1,6 @@
 plugin_names: 
     {
-        hw_interface_plugin_example: example_serial,
+        example_serial : hw_interface_plugin_example,
     }
     
 example_serial:
