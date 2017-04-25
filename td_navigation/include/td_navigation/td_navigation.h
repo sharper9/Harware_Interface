@@ -22,46 +22,43 @@ namespace td_navigation
   class worker
   {
   public:
-    worker();
+    worker(int average_length_val, double base_station_distance_val,
+           int rad_L_val, int rad_R_val, int z_estimate_val,
+           int robot_length_offset_val);
 
     bool confirmed;
     int count;
     int selector;
 
     int average_length;
-    double dStation;
+    double base_station_distance;
     int rad_L;
     int rad_R;
+    double z_estimate;
+    double robot_length_offset;
 
-    double rad104_DistL;
-    double rad104_DistR;
+    double x, y, bearing, heading;
 
-    double rad105_DistL;
-    double rad105_DistR;
 
-    std::vector<double> headings;
-    std::vector<double> bearings;
-    std::vector<double> x;
-    std::vector<double> y;
+    std::vector < std::vector<double> > dist0_l;
+    std::vector < std::vector<double> > dist0_r;
+    std::vector < std::vector<double> > dist1_l;
+    std::vector < std::vector<double> > dist1_r;
 
-    bool send_and_recieve(int& to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub);
+    int add_distance(std::vector < std::vector<double> >& distances, double range, double error);
+    bool send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub);
     void radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
     bool srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res);
-    void set_current_heading(double heading);
-    void set_current_bearing(double bearing);
-    void set_current_pos_x(double pos_x);
-    void set_current_pos_y(double pos_y);
+    int set_current_pos(double x_val, double y_val, double bearing_val, double heading_val);
+    double get_avg_dist0_l(int amount_to_avg);
+    double get_avg_dist0_r(int amount_to_avg);
+    double get_avg_dist1_l(int amount_to_avg);
+    double get_avg_dist1_r(int amount_to_avg);
     double get_current_heading();
     double get_current_bearing();
     double get_current_pos_x();
     double get_current_pos_y();
-    void update_sums();
-    double get_avg_heading();
-    double get_avg_bearing();
-    double get_avg_x();
-    double get_avg_y();
     void update_count();
-    int set_error();
 
 
   };
