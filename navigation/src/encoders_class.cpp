@@ -22,9 +22,10 @@ Encoders::Encoders()
   impossible_encoder_diff=10000; // TODO: check this
 	spike_diff = 1000;
 	wheel_radius=0;
-	counts_per_revolution=1;
-    subscriber_encoder_left = node.subscribe("roboteq/drivemotorin/left", 1, &Encoders::getEncoderLeftCallback,this); // TODO: update topic name
-    subscriber_encoder_right = node.subscribe("roboteq/drivemotorin/right", 1, &Encoders::getEncoderRightCallback,this); // TODO: update topic name
+  counts_per_revolution_front=1;
+  counts_per_revolution_back=1;
+  subscriber_encoder_left = node.subscribe("roboteq/drivemotorin/left", 1, &Encoders::getEncoderLeftCallback,this); // TODO: update topic name
+  subscriber_encoder_right = node.subscribe("roboteq/drivemotorin/right", 1, &Encoders::getEncoderRightCallback,this); // TODO: update topic name
 }
 
 void Encoders::set_wheel_radius(double set_radius)
@@ -32,10 +33,16 @@ void Encoders::set_wheel_radius(double set_radius)
 	wheel_radius=set_radius;
 }
 
-void Encoders::set_counts_per_revolution(double set_counts)
+void Encoders::set_counts_per_revolution_front(double set_counts)
 {
-	counts_per_revolution=set_counts;
+  counts_per_revolution_front=set_counts;
 }
+
+void Encoders::set_counts_per_revolution_back(double set_counts)
+{
+  counts_per_revolution_back=set_counts;
+}
+
 // TODO
 void Encoders::adjustEncoderWrapError()
 {
@@ -72,8 +79,8 @@ void Encoders::calculateWheelDistancesFromEncoders()
 {
 	if(this->counter_left_prev != this->counter_left)
 	{
-		fl_dist = (double)fl_diff/(double)counts_per_revolution*2.0*wheel_radius*3.14159265;
-		bl_dist = (double)bl_diff/(double)counts_per_revolution*2.0*wheel_radius*3.14159265;
+    fl_dist = (double)fl_diff/(double)counts_per_revolution_front*2.0*wheel_radius*3.14159265;
+    bl_dist = (double)bl_diff/(double)counts_per_revolution_back*2.0*wheel_radius*3.14159265;
 	}
 	else
 	{
@@ -84,8 +91,8 @@ void Encoders::calculateWheelDistancesFromEncoders()
 
 	if(this->counter_right_prev != this->counter_right)
 	{
-		fr_dist = (double)fr_diff/(double)counts_per_revolution*2.0*wheel_radius*3.14159265;
-		br_dist = (double)br_diff/(double)counts_per_revolution*2.0*wheel_radius*3.14159265;
+    fr_dist = (double)fr_diff/(double)counts_per_revolution_front*2.0*wheel_radius*3.14159265;
+    br_dist = (double)br_diff/(double)counts_per_revolution_back*2.0*wheel_radius*3.14159265;
 	}
 	else
 	{

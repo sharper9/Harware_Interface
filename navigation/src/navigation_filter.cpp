@@ -9,9 +9,10 @@ NavigationFilter::NavigationFilter()
 
 	filter.initialize_states(0,0,PI,1,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
 
-	encoders.set_wheel_radius(0.2286/2); //TODO
-	encoders.set_counts_per_revolution(4476.16*1.062); //TODO
-	current_time = ros::Time::now().toSec();
+  encoders.set_wheel_radius(REG_WHEEL_RADIUS);
+  encoders.set_counts_per_revolution_front(REG_WHEEL_COUNTS_PER_REV_FRONT);
+  encoders.set_counts_per_revolution_back(REG_WHEEL_COUNTS_PER_REV_BACK);
+  current_time = ros::Time::now().toSec();
 
     //added for new User Interface -Matt G.
     std::string tempServiceName = "";

@@ -16,8 +16,8 @@ private:
 	{
 		this->fl_prev = this->fl;
 		this->bl_prev = this->bl;
-		this->fl = msg->absolute_brushless_counter[1]; // TODO: double check roboteq channel
-		this->bl = msg->absolute_brushless_counter[0]; // TODO
+    this->fl = msg->absolute_brushless_counter[0]; // TODO: double check roboteq channel
+    this->bl = msg->absolute_brushless_counter[1]; // TODO
 		this->fl_diff = this->fl - this->fl_prev;
 		this->bl_diff = this->bl - this->bl_prev;
 		this->counter_left=this->counter_left+1;
@@ -27,8 +27,8 @@ private:
 	{
 		this->fr_prev = this->fr;
 		this->br_prev = this->br;
-		this->fr = msg->absolute_brushless_counter[1]; //TODO: double check roboteq channel
-		this->br = msg->absolute_brushless_counter[0]; //TODO
+    this->fr = msg->absolute_brushless_counter[0]; //TODO: double check roboteq channel
+    this->br = msg->absolute_brushless_counter[1]; //TODO
 		this->fr_diff = this->fr - this->fr_prev;
 		this->br_diff = this->br - this->br_prev;
 		this->counter_right=this->counter_right+1;
@@ -59,7 +59,9 @@ public:
 	long int spike_diff;
 	float wheel_radius;
 	double delta_distance;
-	int counts_per_revolution;
+  int counts_per_revolution_front;
+  int counts_per_revolution_back;
+
 	Encoders();
 	void set_wheel_radius(double set_radius);
 	void set_counts_per_revolution(double set_counts);
