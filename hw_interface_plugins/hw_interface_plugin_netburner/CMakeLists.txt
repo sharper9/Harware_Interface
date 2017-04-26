@@ -6,9 +6,9 @@ project(hw_interface_plugin_netburner)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   hw_interface
-  messages
   pluginlib
   roscpp
+  messages
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,11 +45,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
+add_message_files(
+  FILES
+  IMUUpdate.msg
 #   Message2.msg
-# )
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +66,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
+ generate_messages(
+   DEPENDENCIES
 #   std_msgs  # Or other packages containing msgs
-# )
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -105,7 +105,7 @@ add_definitions("-std=gnu++11")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES hw_interface_plugin_netburner
-  CATKIN_DEPENDS hw_interface messages pluginlib roscpp
+  CATKIN_DEPENDS hw_interface pluginlib roscpp messages
 #  DEPENDS system_lib
 )
 
@@ -127,7 +127,8 @@ add_library(hw_interface_plugin_netburner_UDP   src/hw_interface_plugin_netburne
 
 add_dependencies(hw_interface_plugin_netburner_UDP ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
                     hw_interface
-                    messages_generate_messages)
+            #        messages_generate_messages
+            )
 
 ## Declare a C++ library
 # add_library(hw_interface_plugin_netburner
