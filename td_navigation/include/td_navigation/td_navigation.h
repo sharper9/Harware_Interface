@@ -50,6 +50,7 @@ namespace td_navigation
     void radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
     bool srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res);
     int set_current_pos(double x_val, double y_val, double bearing_val, double heading_val);
+    double get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg);
     double get_avg_dist0_l(int amount_to_avg);
     double get_avg_dist0_r(int amount_to_avg);
     double get_avg_dist1_l(int amount_to_avg);

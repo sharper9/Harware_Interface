@@ -44,7 +44,7 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
   int wait = 0;
   int timeout = 0;
   //TODO: change back to about 200
-  ros::Rate loop_rate(2);
+  ros::Rate loop_rate(20);
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -67,7 +67,9 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
 int td_navigation::worker::add_distance(std::vector < std::vector<double> >& distances,
                                         double range, double error){
   std::vector< std::vector<double> >::iterator it = distances.begin();
-  std::vector<double> range_and_error(range, error);
+  std::vector<double> range_and_error;
+  range_and_error.push_back(range);
+  range_and_error.push_back(error);
 
   if(distances.size() == average_length){
     distances.pop_back();
@@ -101,7 +103,7 @@ void td_navigation::worker::radCallBack(const hw_interface_plugin_timedomain::RC
         if(msg->msgID == count && selector == 0){
             ROS_INFO("Reading from rad0 to leftRad");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-            add_distance(dist0_l, msg->PRM, msg->PRMError);
+            add_distance(dist0_l, (double)msg->PRM, (double)msg->PRMError);
             confirmed = true;
             return;
 
@@ -157,25 +159,20 @@ res.fail = false;
 return true;
 }
 
-double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
+double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg){
   double top = 0;
   double bottom = 0;
   int max = 0;
 
-  if(amount_to_avg <= dist0_l.size()){
+  if(amount_to_avg <= dist.size()){
     max = amount_to_avg;
   }else{
-    max = dist0_l.size();
+    max = dist.size();
   }
-
   for(int i = 0; i < max; i++){
-    if (dist0_l[i][1] == 0){
-      top += dist0_l[i][0];
-      bottom += 1;
-    }else{
-      top += dist0_l[i][0] * (1/dist0_l[i][1]);
-      bottom += 1/dist0_l[i][1];
-    }
+
+    top += dist[i][0] * (65535 - dist[i][1]);
+    bottom += (65535 - dist[i][1]);
   }
 
   if(bottom == 0){
@@ -186,91 +183,21 @@ double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
 
 }
 
+double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
+  return get_avg_dist(dist0_l, amount_to_avg);
+}
+
 double td_navigation::worker::get_avg_dist0_r(int amount_to_avg){
-  double top = 0;
-  double bottom = 0;
-  int max = 0;
-
-  if(amount_to_avg <= dist0_r.size()){
-    max = amount_to_avg;
-  }else{
-    max = dist0_r.size();
-  }
-
-  for(int i = 0; i < max; i++){
-    if (dist0_r[i][1] == 0){
-      top += dist0_r[i][0];
-      bottom += 1;
-    }else{
-      top += dist0_r[i][0] * (1/dist0_r[i][1]);
-      bottom += 1/dist0_r[i][1];
-    }
-  }
-
-  if(bottom == 0){
-    return 0;
-  }
-
-  return top/bottom;
+  return get_avg_dist(dist0_r, amount_to_avg);
 
 }
 
 double td_navigation::worker::get_avg_dist1_l(int amount_to_avg){
-  double top = 0;
-  double bottom = 0;
-  int max = 0;
-
-  if(amount_to_avg <= dist1_l.size()){
-    max = amount_to_avg;
-  }else{
-    max = dist1_l.size();
-  }
-
-  for(int i = 0; i < max; i++){
-    if (dist1_l[i][1] == 0){
-      top += dist0_l[i][0];
-      bottom += 1;
-    }else{
-      top += dist1_l[i][0] * (1/dist1_l[i][1]);
-      bottom += 1/dist1_l[i][1];
-    }
-  }
-
-  if(bottom == 0){
-    return 0;
-  }
-
-  return top/bottom;
-
+  return get_avg_dist(dist1_l, amount_to_avg);
 }
 
 double td_navigation::worker::get_avg_dist1_r(int amount_to_avg){
-  double top = 0;
-  double bottom = 0;
-  int max = 0;
-
-  if(amount_to_avg <= dist1_r.size()){
-    max = amount_to_avg;
-  }else{
-    max = dist1_r.size();
-  }
-
-  for(int i = 0; i < max; i++){
-    if (dist1_r[i][1] == 0){
-      top += dist1_r[i][0];
-      bottom += 1;
-    }else{
-      top += dist1_r[i][0] * (1/dist1_r[i][1]);
-      bottom += 1/dist1_r[i][1];
-    }
-  }
-
-  if(bottom == 0){
-    return 0;
-  }
-
-  return top/bottom;
-
+  return get_avg_dist(dist1_r, amount_to_avg);
 }
 
 int td_navigation::worker::set_current_pos(double x_val, double y_val,
@@ -303,7 +230,7 @@ void td_navigation::worker::update_count(){
   count++;
 }
 
-double smart_atan(double x, double y);
+double smart_atan(double adj, double opp);
 
 int main(int argc, char **argv)
 {
@@ -316,11 +243,10 @@ int main(int argc, char **argv)
   ros::init(argc, argv, node_type);
   ROS_INFO(" - ros::init complete");
 
-  td_navigation::worker worker(20, 1930.4, 101, 106, 0, 750);
+  td_navigation::worker worker(20, 625.5, 101, 106, 0, 0);
   radio_nav rad_nav;
   rad_nav.create_base_radio(0, -1.0 * worker.base_station_distance/2.0, 0);
   rad_nav.create_base_radio(0, worker.base_station_distance/2.0, 0);
-  rad_nav.create_mobile_radio();
   rad_nav.create_mobile_radio();
   rad_nav.create_mobile_radio();
   double x, y, heading, bearing;
@@ -389,42 +315,43 @@ int main(int argc, char **argv)
 
       std::vector<double> distance_to_base_rads;
 
-      ROS_INFO("TEST: 1");
+
       distance_to_base_rads.push_back(worker.get_avg_dist0_l(20));
       distance_to_base_rads.push_back(worker.get_avg_dist0_r(20));
       rad_nav.update_mobile_radio(0,distance_to_base_rads);
-      ROS_INFO("TEST: 2");
+
 
       distance_to_base_rads[0] = worker.get_avg_dist1_l(20);
       distance_to_base_rads[1] = worker.get_avg_dist1_r(20);
       rad_nav.update_mobile_radio(1,distance_to_base_rads);
-      ROS_INFO("TEST: 3");
+
 
 
 
       if (rad_nav.triangulate_2Base(worker.z_estimate) == 0){
-        ROS_INFO("TEST: 4");
+
 
         heading = -smart_atan( (rad_nav.get_mobile_radio_coordinate(1,1) - rad_nav.get_mobile_radio_coordinate(0,1)),
                               (rad_nav.get_mobile_radio_coordinate(1,0) - rad_nav.get_mobile_radio_coordinate(0,0)) );
-        ROS_INFO("TEST: 5");
+
         x = ( (rad_nav.get_mobile_radio_coordinate(0,0) + rad_nav.get_mobile_radio_coordinate(1,0)) / 2.0 ) +
-             cos(heading) * worker.robot_length_offset;
-        ROS_INFO("TEST: 6");
+             (sin(heading) * worker.robot_length_offset);
+
         y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
-             sin(heading) * worker.robot_length_offset;
-        ROS_INFO("TEST: 7");
+             (cos(heading) * worker.robot_length_offset);
+
         bearing = smart_atan(x,y);
-        ROS_INFO("TEST: 8");
-        worker.set_current_pos(x, y, heading * 180.0 / PI, bearing * 180.0 / PI);
-        ROS_INFO("TEST: 9");
-        ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading, bearing, x, y );
-        ROS_INFO("TEST: 10");
+
+
+        worker.set_current_pos(x, y, heading , bearing);
+
+        ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
+        
 
         td_navigation::Average_angle aa;
 
-        aa.heading = heading;
-        aa.bearing = bearing;
+        aa.heading = heading * 180.0 / PI;
+        aa.bearing = bearing * 180.0 / PI;
         aa.x = x;
         aa.y = y;
 
@@ -432,11 +359,8 @@ int main(int argc, char **argv)
 
 
       }else {
-<<<<<<< HEAD
         ROS_DEBUG("Problem encountered with triangulation!");
-=======
-        ROS_ERROR("NumberOfErrorsInLast%d: %d", worker.average_length, worker.set_error());
->>>>>>> 145f008bc080411e1d74e2f5b979e143061a41a9
+
       }
 
   //update count
@@ -451,15 +375,15 @@ int main(int argc, char **argv)
   return 0;
 }
 
-double smart_atan(double x, double y){
-      if (x == 0 && y >= 0){
+double smart_atan(double adj, double opp){
+      if (adj == 0 && opp >= 0){
         return PI / 2.0;
-      }else if (x == 0 && y < 0){
+      }else if (adj == 0 && opp < 0){
         return -1 * PI / 2.0;
-      }else if (x < 0){
-        return atan(y/x) + PI;
+      }else if (adj < 0){
+        return atan(opp/adj) + PI;
       }else {
-        return atan(y/x);
+        return atan(opp/adj);
       }
       return -500;
 }
