@@ -1,38 +1,64 @@
 #include <td_navigation/td_navigation.h>
 
 #define PI 3.14159265
-#define ERRNUM -200000000.1
+//#define ERRNUM -200000000.1
 
-td_navigation::worker::worker()
+td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
+                              int rad_L_val, int rad_R_val, int z_estimate_val,
+                              int robot_length_offset_val)
 {
-  average_length = 20;
-  dStation =  1930.4;
-  rad_L =  101;
-  rad_R = 106;
-
 
   confirmed = 0;
   count = 0;
   selector = 0 ;
 
-  rad104_DistL = 0;
-  rad104_DistR = 0;
+  average_length = average_length_val;
+  base_station_distance = base_station_distance_val;
+  rad_L = rad_L_val;
+  rad_R = rad_R_val;
+  z_estimate = z_estimate_val;
+  robot_length_offset = robot_length_offset_val;
 
-  rad105_DistL = 0;
-  rad105_DistR = 0;
+  dist0_l.reserve(average_length);
+  dist0_r.reserve(average_length);
+  dist1_l.reserve(average_length);
+  dist1_r.reserve(average_length);
 
-  headings.reserve(average_length);
-  bearings.reserve(average_length);
-  x.reserve(average_length);
-  y.reserve(average_length);
+  rad_nav.create_base_radio(0, -1.0 * base_station_distance/2.0, 0);
+  rad_nav.create_base_radio(0, base_station_distance/2.0, 0);
+  rad_nav.create_mobile_radio();
+  rad_nav.create_mobile_radio();
+
+  ros::NodeHandle nh;
+  ROS_INFO(" - node handle created");
+
+  ros::ServiceServer service = nh.advertiseService("localize", &td_navigation::worker::srvCallBack, this);
+  ROS_INFO("td_navigation node ready to Localize");
+
+  //subscriber for recieving messages
+  mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::rad_L_CallBack, this);
+  mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::rad_R_CallBack, this);
+
+
+  //publisher for sending a message to timedomain serial to get a range request
+  mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
+  mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
+
+  //publisher for getting average angle measurements
+  aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
+
+  while(nh.ok())
+  {
+    run();
+  }
 }
 
 
-bool td_navigation::worker::send_and_recieve(int& to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
+bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
   int wait = 0;
   int timeout = 0;
   //TODO: change back to about 200
-  ros::Rate loop_rate(500);
+  ros::Rate loop_rate(20000);
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -52,7 +78,23 @@ bool td_navigation::worker::send_and_recieve(int& to, hw_interface_plugin_timedo
   return true;
 }
 
-void td_navigation::worker::radCallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
+int td_navigation::worker::add_distance(std::vector < std::vector<double> >& distances,
+                                        double range, double error){
+  std::vector< std::vector<double> >::iterator it = distances.begin();
+  std::vector<double> range_and_error;
+  range_and_error.push_back(range);
+  range_and_error.push_back(error);
+
+  if(distances.size() == average_length){
+    distances.pop_back();
+  }
+
+  distances.insert(it, range_and_error);
+
+  return 0;
+}
+
+void td_navigation::worker::rad_L_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
     ROS_INFO("TDRR Navigation Callback");
     //check if the radio was busy
     if (msg->busy == true){
@@ -66,32 +108,26 @@ void td_navigation::worker::radCallBack(const hw_interface_plugin_timedomain::RC
 
     }
 
-    //Selector for assigneing the distance to the correct value
+    //Selector for assigning the distance to the correct value
     if(msg->msgID >=0 && msg->msgID < 32000 ){
+
+      //reading 0 to l
         if(msg->msgID == count && selector == 0){
-            ROS_INFO("Reading from rad0 to leftRad");
+            ROS_INFO("Reading from Mob_0 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-            rad104_DistL = msg->PRM;
-            confirmed = true;
-        }else if(msg-> msgID == count && selector == 1){
-            ROS_INFO("Reading from rad0 to RightRad");
-            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-            rad104_DistR = msg->PRM;
-            confirmed = true;
-            return;
-        }else if(msg-> msgID == count && selector == 2){
-            ROS_INFO("Reading from rad1 to leftRad");
-            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-            rad105_DistL = msg->PRM;
-            confirmed = true;
-            return;
-        }else if(msg-> msgID == count && selector == 3){
-            ROS_INFO("Reading from rad1 to RightRad");
-            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-            rad105_DistR = msg->PRM;
+            add_distance(dist0_l, (double)msg->PRM, (double)msg->PRMError);
             confirmed = true;
             return;
 
+        //reading 1 to l
+      }else if(msg-> msgID == count && selector == 1){
+          ROS_INFO("Reading from Mob_0 to Base_1");
+          ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
+          add_distance(dist1_l, msg->PRM, msg->PRMError);
+          confirmed = true;
+          return;
+
+        //no match
         }else{
             ROS_WARN("TDRR MsgID mismatched!");
             return;
@@ -104,159 +140,315 @@ void td_navigation::worker::radCallBack(const hw_interface_plugin_timedomain::RC
 
 }
 
-bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res){
-  int non_err = 0;
-
-  double h_dev_sum = 0;
-  double b_dev_sum = 0;
-//get the standard deviation
-  for(int i = 0; i < average_length; i++){
-    if (headings[i] != ERRNUM){
-      h_dev_sum += pow(headings[i] - this->get_avg_heading(), 2.0);
-      b_dev_sum += pow(bearings[i] - this->get_avg_bearing(), 2.0);
-      non_err++;
+void td_navigation::worker::rad_R_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
+    ROS_INFO("TDRR Navigation Callback");
+    //check if the radio was busy
+    if (msg->busy == true){
+        ROS_WARN("TDRR was busy");
+        return;
     }
-  }
+    //check if the radio range has failed
+    if (msg->failed == true){
+        ROS_WARN("TDRR request has failed!");
+        return;
 
-if (non_err == 0){
-  res.fail = true;
-  return false;
+    }
+
+
+
+    //Selector for assigning the distance to the correct value
+    if(msg->msgID >=0 && msg->msgID < 32000 ){
+
+      //reading 0 to r
+      if(msg-> msgID == count && selector == 2){
+            ROS_INFO("Reading from Mob_0 to Base_1");
+            ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
+            add_distance(dist0_r, msg->PRM, msg->PRMError);
+            confirmed = true;
+            return;
+
+      //reading 1 to r
+      }else if(msg-> msgID == count && selector == 3){
+          ROS_INFO("Reading from Mob_1 to Base_1");
+          ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
+          add_distance(dist1_r, msg->PRM, msg->PRMError);
+          confirmed = true;
+          return;
+
+        //no match
+        }else{
+            ROS_WARN("TDRR MsgID mismatched!");
+            return;
+        }
+
+    }else{
+        ROS_WARN("TDRR: Recieved MsgID never assigned!");
+    }
+
+
+}
+
+
+
+
+bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
+                                        td_navigation::Localize::Response &res){
+dist0_l.clear();
+dist0_r.clear();
+dist1_l.clear();
+dist1_r.clear();
+
+int max = average_length;
+
+if(req.average_length <= average_length){
+  max = req.average_length;
+}
+
+for(int i = 0; i < max; i++){
+  run();
 }
 
 //service response
-res.x = this->get_avg_x();
-res.y = this->get_avg_y();
-res.heading = this->get_avg_heading();
-res.head_dev = sqrtl(h_dev_sum/non_err);
-res.bearing = this->get_avg_bearing();
-res.bear_dev = sqrtl(b_dev_sum/non_err);
+res.x = x;
+res.y = y;
+res.heading = heading;
+res.bearing = bearing;
+res.avg_error = get_avg_error(req.average_length);
+res.max_error = get_max_error(req.average_length);
+res.min_error = get_min_error(req.average_length);
 res.fail = false;
 
 return true;
 }
 
-void td_navigation::worker::set_current_heading(double heading){
-  headings[count%average_length] = heading;
+double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg){
+  double top = 0;
+  double bottom = 0;
+  int max = 0;
+
+  if(amount_to_avg <= dist.size()){
+    max = amount_to_avg;
+  }else{
+    max = dist.size();
+  }
+  for(int i = 0; i < max; i++){
+
+    top += dist[i][0] * (65535 - dist[i][1]);
+    bottom += (65535 - dist[i][1]);
+  }
+
+  if(bottom == 0){
+    return 0;
+  }
+
+  return top/bottom;
+
 }
 
-void td_navigation::worker::set_current_bearing(double bearing){
-  bearings[count%average_length] = bearing;
+double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
+  return get_avg_dist(dist0_l, amount_to_avg);
 }
 
-void td_navigation::worker::set_current_pos_x(double pos_x){
-  x[count%average_length] = pos_x;
+double td_navigation::worker::get_avg_dist0_r(int amount_to_avg){
+  return get_avg_dist(dist0_r, amount_to_avg);
+
 }
 
-void td_navigation::worker::set_current_pos_y(double pos_y){
-  y[count%average_length] = pos_y;
+double td_navigation::worker::get_avg_dist1_l(int amount_to_avg){
+  return get_avg_dist(dist1_l, amount_to_avg);
 }
+
+double td_navigation::worker::get_avg_dist1_r(int amount_to_avg){
+  return get_avg_dist(dist1_r, amount_to_avg);
+}
+
+int td_navigation::worker::set_current_pos(double x_val, double y_val,
+                                           double bearing_val, double heading_val){
+  x = x_val;
+  y = y_val;
+  bearing = bearing_val;
+  heading = heading_val;
+  return 0;
+}
+
+double td_navigation::worker::get_avg_error(int amount_to_avg){
+  double sum = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    sum += dist0_l[i][1] + dist0_r[i][1] + dist1_l[i][1] + dist1_r[i][1];
+  }
+
+  return sum/(max * 4);
+}
+
+double td_navigation::worker::get_max_error(int amount_to_avg){
+  double max_err = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    max_err = std::max(dist0_l[i][1], max_err);
+    max_err = std::max(dist0_r[i][1], max_err);
+    max_err = std::max(dist1_l[i][1], max_err);
+    max_err = std::max(dist1_r[i][1], max_err);
+  }
+
+  return max_err;
+}
+
+double td_navigation::worker::get_min_error(int amount_to_avg){
+  double min_err = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    min_err = std::min(dist0_l[i][1], min_err);
+    min_err = std::min(dist0_r[i][1], min_err);
+    min_err = std::min(dist1_l[i][1], min_err);
+    min_err = std::min(dist1_r[i][1], min_err);
+  }
+
+  return min_err;
+}
+
 
 double td_navigation::worker::get_current_heading(){
-  return headings[count%average_length];
+  return heading;
 }
 
 double td_navigation::worker::get_current_bearing(){
-  return bearings[count%average_length];
+  return bearing;
 }
 
 double td_navigation::worker::get_current_pos_x(){
-  return x[count%average_length];
+  return x;
 }
 
 double td_navigation::worker::get_current_pos_y(){
-  return y[count%average_length];
-}
-
-double td_navigation::worker::get_avg_heading(){
-  int non_err = 0;
-  double head_sum = 0;
-
-  for(int i = 0; i < average_length; i++){
-    if (headings[i] != ERRNUM){
-      head_sum += headings[i];
-      non_err++;
-    }
-  }
-
-  if (non_err == 0){
-    return ERRNUM;
-  }
-
-  return head_sum/non_err;
-}
-
-double td_navigation::worker::get_avg_bearing(){
-  int non_err = 0;
-  double bear_sum = 0;
-
-  for(int i = 0; i < average_length; i++){
-    if (bearings[i] != ERRNUM){
-      bear_sum += bearings[i];
-      non_err++;
-    }
-  }
-
-  if (non_err == 0){
-    return ERRNUM;
-  }
-
-  return bear_sum/non_err;
-}
-
-double td_navigation::worker::get_avg_x(){
-  int non_err = 0;
-  double x_sum = 0;
-
-  for(int i = 0; i < average_length; i++){
-    if (x[i] != ERRNUM){
-      x_sum += x[i];
-      non_err++;
-    }
-  }
-
-  if (non_err == 0){
-    return ERRNUM;
-  }
-
-  return x_sum/non_err;
-}
-
-double td_navigation::worker::get_avg_y(){
-  int non_err = 0;
-  double y_sum = 0;
-
-  for(int i = 0; i < average_length; i++){
-    if (y[i] != ERRNUM){
-      y_sum += y[i];
-      non_err++;
-    }
-  }
-
-  if (non_err == 0){
-    return ERRNUM;
-  }
-
-  return y_sum/non_err;
+  return y;
 }
 
 void td_navigation::worker::update_count(){
   count++;
 }
 
-int td_navigation::worker::set_error(){
-  headings[count%average_length] = ERRNUM;
-  bearings[count%average_length] = ERRNUM;
-  x[count%average_length] = ERRNUM;
-  y[count%average_length] = ERRNUM;
-
-  int num_of_errors;
-  for (int i = 0; i < average_length; i++){
-    if (headings[i] == ERRNUM){
-      num_of_errors++;
-    }
-  }
-  return num_of_errors;
+double td_navigation::worker::smart_atan(double adj, double opp){
+      if (adj == 0 && opp >= 0){
+        return PI / 2.0;
+      }else if (adj == 0 && opp < 0){
+        return -1 * PI / 2.0;
+      }else if (adj < 0){
+        return atan(opp/adj) + PI;
+      }else {
+        return atan(opp/adj);
+      }
+      return -500;
 }
+
+
+int td_navigation::worker::run(){
+
+  ROS_INFO("Count: %d", count);
+
+  hw_interface_plugin_timedomain::Range_Request rr;
+  rr.send_range_request = true;
+
+  rr.msgID = count;
+  confirmed = false;
+  selector = 0;
+
+  //range request and response from 104 to 101
+  if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 1;
+  rr.msgID = count;
+  //range request and response from 104 to 106
+  if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 2;
+  rr.msgID = count;
+  //range request and response from 105 to 101
+  if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 3;
+  rr.msgID = count;
+  //range request and response from 105 to 106
+  if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  std::vector<double> distance_to_base_rads;
+
+
+  distance_to_base_rads.push_back(get_avg_dist0_l(average_length));
+  distance_to_base_rads.push_back(get_avg_dist0_r(average_length));
+  rad_nav.update_mobile_radio(0,distance_to_base_rads);
+
+
+  distance_to_base_rads[0] = get_avg_dist1_l(average_length);
+  distance_to_base_rads[1] = get_avg_dist1_r(average_length);
+  rad_nav.update_mobile_radio(1,distance_to_base_rads);
+
+
+
+
+  if (rad_nav.triangulate_2Base(z_estimate) == 0){
+
+
+    heading = -smart_atan( (rad_nav.get_mobile_radio_coordinate(1,1) - rad_nav.get_mobile_radio_coordinate(0,1)),
+                          (rad_nav.get_mobile_radio_coordinate(1,0) - rad_nav.get_mobile_radio_coordinate(0,0)) );
+
+    x = ( (rad_nav.get_mobile_radio_coordinate(0,0) + rad_nav.get_mobile_radio_coordinate(1,0)) / 2.0 ) +
+         (sin(heading) * robot_length_offset);
+
+    y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
+         (cos(heading) * robot_length_offset);
+
+    bearing = smart_atan(x,y);
+
+
+    ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
+
+
+    td_navigation::Average_angle aa;
+
+    aa.heading = heading * 180.0 / PI;
+    aa.bearing = bearing * 180.0 / PI;
+    aa.x = x;
+    aa.y = y;
+
+    aa_p.publish(aa);
+
+
+  }else {
+    ROS_DEBUG("Problem encountered with triangulation!");
+
+  }
+
+  //update count
+  count++;
+  if(count >= 32000){
+    count = 0;
+}
+
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -269,115 +461,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, node_type);
   ROS_INFO(" - ros::init complete");
 
-  td_navigation::worker worker;
-
-  ros::NodeHandle nh;
-  ROS_INFO(" - node handle created");
-
-  ros::ServiceServer service = nh.advertiseService("localize", &td_navigation::worker::srvCallBack, &worker);
-  ROS_INFO("td_navigation node ready to Localize");
-
-  //subscriber for recieving messages
-  ros::Subscriber rad104_s = nh.subscribe("/radio104/data", 5, &td_navigation::worker::radCallBack, &worker);
-  ros::Subscriber rad105_s = nh.subscribe("/radio105/data", 5, &td_navigation::worker::radCallBack, &worker);
-
-
-  //publisher for sending a message to timedomain serial to get a range request
-  ros::Publisher rad104_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
-  ros::Publisher rad105_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
-
-  //publisher for getting average angle measurements
-  ros::Publisher aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
-
-  bool begin_avg = false;
-
-  while(nh.ok())
-  {
-
-      ROS_INFO("Count: %d", worker.count);
-
-      hw_interface_plugin_timedomain::Range_Request rr;
-      rr.send_range_request = true;
-
-      rr.msgID = worker.count;
-      worker.confirmed = false;
-      worker.selector = 0;
-
-      //range request and response from 104 to 101
-      if (worker.send_and_recieve(worker.rad_L, rr, rad104_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      worker.selector = 1;
-      rr.msgID = worker.count;
-      //range request and response from 104 to 106
-      if (worker.send_and_recieve(worker.rad_R, rr, rad104_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      worker.selector = 2;
-      rr.msgID = worker.count;
-      //range request and response from 105 to 101
-      if (worker.send_and_recieve(worker.rad_L, rr, rad105_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      worker.selector = 3;
-      rr.msgID = worker.count;
-      //range request and response from 105 to 106
-      if (worker.send_and_recieve(worker.rad_R, rr, rad105_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-
-      radio_nav rad_nav;
-      rad_nav.set_all(worker.dStation, worker.rad104_DistL, worker.rad104_DistR, worker.rad105_DistL, worker.rad105_DistR);
-      rad_nav.triangulate();
-
-      if (rad_nav.success()){
-
-        if (worker.count == worker.average_length){
-          begin_avg = true;
-        }
-
-        ROS_DEBUG("RadNavHead: %lf, RadNavBear: %lf", rad_nav.get_heading() * 180.0 / PI, rad_nav.get_bearing() * 180.0 / PI);
-        //put the most recent measurement into the array
-        //angle the bot is looking
-        worker.set_current_heading(rad_nav.get_heading() * 180.0 / PI);
-        worker.set_current_bearing(rad_nav.get_bearing() * 180.0 / PI);
-
-        worker.set_current_pos_x( ( rad_nav.get_rad0_x() + rad_nav.get_rad1_x() ) / (2.0) );
-        worker.set_current_pos_y( ( rad_nav.get_rad0_y() + rad_nav.get_rad1_y() ) / (2.0) );
-
-        ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", worker.get_current_heading(), worker.get_current_bearing(),
-                  worker.get_current_pos_x(), worker.get_current_pos_y() );
-
-        if(begin_avg){
-          td_navigation::Average_angle aa;
-
-          aa.heading = worker.get_avg_heading();
-          aa.bearing = worker.get_avg_bearing();
-          aa.x = worker.get_avg_x();
-          aa.y = worker.get_avg_y();
-
-          aa_p.publish(aa);
-        }
-
-      }else {
-        ROS_ERROR("NumberOfErrorsInLast%d: %d", worker.average_length, worker.set_error());
-      }
-
-  //update count
-  worker.update_count();
-  if(worker.count >= 32000){
-      worker.count = 0;
-  }
-
-}
+  td_navigation::worker worker(20, 625.5, 101, 106, 0, 0);
 
   ROS_DEBUG("td_navigation closing");
   return 0;
