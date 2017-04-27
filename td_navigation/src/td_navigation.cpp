@@ -19,24 +19,38 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   z_estimate = z_estimate_val;
   robot_length_offset = robot_length_offset_val;
 
-  // rad104_DistL = 0;
-  // rad104_DistR = 0;
-  //
-  // rad105_DistL = 0;
-  // rad105_DistR = 0;
-  //
-  //
-  //
-  // headings.reserve(average_length);
-  // bearings.reserve(average_length);
-  // x.reserve(average_length);
-  // y.reserve(average_length);
-
   dist0_l.reserve(average_length);
   dist0_r.reserve(average_length);
   dist1_l.reserve(average_length);
   dist1_r.reserve(average_length);
 
+  rad_nav.create_base_radio(0, -1.0 * base_station_distance/2.0, 0);
+  rad_nav.create_base_radio(0, base_station_distance/2.0, 0);
+  rad_nav.create_mobile_radio();
+  rad_nav.create_mobile_radio();
+
+  ros::NodeHandle nh;
+  ROS_INFO(" - node handle created");
+
+  ros::ServiceServer service = nh.advertiseService("localize", &td_navigation::worker::srvCallBack, this);
+  ROS_INFO("td_navigation node ready to Localize");
+
+  //subscriber for recieving messages
+  mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::radCallBack, this);
+  mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::radCallBack, this);
+
+
+  //publisher for sending a message to timedomain serial to get a range request
+  mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
+  mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
+
+  //publisher for getting average angle measurements
+  aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
+
+  while(nh.ok())
+  {
+    run();
+  }
 }
 
 
@@ -148,6 +162,20 @@ void td_navigation::worker::radCallBack(const hw_interface_plugin_timedomain::RC
 
 bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
                                         td_navigation::Localize::Response &res){
+dist0_l.clear();
+dist0_r.clear();
+dist1_l.clear();
+dist1_r.clear();
+
+int max = average_length;
+
+if(req.average_length <= average_length){
+  max = req.average_length;
+}
+
+for(int i = 0; i < max; i++){
+  run();
+}
 
 //service response
 res.x = this->x;
@@ -230,7 +258,117 @@ void td_navigation::worker::update_count(){
   count++;
 }
 
-double smart_atan(double adj, double opp);
+double td_navigation::worker::smart_atan(double adj, double opp){
+      if (adj == 0 && opp >= 0){
+        return PI / 2.0;
+      }else if (adj == 0 && opp < 0){
+        return -1 * PI / 2.0;
+      }else if (adj < 0){
+        return atan(opp/adj) + PI;
+      }else {
+        return atan(opp/adj);
+      }
+      return -500;
+}
+
+
+int td_navigation::worker::run(){
+
+  ROS_INFO("Count: %d", count);
+
+  hw_interface_plugin_timedomain::Range_Request rr;
+  rr.send_range_request = true;
+
+  rr.msgID = count;
+  confirmed = false;
+  selector = 0;
+
+  //range request and response from 104 to 101
+  if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 1;
+  rr.msgID = count;
+  //range request and response from 104 to 106
+  if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 2;
+  rr.msgID = count;
+  //range request and response from 105 to 101
+  if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 3;
+  rr.msgID = count;
+  //range request and response from 105 to 106
+  if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  std::vector<double> distance_to_base_rads;
+
+
+  distance_to_base_rads.push_back(get_avg_dist0_l(20));
+  distance_to_base_rads.push_back(get_avg_dist0_r(20));
+  rad_nav.update_mobile_radio(0,distance_to_base_rads);
+
+
+  distance_to_base_rads[0] = get_avg_dist1_l(20);
+  distance_to_base_rads[1] = get_avg_dist1_r(20);
+  rad_nav.update_mobile_radio(1,distance_to_base_rads);
+
+
+
+
+  if (rad_nav.triangulate_2Base(z_estimate) == 0){
+
+
+    heading = -smart_atan( (rad_nav.get_mobile_radio_coordinate(1,1) - rad_nav.get_mobile_radio_coordinate(0,1)),
+                          (rad_nav.get_mobile_radio_coordinate(1,0) - rad_nav.get_mobile_radio_coordinate(0,0)) );
+
+    x = ( (rad_nav.get_mobile_radio_coordinate(0,0) + rad_nav.get_mobile_radio_coordinate(1,0)) / 2.0 ) +
+         (sin(heading) * robot_length_offset);
+
+    y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
+         (cos(heading) * robot_length_offset);
+
+    bearing = smart_atan(x,y);
+
+
+    ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
+
+
+    td_navigation::Average_angle aa;
+
+    aa.heading = heading * 180.0 / PI;
+    aa.bearing = bearing * 180.0 / PI;
+    aa.x = x;
+    aa.y = y;
+
+    aa_p.publish(aa);
+
+
+  }else {
+    ROS_DEBUG("Problem encountered with triangulation!");
+
+  }
+
+  //update count
+  if(count >= 32000){
+    count = 0;
+}
+
+}
+
+
 
 int main(int argc, char **argv)
 {
@@ -244,146 +382,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   td_navigation::worker worker(20, 625.5, 101, 106, 0, 0);
-  radio_nav rad_nav;
-  rad_nav.create_base_radio(0, -1.0 * worker.base_station_distance/2.0, 0);
-  rad_nav.create_base_radio(0, worker.base_station_distance/2.0, 0);
-  rad_nav.create_mobile_radio();
-  rad_nav.create_mobile_radio();
-  double x, y, heading, bearing;
-
-  ros::NodeHandle nh;
-  ROS_INFO(" - node handle created");
-
-  ros::ServiceServer service = nh.advertiseService("localize", &td_navigation::worker::srvCallBack, &worker);
-  ROS_INFO("td_navigation node ready to Localize");
-
-  //subscriber for recieving messages
-  ros::Subscriber rad104_s = nh.subscribe("/radio104/data", 5, &td_navigation::worker::radCallBack, &worker);
-  ros::Subscriber rad105_s = nh.subscribe("/radio105/data", 5, &td_navigation::worker::radCallBack, &worker);
-
-
-  //publisher for sending a message to timedomain serial to get a range request
-  ros::Publisher rad104_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
-  ros::Publisher rad105_p = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
-
-  //publisher for getting average angle measurements
-  ros::Publisher aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
-
-  bool begin_avg = false;
-
-  while(nh.ok())
-  {
-
-      ROS_INFO("Count: %d", worker.count);
-
-      hw_interface_plugin_timedomain::Range_Request rr;
-      rr.send_range_request = true;
-
-      rr.msgID = worker.count;
-      worker.confirmed = false;
-      worker.selector = 0;
-
-      //range request and response from 104 to 101
-      if (worker.send_and_recieve(worker.rad_L, rr, rad104_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      worker.selector = 1;
-      rr.msgID = worker.count;
-      //range request and response from 104 to 106
-      if (worker.send_and_recieve(worker.rad_R, rr, rad104_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      worker.selector = 2;
-      rr.msgID = worker.count;
-      //range request and response from 105 to 101
-      if (worker.send_and_recieve(worker.rad_L, rr, rad105_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      worker.selector = 3;
-      rr.msgID = worker.count;
-      //range request and response from 105 to 106
-      if (worker.send_and_recieve(worker.rad_R, rr, rad105_p) == false){
-        //call a function to tell about the malfunction
-        ROS_DEBUG("We didn't get a response in time!");
-      }
-
-      std::vector<double> distance_to_base_rads;
-
-
-      distance_to_base_rads.push_back(worker.get_avg_dist0_l(20));
-      distance_to_base_rads.push_back(worker.get_avg_dist0_r(20));
-      rad_nav.update_mobile_radio(0,distance_to_base_rads);
-
-
-      distance_to_base_rads[0] = worker.get_avg_dist1_l(20);
-      distance_to_base_rads[1] = worker.get_avg_dist1_r(20);
-      rad_nav.update_mobile_radio(1,distance_to_base_rads);
-
-
-
-
-      if (rad_nav.triangulate_2Base(worker.z_estimate) == 0){
-
-
-        heading = -smart_atan( (rad_nav.get_mobile_radio_coordinate(1,1) - rad_nav.get_mobile_radio_coordinate(0,1)),
-                              (rad_nav.get_mobile_radio_coordinate(1,0) - rad_nav.get_mobile_radio_coordinate(0,0)) );
-
-        x = ( (rad_nav.get_mobile_radio_coordinate(0,0) + rad_nav.get_mobile_radio_coordinate(1,0)) / 2.0 ) +
-             (sin(heading) * worker.robot_length_offset);
-
-        y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
-             (cos(heading) * worker.robot_length_offset);
-
-        bearing = smart_atan(x,y);
-
-
-        worker.set_current_pos(x, y, heading , bearing);
-
-        ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
-        
-
-        td_navigation::Average_angle aa;
-
-        aa.heading = heading * 180.0 / PI;
-        aa.bearing = bearing * 180.0 / PI;
-        aa.x = x;
-        aa.y = y;
-
-        aa_p.publish(aa);
-
-
-      }else {
-        ROS_DEBUG("Problem encountered with triangulation!");
-
-      }
-
-  //update count
-  worker.update_count();
-  if(worker.count >= 32000){
-      worker.count = 0;
-  }
-
-}
 
   ROS_DEBUG("td_navigation closing");
   return 0;
-}
-
-double smart_atan(double adj, double opp){
-      if (adj == 0 && opp >= 0){
-        return PI / 2.0;
-      }else if (adj == 0 && opp < 0){
-        return -1 * PI / 2.0;
-      }else if (adj < 0){
-        return atan(opp/adj) + PI;
-      }else {
-        return atan(opp/adj);
-      }
-      return -500;
 }

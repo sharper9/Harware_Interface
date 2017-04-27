@@ -38,6 +38,15 @@ namespace td_navigation
     double robot_length_offset;
 
     double x, y, bearing, heading;
+    radio_nav rad_nav;
+
+    ros::Subscriber mob_rad_l_sub;
+    ros::Subscriber mob_rad_r_sub;
+
+    ros::Publisher mob_rad_l_pub;
+    ros::Publisher mob_rad_r_pub;
+
+    ros::Publisher aa_p;
 
 
     std::vector < std::vector<double> > dist0_l;
@@ -60,6 +69,8 @@ namespace td_navigation
     double get_current_pos_x();
     double get_current_pos_y();
     void update_count();
+    double smart_atan(double adj, double opp);
+    int run();
 
 
   };
