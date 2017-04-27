@@ -10,6 +10,7 @@ void DriveGlobal::init()
     desiredEndHeading_ = params.float3;
 	endHeading_ = params.bool1;
     pushedToFront_ = params.bool2;
+    driveBackwards_ = params.bool3;
     nextGlobalX = params.float1;
     nextGlobalY = params.float2;
     clearDeques();
@@ -71,7 +72,15 @@ void DriveGlobal::calculatePath_()
 	uYAct_ = sin(robotStatus.heading*PI/180.0);
 	if(asin(uXAct_*uYDes_-uXDes_*uYAct_)>=0) newHeadingSign_ = 1.0;
 	else newHeadingSign_ = -1.0;
-	angleToTurn_ = (180.0/PI)*(newHeadingSign_)*acos(uXAct_*uXDes_+uYAct_*uYDes_);
-	distanceToDrive_ = hypot(xErr_,yErr_);
+    if(driveBackwards_)
+    {
+        angleToTurn_ = (180.0/PI)*(newHeadingSign_)*acos(uXAct_*uXDes_+uYAct_*uYDes_)+180.0;
+        distanceToDrive_ = -hypot(xErr_,yErr_);
+    }
+    else
+    {
+        angleToTurn_ = (180.0/PI)*(newHeadingSign_)*acos(uXAct_*uXDes_+uYAct_*uYDes_);
+        distanceToDrive_ = hypot(xErr_,yErr_);
+    }
     if(distanceToDrive_>incrementalDriveDistance) distanceToDrive_ = incrementalDriveDistance;
 }

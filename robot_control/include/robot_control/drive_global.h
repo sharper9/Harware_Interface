@@ -27,6 +27,7 @@ private:
 	float uYAct_;
 	float newHeadingSign_;
 	bool pushedToFront_;
+	bool driveBackwards_;
     bool driveCompleted_;
 	void calculatePath_();
     const float incrementalDriveDistance = 0.5; // m

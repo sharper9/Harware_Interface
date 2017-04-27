@@ -15,6 +15,6 @@ Arm_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/brushed/arm",
         controllerType     : "Arm_Roboteq",
-        initializationCmd  : "motor_amps",
+        initializationCmd  : "analog_inputs individual_digital_inputs",
         initCmdCycle       : 20,
     }

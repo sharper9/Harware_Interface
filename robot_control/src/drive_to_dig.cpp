@@ -13,7 +13,7 @@ bool DriveToDig::runProc()
         clearAndResizeWTT();
         waypointsToTravel.at(0).x = 5.0; // TODO: Figure out how to compute these
         waypointsToTravel.at(0).y = 5.0;
-        sendDriveGlobal(false, false, 0.0);
+        sendDriveGlobal(false, false, 0.0, false);
         state = _exec_;
         resetQueueEmptyCondition();
         break;

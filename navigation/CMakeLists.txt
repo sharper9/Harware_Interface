@@ -1,14 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(hw_interface_plugin_netburner)
+project(navigation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  hw_interface
-  pluginlib
-  roscpp
+  message_generation
+  message_runtime
   messages
+  roscpp
+  rospy
+  std_msgs
+  hw_interface_plugin_roboteq
 )
 
 ## System dependencies are found with CMake's conventions
@@ -45,11 +48,11 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  IMUUpdate.msg
+# add_message_files(
+#   FILES
+#   Message1.msg
 #   Message2.msg
- )
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -66,10 +69,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
- )
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -91,8 +94,6 @@ add_message_files(
 #   cfg/DynReconf2.cfg
 # )
 
-add_definitions("-std=gnu++11")
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -103,11 +104,13 @@ add_definitions("-std=gnu++11")
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES hw_interface_plugin_netburner
-  CATKIN_DEPENDS hw_interface pluginlib roscpp messages
+#  INCLUDE_DIRS include
+#  LIBRARIES lidar
+  CATKIN_DEPENDS message_generation message_runtime messages roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
+
+add_definitions("-std=gnu++11")
 
 ###########
 ## Build ##
@@ -117,46 +120,42 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  include
+	include
   ${catkin_INCLUDE_DIRS}
 )
 
-
-add_library(hw_interface_plugin_netburner_UDP   src/hw_interface_plugin_netburner_UDP.cpp)
-
-
-add_dependencies(hw_interface_plugin_netburner_UDP ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS}
-                    hw_interface
-            #        messages_generate_messages
-            )
-
 ## Declare a C++ library
-# add_library(hw_interface_plugin_netburner
-#   src/${PROJECT_NAME}/hw_interface_plugin_netburner.cpp
-# )
+add_library(encoders_class src/encoders_class.cpp)
+target_link_libraries(encoders_class ${catkin_LIBRARIES})
+
+add_library(imu_class src/imu_class.cpp)
+target_link_libraries(imu_class ${catkin_LIBRARIES} armadillo lapack blas)
+
+add_library(filter_class src/filter_class.cpp)
+target_link_libraries(filter_class ${catkin_LIBRARIES} armadillo lapack blas)
+
+add_library(navigation_filter src/navigation_filter.cpp)
+target_link_libraries(navigation_filter ${catkin_LIBRARIES} encoders_class imu_class filter_class)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(hw_interface_plugin_netburner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(lidar ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(hw_interface_plugin_netburner_node src/hw_interface_plugin_netburner_node.cpp)
+add_executable(navigation_filter_node src/navigation_filter_node.cpp)
+add_dependencies(navigation_filter_node navigation_generate_messages_cpp)
+ target_link_libraries(navigation_filter_node
+   ${catkin_LIBRARIES}
+   encoders_class
+   imu_class
+   filter_class
+   navigation_filter
+ )
 
 ## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(hw_interface_plugin_netburner_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(hw_interface_plugin_netburner_node
-#   ${catkin_LIBRARIES}
-# )
-
- target_link_libraries(hw_interface_plugin_netburner_UDP
-   ${catkin_LIBRARIES}
-    base_interface
-    base_UDP_interface
- )
 
 #############
 ## Install ##
@@ -173,7 +172,7 @@ add_dependencies(hw_interface_plugin_netburner_UDP ${${PROJECT_NAME}_EXPORTED_TA
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS hw_interface_plugin_netburner hw_interface_plugin_netburner_node
+# install(TARGETS lidar lidar_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -198,7 +197,7 @@ add_dependencies(hw_interface_plugin_netburner_UDP ${${PROJECT_NAME}_EXPORTED_TA
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_hw_interface_plugin_netburner.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_lidar.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -15,7 +15,7 @@ public:
     bool run();
     virtual bool runProc() = 0;
     void clearAndResizeWTT();
-	void sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading);
+	void sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading, bool driveBackwards);
 	void sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque);
     void sendDig();
     void sendDump();
@@ -51,7 +51,7 @@ void Procedure::clearAndResizeWTT()
     waypointsToTravel.resize(numWaypointsToTravel);
 }
 
-void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading)
+void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading, bool driveBackwards)
 {
     for(int i=0; i<numWaypointsToTravel; i++)
     {
@@ -68,12 +68,12 @@ void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float end
 		execActionSrv.request.float3 = endHeading;
 		execActionSrv.request.float4 = 0.0;
         execActionSrv.request.float5 = 0.0;
-		execActionSrv.request.int1 = waypointsToTravel.at(i).maxAvoids;
+		execActionSrv.request.int1 = 0;
 		if(i==(numWaypointsToTravel-1)) execActionSrv.request.bool1 = endHeadingFlag;
 		else execActionSrv.request.bool1 = false;
 		execActionSrv.request.bool2 = pushToFront;
-		execActionSrv.request.bool3 = waypointsToTravel.at(i).unskippable;
-		execActionSrv.request.bool4 = waypointsToTravel.at(i).roiWaypoint;
+		execActionSrv.request.bool3 = driveBackwards;
+		execActionSrv.request.bool4 = false;
 		execActionSrv.request.bool5 = false;
 		execActionSrv.request.bool6 = false;
 		execActionSrv.request.bool7 = false;
