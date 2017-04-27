@@ -22,7 +22,7 @@ private:
     this->ax1 = msg->acc_x; //G's // TODO: Check this
     this->ay1 = msg->acc_y; //G's // TODO: Check this
     this->az1 = msg->acc_z; //G's // TODO: Check this
-    this->imu_1_good = msg->pause_switch; //G's // TODO: Check this
+    this->imu_1_good = 1;//msg->pause_switch; //G's // TODO: Check this
 		this->nb1_counter=msg->counter; //counter from nb
 		this->call_counter1=this->call_counter1+1; //increments each time function executed
 		this->time1=msg->nb_clock; //time since object instantiated
@@ -46,7 +46,7 @@ public:
 	double nb1_az;
 
 	double prev_time1;
-	double dt1;
+	double dt;
 	short int call_counter1;
 	short int nb1_num_imus;
 	short int nb1_counter;

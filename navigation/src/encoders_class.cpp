@@ -18,12 +18,15 @@ Encoders::Encoders()
 	fr_diff=0;
 	bl_diff=0;
 	br_diff=0;
-    encoder_max_count=2147483648;
+  encoder_max_count=2147483648;
   impossible_encoder_diff=10000; // TODO: check this
 	spike_diff = 1000;
 	wheel_radius=0;
-  counts_per_revolution_front=1;
-  counts_per_revolution_back=1;
+  counts_per_revolution_front_right=1;
+  counts_per_revolution_front_left=1;
+  counts_per_revolution_back_right=1;
+  counts_per_revolution_back_left=1;
+  
   subscriber_encoder_left = node.subscribe("roboteq/drivemotorin/left", 1, &Encoders::getEncoderLeftCallback,this); // TODO: update topic name
   subscriber_encoder_right = node.subscribe("roboteq/drivemotorin/right", 1, &Encoders::getEncoderRightCallback,this); // TODO: update topic name
 }
@@ -33,17 +36,26 @@ void Encoders::set_wheel_radius(double set_radius)
 	wheel_radius=set_radius;
 }
 
-void Encoders::set_counts_per_revolution_front(double set_counts)
+void Encoders::set_counts_per_revolution_front_right(double set_counts)
 {
-  counts_per_revolution_front=set_counts;
+  counts_per_revolution_front_right=set_counts;
 }
 
-void Encoders::set_counts_per_revolution_back(double set_counts)
+void Encoders::set_counts_per_revolution_front_left(double set_counts)
 {
-  counts_per_revolution_back=set_counts;
+  counts_per_revolution_front_left=set_counts;
 }
 
-// TODO
+void Encoders::set_counts_per_revolution_back_right(double set_counts)
+{
+  counts_per_revolution_back_right=set_counts;
+}
+
+void Encoders::set_counts_per_revolution_back_left(double set_counts)
+{
+  counts_per_revolution_back_left=set_counts;
+}
+
 void Encoders::adjustEncoderWrapError()
 {
 	if(abs(fl_diff)>impossible_encoder_diff)
@@ -79,8 +91,8 @@ void Encoders::calculateWheelDistancesFromEncoders()
 {
 	if(this->counter_left_prev != this->counter_left)
 	{
-    fl_dist = (double)fl_diff/(double)counts_per_revolution_front*2.0*wheel_radius*3.14159265;
-    bl_dist = (double)bl_diff/(double)counts_per_revolution_back*2.0*wheel_radius*3.14159265;
+    fl_dist = (double)fl_diff/(double)counts_per_revolution_front_left*2.0*wheel_radius*3.14159265;
+    bl_dist = (double)bl_diff/(double)counts_per_revolution_back_left*2.0*wheel_radius*3.14159265;
 	}
 	else
 	{
@@ -91,8 +103,8 @@ void Encoders::calculateWheelDistancesFromEncoders()
 
 	if(this->counter_right_prev != this->counter_right)
 	{
-    fr_dist = (double)fr_diff/(double)counts_per_revolution_front*2.0*wheel_radius*3.14159265;
-    br_dist = (double)br_diff/(double)counts_per_revolution_back*2.0*wheel_radius*3.14159265;
+    fr_dist = (double)fr_diff/(double)counts_per_revolution_front_right*2.0*wheel_radius*3.14159265;
+    br_dist = (double)br_diff/(double)counts_per_revolution_back_right*2.0*wheel_radius*3.14159265;
 	}
 	else
 	{
@@ -104,6 +116,41 @@ void Encoders::calculateWheelDistancesFromEncoders()
 
 void Encoders::calculateDeltaDistance4Wheels(int turnFlag, int stopFlag)
 {
-	short int logical = (1-stopFlag)*(1-turnFlag);
-	delta_distance  = (double)logical*1/2*( (fl_dist+bl_dist)/2 + (fr_dist+br_dist)/2 );
+	short int logical = (1-stopFlag)*(1-turnFlag); //this sets distance to zero if stopFlag or turnFlag is set
+  double minF, minB;
+  ROS_INFO("fr,fl,br,bl = %f,%f,%f,%f",fr_dist,fl_dist,br_dist,bl_dist);
+	if(abs(fl_dist) < abs(fr_dist) || abs(fr_dist)==0)
+	{
+	  ROS_INFO("1");
+	  minF = fl_dist;
+	}
+	else
+	{
+	ROS_INFO("2");
+	  minF = fr_dist;
+	}
+	
+	if(abs(bl_dist) < abs(br_dist) || abs(br_dist)==0)
+	{
+	ROS_INFO("3");
+	  minB = bl_dist;
+	}
+	else
+	{
+	ROS_INFO("4");
+	  minB = br_dist;
+	}	
+	
+	if(abs(minB) < abs(minF) || abs(minF)==0)
+	{
+	ROS_INFO("5");
+	  delta_distance = (double)logical*minB;
+	}
+	else
+	{
+	ROS_INFO("6");
+	  delta_distance = (double)logical*minF;
+	}
+	
+	//delta_distance  = (double)logical*1/2*( (fl_dist+bl_dist)/2 + (fr_dist+br_dist)/2 );
 }

@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <messages/encoder_data.h>
 #include <hw_interface_plugin_roboteq/Roboteq_Data.h>
+#include <algorithm>
 
 #ifndef ENCODERS_CLASS_HPP
 #define ENCODERS_CLASS_HPP
@@ -59,12 +60,17 @@ public:
 	long int spike_diff;
 	float wheel_radius;
 	double delta_distance;
-  int counts_per_revolution_front;
-  int counts_per_revolution_back;
+  int counts_per_revolution_front_right;
+  int counts_per_revolution_front_left;
+  int counts_per_revolution_back_right;
+  int counts_per_revolution_back_left;
 
 	Encoders();
 	void set_wheel_radius(double set_radius);
-	void set_counts_per_revolution(double set_counts);
+	void set_counts_per_revolution_front_right(double set_counts);
+	void set_counts_per_revolution_front_left(double set_counts);
+	void set_counts_per_revolution_back_right(double set_counts);
+	void set_counts_per_revolution_back_left(double set_counts);
 	void adjustEncoderWrapError();
 	void calculateWheelDistancesFromEncoders();
 	void calculateDeltaDistance4Wheels(int turnFlag, int stopFlag);

@@ -26,14 +26,14 @@ IMU::IMU()
 	nb1_counter_prev = 0;
 	nb1_diff_prev = 1;
 	nb1_drive_counter = 0;
-    nb1_current = true;
+  nb1_current = true;
 	nb1_good = true;
 	nb1_good_prev = true;
 	call_counter1=0;
 	prev_time1 = 0;
-	dt1 = 0;
+	dt = 0;
 	new_nb1 = 0;
-  subscriber_imu = node.subscribe("hw_interface/nb1in/nb1in", 1, &IMU::getIMUCallback,this);
+  subscriber_imu = node.subscribe("/hw_interface/hw_interface/nb1in/nb1in", 1, &IMU::getIMUCallback,this);
 
 	//imu1
 	p1=0;
@@ -42,12 +42,12 @@ IMU::IMU()
 	ax1=0;
 	ay1=0;
 	az1=0;
-	p1_offset = 0.00155578029808;
-	q1_offset = 0.000418158248067;
-	r1_offset = 0.000437778187916;
-	E_p1_offset = 0.00155578029808;
-	E_q1_offset = 0.000418158248067;
-	E_r1_offset = 0.000437778187916;
+	p1_offset = 0;//0.00155578029808;
+	q1_offset = 0;//0.000418158248067;
+	r1_offset = 0;//0.000437778187916;
+	E_p1_offset = 0;//0.00155578029808;
+	E_q1_offset = 0;//0.000418158248067;
+	E_r1_offset = 0;//0.000437778187916;
 	mean_p1 = 0;
 	mean_q1 = 0;
 	mean_r1 = 0;
@@ -124,6 +124,7 @@ void IMU::calculate_gyro1_offset()
 	mean_p1 = arma::mean(arma::mean(p_meds));
 	if (fabs(mean_p1-E_p1_offset)>bias_thresh)
 	{
+    ROS_INFO("bias threshold exceeded");
 		good_bias1 = false;
 	}
 
@@ -256,77 +257,51 @@ void IMU::determine_new_data()
 void IMU::filter_imu_values()
 {
 		
-	if (new_nb1 == 1)
+	if (new_nb1 == 1) //this is based on netburner counters
 	{
 		if (prev_time1!=0)
 		{
-			dt1 = time1 - prev_time1;
+			dt = time1 - prev_time1; //time from netburner clock
+			if (fabs(dt)>0.1) //this is to prevent large jumps in rotation
+      {
+        dt = 0.1;
+      }
 		}
 		else 
 		{
-			dt1 = 0.0;
-		}
-        if (fabs(dt1)>0.1)
-		{
-            dt1 = 0.1;
+			dt = 0.0;
 		}
 
 		p1 = p1-p1_offset;
 		q1 = q1-q1_offset;
 		r1 = r1-r1_offset;
 
-        if (imu_1_good)
-		{
-            nb1_p = p1;
-            nb1_q = q1;
-            nb1_r = r1;
-            nb1_ax = ax1;
-            nb1_ay = ay1;
-            nb1_az = az1;
-		}
-		else
-		{
-			nb1_p = 0;
-			nb1_q = 0;
-			nb1_r = 0;
-			nb1_ax = 0;
-			nb1_ay = 0;
-			nb1_az = 0;
-		}
-
+    nb1_p = p1;
+    nb1_q = q1;
+    nb1_r = r1;
+    nb1_ax = ax1;
+    nb1_ay = ay1;
+    nb1_az = az1;
+    new_imu1 = 1;
 	}
 	else
 	{
-        dt1 = 0;
-        nb1_p = 0;
+    dt = 0;
+    nb1_p = 0;
 		nb1_q = 0;
 		nb1_r = 0;
 		nb1_ax = 0;
 		nb1_ay = 0;
 		nb1_az = 0;
 		new_imu1 = 0;
-		nb1_num_imus = 0;
 	}
 
-    if (nb1_num_imus!=0 || !nb1_good)
-    {
-        p = nb1_p;
-        q = nb1_q;
-        r = nb1_r;
-        ax = nb1_ax;
-        ay = nb1_ay;
-        az = nb1_az;
-    }
-    else
-    {
-        p = 0;
-        q = 0;
-        r = 0;
-        ax = 0;
-        ay = 0;
-        az = 0;
-    }
-
+  p = nb1_p;
+  q = nb1_q;
+  r = nb1_r;
+  ax = nb1_ax;
+  ay = nb1_ay;
+  az = nb1_az;
 }
 
 void IMU::set_prev_counters()
@@ -334,7 +309,7 @@ void IMU::set_prev_counters()
 	if (nb1_counter_prev == nb1_counter)
 	{
 		nb1_missed_counter = nb1_missed_counter+1;
-        if (nb1_missed_counter>1)
+    if (nb1_missed_counter>1)
 		{
 			nb1_current = false;
 			nb1_drive_counter = nb1_drive_counter+1;
