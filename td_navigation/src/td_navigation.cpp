@@ -58,7 +58,7 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
   int wait = 0;
   int timeout = 0;
   //TODO: change back to about 200
-  ros::Rate loop_rate(20);
+  ros::Rate loop_rate(2000);
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -362,6 +362,7 @@ int td_navigation::worker::run(){
   }
 
   //update count
+  count++;
   if(count >= 32000){
     count = 0;
 }
