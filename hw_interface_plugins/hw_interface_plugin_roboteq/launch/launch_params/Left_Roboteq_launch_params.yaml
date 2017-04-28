@@ -15,6 +15,7 @@ Left_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/drivemotorin/left",
         controllerType     : "Left_Drive",
-        initializationCmd  : "absolute_brushless_counter; individual_digital_inputs",
+        initializationCmd  : "absolute_brushless_counter individual_digital_inputs",
         initCmdCycle       : 20,
+        wheelType          : "Reg_Left",
     }

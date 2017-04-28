@@ -12,12 +12,11 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
 {
   ROS_INFO("%s:: Plugin start!", pluginName.c_str());
 
-  std::string filename;
+  // TODO: error checking
+  std::string wheelType;
+  ros::param::get(pluginName+"/wheelType", wheelType);
 
-  if (roboteqType == controller_t::Left_Drive_Roboteq)
-    filename = "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/left-drive-closed-loop-script.txt";
-  else
-    filename = "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/right-drive-closed-loop-script.txt";
+  std::string filename = script_list[wheelType];
 
   std::ifstream roboteqInitFile (filename, std::ifstream::in);
   if (!roboteqInitFile)

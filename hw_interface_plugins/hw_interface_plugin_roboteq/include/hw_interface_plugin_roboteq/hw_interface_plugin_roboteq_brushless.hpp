@@ -15,6 +15,14 @@ namespace hw_interface_plugin_roboteq
     bool implStop();
     bool implDataHandler();
 
+  private:
+    std::map <std::string, std::string> script_list = {
+      {"Reg_Left", "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/REG_L_Drive_CL_Script.txt"},
+      {"Reg_Right", "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/REG_R_Drive_CL_Script.txt"},
+      {"Comp_Left", "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/COMP_L_Drive_CL_Script.txt"},
+      {"Comp_Right", "../rmc_ws/src/hw_interface_plugins/hw_interface_plugin_roboteq/COMP_R_Drive_CL_Script.txt"}
+    };
+
   };
 }
 
