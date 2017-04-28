@@ -60,8 +60,8 @@ public:
   int create_mobile_radio();
   int create_mobile_radio(std::vector <double> distance_to_base_radios);
   int update_mobile_radio(int radio_index, std::vector <double> distance_to_base_radios);
-  int get_mobile_radio_coordinate(int radio_index, int coordinate_index);
-  int get_base_radio_coordinate(int radio_index, int coordinate_index);
+  double get_mobile_radio_coordinate(int radio_index, int coordinate_index);
+  double get_base_radio_coordinate(int radio_index, int coordinate_index);
   int triangulate_2Base(double z_estimate);
   double law_of_cosines(base_radio& base_rad_0, base_radio& base_rad_1,
                         mobile_radio& mob_rad, double z_estimate, double estimate_angle_0, double estimate_angle_1);
@@ -98,7 +98,7 @@ int radio_nav::update_mobile_radio(int radio_index, std::vector <double> distanc
   return 0;
 }
 
-int radio_nav::get_mobile_radio_coordinate(int radio_index, int coordinate_index){
+double radio_nav::get_mobile_radio_coordinate(int radio_index, int coordinate_index){
   switch(coordinate_index){
     case 0: return mobile_radios[radio_index].x;
     case 1: return mobile_radios[radio_index].y;
@@ -108,7 +108,7 @@ int radio_nav::get_mobile_radio_coordinate(int radio_index, int coordinate_index
   return -1;
 }
 
-int radio_nav::get_base_radio_coordinate(int radio_index, int coordinate_index){
+double radio_nav::get_base_radio_coordinate(int radio_index, int coordinate_index){
   switch(coordinate_index){
     case 0: return base_radios[radio_index].x;
     case 1: return base_radios[radio_index].y;
@@ -163,7 +163,7 @@ double radio_nav::law_of_cosines(base_radio& base_rad_0, base_radio& base_rad_1,
 
     if (temp/(2.0 * base_station_distance * mob_rad.distance_to_base_rads[0] * cos(estimate_angle_0)) >= -1
         && temp/(2.0 * base_station_distance * mob_rad.distance_to_base_rads[0]* cos(estimate_angle_0)) <= 1){
-      
+
       return acos(temp/(2.0 * base_station_distance * mob_rad.distance_to_base_rads[0]) * cos(estimate_angle_0));
   }
 
@@ -185,7 +185,7 @@ double radio_nav::smart_atan(double adj, double opp){
 
 
 double radio_nav::calculate_base_station_distance(base_radio& b_rad_0, base_radio& b_rad_1){
-  return sqrt( pow(b_rad_0.x - b_rad_1.x, 2.0) + pow(b_rad_0.y - b_rad_1.y, 2.0) + pow(b_rad_0.z - b_rad_1.z, 2.0));
+  return sqrt( pow(b_rad_0.x - b_rad_1.x, 2.0) + pow(b_rad_0.y - b_rad_1.y, 2.0) + pow(b_rad_0.z - b_rad_1.z, 2.0) );
 }
 
 #endif // RADIO_NAV_HPP__

@@ -36,8 +36,8 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   ROS_INFO("td_navigation node ready to Localize");
 
   //subscriber for recieving messages
-  mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::rad_L_CallBack, this);
-  mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::rad_R_CallBack, this);
+  mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::mob_rad_0_CallBack, this);
+  mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::mob_rad_1_CallBack, this);
 
 
   //publisher for sending a message to timedomain serial to get a range request
@@ -58,7 +58,7 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
   int wait = 0;
   int timeout = 0;
   //TODO: change back to about 200
-  ros::Rate loop_rate(20000);
+  ros::Rate loop_rate(2000);
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -94,7 +94,7 @@ int td_navigation::worker::add_distance(std::vector < std::vector<double> >& dis
   return 0;
 }
 
-void td_navigation::worker::rad_L_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
+void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
     ROS_INFO("TDRR Navigation Callback");
     //check if the radio was busy
     if (msg->busy == true){
@@ -112,7 +112,7 @@ void td_navigation::worker::rad_L_CallBack(const hw_interface_plugin_timedomain:
     if(msg->msgID >=0 && msg->msgID < 32000 ){
 
       //reading 0 to l
-        if(msg->msgID == count && selector == 0){
+        if(msg->msgID == count + selector && selector == 0){
             ROS_INFO("Reading from Mob_0 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             add_distance(dist0_l, (double)msg->PRM, (double)msg->PRMError);
@@ -120,10 +120,10 @@ void td_navigation::worker::rad_L_CallBack(const hw_interface_plugin_timedomain:
             return;
 
         //reading 1 to l
-      }else if(msg-> msgID == count && selector == 1){
+      }else if(msg-> msgID == count + selector && selector == 1){
           ROS_INFO("Reading from Mob_0 to Base_1");
           ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-          add_distance(dist1_l, msg->PRM, msg->PRMError);
+          add_distance(dist0_r, msg->PRM, msg->PRMError);
           confirmed = true;
           return;
 
@@ -140,7 +140,7 @@ void td_navigation::worker::rad_L_CallBack(const hw_interface_plugin_timedomain:
 
 }
 
-void td_navigation::worker::rad_R_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
+void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg){
     ROS_INFO("TDRR Navigation Callback");
     //check if the radio was busy
     if (msg->busy == true){
@@ -160,15 +160,15 @@ void td_navigation::worker::rad_R_CallBack(const hw_interface_plugin_timedomain:
     if(msg->msgID >=0 && msg->msgID < 32000 ){
 
       //reading 0 to r
-      if(msg-> msgID == count && selector == 2){
+      if(msg-> msgID == count + selector && selector == 2){
             ROS_INFO("Reading from Mob_0 to Base_1");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
-            add_distance(dist0_r, msg->PRM, msg->PRMError);
+            add_distance(dist1_l, msg->PRM, msg->PRMError);
             confirmed = true;
             return;
 
       //reading 1 to r
-      }else if(msg-> msgID == count && selector == 3){
+    }else if(msg-> msgID == count + selector && selector == 3){
           ROS_INFO("Reading from Mob_1 to Base_1");
           ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
           add_distance(dist1_r, msg->PRM, msg->PRMError);
@@ -334,18 +334,34 @@ double td_navigation::worker::get_current_pos_y(){
 }
 
 void td_navigation::worker::update_count(){
-  count++;
+  count += 10;
 }
 
 double td_navigation::worker::smart_atan(double adj, double opp){
-      if (adj == 0 && opp >= 0){
-        return PI / 2.0;
-      }else if (adj == 0 && opp < 0){
-        return -1 * PI / 2.0;
-      }else if (adj < 0){
-        return atan(opp/adj) + PI;
-      }else {
-        return atan(opp/adj);
+      if(adj == 0){
+        if(opp > 0){
+          return -PI/2.0;
+        }else if (opp <= 0){
+          return PI/2.0;
+        }
+      }else if(opp == 0){
+        if(adj >= 0){
+          return 0;
+        }else if(adj < 0){
+          return PI;
+        }
+      }else if(opp > 0){
+        if(adj > 0){
+          return -1.0 * atan(opp/adj);
+        }else if(adj < 0){
+          return -1.0 * PI - atan(opp/adj);
+        }
+      }else if(opp < 0){
+        if(adj > 0){
+          return -1.0 * atan(opp/adj);
+        }else if(adj < 0){
+          return PI - atan(opp/adj);
+        }
       }
       return -500;
 }
@@ -358,10 +374,10 @@ int td_navigation::worker::run(){
   hw_interface_plugin_timedomain::Range_Request rr;
   rr.send_range_request = true;
 
-  rr.msgID = count;
+
   confirmed = false;
   selector = 0;
-
+  rr.msgID = count + selector;
   //range request and response from 104 to 101
   if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
     //call a function to tell about the malfunction
@@ -369,7 +385,7 @@ int td_navigation::worker::run(){
   }
 
   selector = 1;
-  rr.msgID = count;
+  rr.msgID = count + selector;
   //range request and response from 104 to 106
   if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
     //call a function to tell about the malfunction
@@ -377,7 +393,7 @@ int td_navigation::worker::run(){
   }
 
   selector = 2;
-  rr.msgID = count;
+  rr.msgID = count + selector;
   //range request and response from 105 to 101
   if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
     //call a function to tell about the malfunction
@@ -385,7 +401,7 @@ int td_navigation::worker::run(){
   }
 
   selector = 3;
-  rr.msgID = count;
+  rr.msgID = count + selector;
   //range request and response from 105 to 106
   if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
     //call a function to tell about the malfunction
@@ -397,12 +413,12 @@ int td_navigation::worker::run(){
 
   distance_to_base_rads.push_back(get_avg_dist0_l(average_length));
   distance_to_base_rads.push_back(get_avg_dist0_r(average_length));
-  rad_nav.update_mobile_radio(0,distance_to_base_rads);
+  rad_nav.update_mobile_radio(0 ,distance_to_base_rads);
 
 
   distance_to_base_rads[0] = get_avg_dist1_l(average_length);
   distance_to_base_rads[1] = get_avg_dist1_r(average_length);
-  rad_nav.update_mobile_radio(1,distance_to_base_rads);
+  rad_nav.update_mobile_radio(1 ,distance_to_base_rads);
 
 
 
@@ -410,14 +426,14 @@ int td_navigation::worker::run(){
   if (rad_nav.triangulate_2Base(z_estimate) == 0){
 
 
-    heading = -smart_atan( (rad_nav.get_mobile_radio_coordinate(1,1) - rad_nav.get_mobile_radio_coordinate(0,1)),
+    heading = smart_atan( (rad_nav.get_mobile_radio_coordinate(1,1) - rad_nav.get_mobile_radio_coordinate(0,1)),
                           (rad_nav.get_mobile_radio_coordinate(1,0) - rad_nav.get_mobile_radio_coordinate(0,0)) );
 
     x = ( (rad_nav.get_mobile_radio_coordinate(0,0) + rad_nav.get_mobile_radio_coordinate(1,0)) / 2.0 ) +
-         (sin(heading) * robot_length_offset);
+         (cos(heading) * robot_length_offset);
 
     y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
-         (cos(heading) * robot_length_offset);
+         (sin(heading) * robot_length_offset);
 
     bearing = smart_atan(x,y);
 
@@ -431,6 +447,10 @@ int td_navigation::worker::run(){
     aa.bearing = bearing * 180.0 / PI;
     aa.x = x;
     aa.y = y;
+    aa.rad0toL = get_avg_dist0_l(average_length);
+    aa.rad0toR = get_avg_dist0_r(average_length);
+    aa.rad1toL = get_avg_dist1_l(average_length);
+    aa.rad1toR = get_avg_dist1_r(average_length);
 
     aa_p.publish(aa);
 
@@ -441,7 +461,7 @@ int td_navigation::worker::run(){
   }
 
   //update count
-  count++;
+  update_count();
   if(count >= 32000){
     count = 0;
 }
@@ -461,7 +481,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, node_type);
   ROS_INFO(" - ros::init complete");
 
-  td_navigation::worker worker(20, 625.5, 101, 106, 0, 0);
+  td_navigation::worker worker(30, 1016, 101, 106, 0, 0);
 
   ROS_DEBUG("td_navigation closing");
   return 0;
