@@ -58,6 +58,7 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
   int wait = 0;
   int timeout = 0;
   //TODO: change back to about 200
+
   ros::Rate loop_rate(2000);
 
   while(!confirmed){
@@ -435,7 +436,7 @@ int td_navigation::worker::run(){
     y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
          (sin(heading) * robot_length_offset);
 
-    bearing = smart_atan(x,y);
+    bearing = -smart_atan(x,y);
 
 
     ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
