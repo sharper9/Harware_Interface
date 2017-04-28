@@ -69,7 +69,8 @@ void NavigationFilter::run()
 	    double rr_heading = rr_srv.response.heading; //radians
 	    double rr_x = rr_srv.response.x;
 	    double rr_y = rr_srv.response.y;
-	    filter.initialize_states(filter.phi, rr_heading, filter.psi, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+	      //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
+	    filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
 	  }
 	
 		if (!prev_stopped && !stop_request)

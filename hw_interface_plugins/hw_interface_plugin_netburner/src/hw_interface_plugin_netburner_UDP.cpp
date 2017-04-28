@@ -59,9 +59,9 @@ bool hw_interface_plugin_netburner::netburner_UDP::interfaceReadHandler(const si
     nbROSMsg.nb_clock			    = ((double)nbMsg->clock_reg_count + ((double)nbMsg->clock_reg_reset_count * ((double) 0xFFFFFFFF + 1.0))) / (double)125000000.0;
     nbROSMsg.acc_x 			      = nbMsg->accX1*.00025/65536.0;
     nbROSMsg.acc_y 			      = nbMsg->accY1*0.00025/65536.0;
-    nbROSMsg.acc_z 			      = nbMsg->accZ1*0.00025/65536.0;
-    nbROSMsg.rate_p          	= nbMsg->rateP1*0.02/65536.0;
-    nbROSMsg.rate_q          	= nbMsg->rateQ1*0.02/65536.0;
+    nbROSMsg.acc_z 			      = -1.0*nbMsg->accZ1*0.00025/65536.0;
+    nbROSMsg.rate_p          	= nbMsg->rateQ1*0.02/65536.0; //quick and dirty transform
+    nbROSMsg.rate_q          	= nbMsg->rateP1*0.02/65536.0;
     nbROSMsg.rate_r          	= nbMsg->rateR1*0.02/65536.0;
     nbROSMsg.num_imus         = nbMsg->imuStatus;
     nbROSMsg.counter         	= nbMsg->counter;
