@@ -6,5 +6,8 @@
     <include file="$(find hw_interface_plugin_roboteq)/launch/Left_Roboteq_Interface.launch" />
     <include file="$(find hw_interface_plugin_roboteq)/launch/Right_Roboteq_Interface.launch" />
     <include file="$(find hw_interface_plugin_roboteq)/launch/Arm_Roboteq_Interface.launch" />
+    <include file="$(find hw_interface_plugin_roboteq)/launch/Bucket_Roboteq_Interface.launch" />
+    <include file="$(find hw_interface_plugin_roboteq)/launch/Scoop_Roboteq_Interface.launch" />    
     <include file="$(find hw_interface_plugin_netburner)/launch/NB1_Interface.launch" />
+
 </launch>

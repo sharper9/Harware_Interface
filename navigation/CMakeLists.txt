@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(messages)
+project(navigation)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -7,10 +7,11 @@ project(messages)
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   message_runtime
-  grid_map_ros
-  grid_map_msgs
+  messages
   roscpp
   rospy
+  std_msgs
+  hw_interface_plugin_roboteq
 )
 
 ## System dependencies are found with CMake's conventions
@@ -31,10 +32,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## * Let MSG_DEP_SET be the set of packages whose message types you use in
 ##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
 ## * In the file package.xml:
+##   * add a build_depend tag for "message_generation"
 ##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependencies might have been
-##     pulled in transitively but can be declared for certainty nonetheless:
-##     * add a build_depend tag for "message_generation"
+##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
+##     but can be declared for certainty nonetheless:
 ##     * add a run_depend tag for "message_runtime"
 ## * In this file (CMakeLists.txt):
 ##   * add "message_generation" and every package in MSG_DEP_SET to
@@ -47,32 +48,18 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
- add_message_files(
-   FILES
-   ActuatorOut.msg
-   ExecInfo.msg
-   ExecActionEnded.msg
-   NavFilterOut.msg
-   Servo_command.msg
-   Servo_status.msg
-   RobotPose.msg
-   MissionPlanningInfo.msg
-   NextWaypointOut.msg
-   #added for Comm port, remove
-   nb1_to_i7_msg.msg
-   nb2_3_to_i7_msg.msg
-   i7_to_nb1_msg.msg
-   encoder_data.msg
- )
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   ExecAction.srv
-   MissionPlanningControl.srv
-   ExecManualOverride.srv
-   NavFilterControl.srv
- )
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -82,11 +69,30 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   grid_map_msgs
-#   std_msgs  # Or other packages containing msgs
- )
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
+
+################################################
+## Declare ROS dynamic reconfigure parameters ##
+################################################
+
+## To declare and build dynamic reconfigure parameters within this
+## package, follow these steps:
+## * In the file package.xml:
+##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
+## * In this file (CMakeLists.txt):
+##   * add "dynamic_reconfigure" to
+##     find_package(catkin REQUIRED COMPONENTS ...)
+##   * uncomment the "generate_dynamic_reconfigure_options" section below
+##     and list every .cfg file to be processed
+
+## Generate dynamic reconfigure parameters in the 'cfg' folder
+# generate_dynamic_reconfigure_options(
+#   cfg/DynReconf1.cfg
+#   cfg/DynReconf2.cfg
+# )
 
 ###################################
 ## catkin specific configuration ##
@@ -99,8 +105,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES messages
-  CATKIN_DEPENDS message_generation message_runtime roscpp rospy
+#  LIBRARIES lidar
+  CATKIN_DEPENDS message_generation message_runtime messages roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -114,25 +120,42 @@ add_definitions("-std=gnu++11")
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
+	include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a cpp library
-# add_library(messages
-#   src/${PROJECT_NAME}/messages.cpp
-# )
+## Declare a C++ library
+add_library(encoders_class src/encoders_class.cpp)
+target_link_libraries(encoders_class ${catkin_LIBRARIES})
 
-## Declare a cpp executable
-# add_executable(messages_node src/messages_node.cpp)
+add_library(imu_class src/imu_class.cpp)
+target_link_libraries(imu_class ${catkin_LIBRARIES} armadillo lapack blas)
 
-## Add cmake target dependencies of the executable/library
-## as an example, message headers may need to be generated before nodes
-# add_dependencies(messages_node messages_generate_messages_cpp)
+add_library(filter_class src/filter_class.cpp)
+target_link_libraries(filter_class ${catkin_LIBRARIES} armadillo lapack blas)
+
+add_library(navigation_filter src/navigation_filter.cpp)
+target_link_libraries(navigation_filter ${catkin_LIBRARIES} encoders_class imu_class filter_class)
+
+## Add cmake target dependencies of the library
+## as an example, code may need to be generated before libraries
+## either from message generation or dynamic reconfigure
+# add_dependencies(lidar ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Declare a C++ executable
+add_executable(navigation_filter_node src/navigation_filter_node.cpp)
+add_dependencies(navigation_filter_node navigation_generate_messages_cpp)
+ target_link_libraries(navigation_filter_node
+   ${catkin_LIBRARIES}
+   encoders_class
+   imu_class
+   filter_class
+   navigation_filter
+ )
+
+## Add cmake target dependencies of the executable
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(messages_node
-#   ${catkin_LIBRARIES}
-# )
 
 #############
 ## Install ##
@@ -149,7 +172,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS messages messages_node
+# install(TARGETS lidar lidar_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -174,7 +197,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_messages.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_lidar.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
