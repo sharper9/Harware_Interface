@@ -18,5 +18,5 @@ float32 pot8
 
 uint8 num_imus
 uint8 pause_switch
-uint16 main_loop_counter
+uint16 mainLoopCounter
 float64 i7_clock

@@ -32,7 +32,9 @@
 /CMakeLists.txt
 
 #qt creator user files
-.user
+*.user
+*.user.*
+*.autosave
 
 # Doxygen config file
 hw_interface.doxy
