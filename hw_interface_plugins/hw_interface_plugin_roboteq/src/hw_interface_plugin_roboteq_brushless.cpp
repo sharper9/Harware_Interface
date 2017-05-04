@@ -11,7 +11,88 @@ hw_interface_plugin_roboteq::brushless::brushless()
 bool hw_interface_plugin_roboteq::brushless::implStart()
 {
   ROS_INFO("%s:: Plugin start!", pluginName.c_str());
+  
+  std::string script;
 
+  if (roboteqType == controller_t::Left_Drive_Roboteq)
+  {
+    //script = "# C\r^DINA 6 52\r^THLD 2\r^BLFB 1 1\r^BLSTD 1 3\r^BLL 1 -65535\r^BHL 1 65535\r^MXRPM 1 6500\r^MAC 1 30000\r^MDEC 1 50000\r^MMOD 1 1\r^MVEL 1 6500\r^MXTRN 1 1092250\r^KP 1 1\r^KI 1 3\r^KD 1 1\r^CLERD 1 0\r^BLFB 2 1\r^BLSTD 2 3\r^BLL 2 -65535\r^BHL 2 65535\r^MXRPM 2 6500\r^MAC 2 30000\r^MDEC 2 50000\r^MMOD 2 1\r^MVEL 2 6500\r^MXTRN 2 1092250\r^KP 2 1\r^KI 2 2\r^KD 2 2\r^CLERD 2 0\r%eesav \r# C \r# \r ";
+    script = "# C\r \
+^DINA 6 52\r \
+^THLD 2\r \
+^BLFB 1 1\r \
+^BLSTD 1 3\r \
+^BLL 1 -65535\r \
+^BHL 1 65535\r \
+^MXRPM 1 6500\r \
+^MAC 1 30000\r \
+^MDEC 1 50000\r \
+^MMOD 1 1\r \
+^MVEL 1 6500\r \
+^MXTRN 1 1092250\r \
+^KP 1 1\r \
+^KI 1 3\r \
+^KD 1 1\r \
+^CLERD 1 0\r \
+^BLFB 2 1\r \
+^BLSTD 2 3\r \
+^BLL 2 -65535\r \
+^BHL 2 65535\r \
+^MXRPM 2 6500\r \
+^MAC 2 30000\r \
+^MDEC 2 50000\r \
+^MMOD 2 1\r \
+^MVEL 2 6500\r \
+^MXTRN 2 1092250\r \
+^KP 2 1\r \
+^KI 2 2\r \
+^KD 2 2\r \
+^CLERD 2 0\r \
+%eesav \r \
+# C \r \
+# \r ";
+  } 
+  else 
+  {
+    //script = "# C\r^DINA 6 53\r^THLD 2\r^BLFB 1 1\r^BLSTD 1 3\r^BLL 1 -65535\r^BHL 1 65535\r^MXRPM 1 6500\r^MAC 1 30000\r^MDEC 1 50000\r^MMOD 1 1\r^MVEL 1 6500\r^MXTRN 1 1092250\r^KP 1 1\r^KI 1 3\r^KD 1 1\r^CLERD 1 0\r^BLFB 2 1\r^BLSTD 2 3\r^BLL 2 -65535\r^BHL 2 65535\r^MXRPM 2 6500\r^MAC 2 30000\r^MDEC 2 50000\r^MMOD 2 1\r^MVEL 2 6500\r^MXTRN 2 1092250\r^KP 2 1\r^KI 2 2\r^KD 2 2\r^CLERD 2 0\r%eesav \r# C \r# \r ";
+    script = "# C\r \
+^DINA 6 53\r \
+^THLD 2\r \
+^BLFB 1 1\r \
+^BLSTD 1 3\r \
+^BLL 1 -65535\r \
+^BHL 1 65535\r \
+^MXRPM 1 6500\r \
+^MAC 1 30000\r \
+^MDEC 1 50000\r \
+^MMOD 1 1\r \
+^MVEL 1 6500\r \
+^MXTRN 1 1092250\r \
+^KP 1 1\r \
+^KI 1 3\r \
+^KD 1 1\r \
+^CLERD 1 0\r \
+^BLFB 2 1\r \
+^BLSTD 2 3\r \
+^BLL 2 -65535\r \
+^BHL 2 65535\r \
+^MXRPM 2 6500\r \
+^MAC 2 30000\r \
+^MDEC 2 50000\r \
+^MMOD 2 1\r \
+^MVEL 2 6500\r \
+^MXTRN 2 1092250\r \
+^KP 2 1\r \
+^KI 2 2\r \
+^KD 2 2\r \
+^CLERD 2 0\r \
+%eesav \r \
+# C \r \
+# \r ";
+  }
+  ROS_INFO("script: %s",script.c_str());
+  postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(script));
+  
   /*
    * Roboteq usage
    * 1. send '# C' to clear history buffer

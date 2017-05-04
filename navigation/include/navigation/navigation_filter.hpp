@@ -7,6 +7,7 @@
 #include <messages/ExecInfo.h>
 #include <messages/MissionPlanningInfo.h>
 #include <messages/NavFilterOut.h>
+#include <td_navigation/Localize.h>
 
 //#include <messages/NavFilterControl.h> //added for new User Interface -Matt G.
 
@@ -41,6 +42,7 @@ class NavigationFilter
 		// Members
 		ros::NodeHandle nh;
 
+    ros::ServiceClient ranging_radio_client;
 	    ros::ServiceServer nav_control_server;
       // TODO: Check this - commented out to compile
 //	    messages::NavFilterControl::Request latest_nav_control_request;

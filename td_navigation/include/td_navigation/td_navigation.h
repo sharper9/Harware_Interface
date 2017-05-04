@@ -57,8 +57,8 @@ namespace td_navigation
 
     int add_distance(std::vector < std::vector<double> >& distances, double range, double error);
     bool send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub);
-    void rad_L_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
-    void rad_R_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
+    void mob_rad_0_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
+    void mob_rad_1_CallBack(const hw_interface_plugin_timedomain::RCM_Range_Info::ConstPtr &msg);
     bool srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res);
     int set_current_pos(double x_val, double y_val, double bearing_val, double heading_val);
     double get_avg_error(int amount_to_avg);

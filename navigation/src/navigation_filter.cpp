@@ -4,8 +4,10 @@ NavigationFilter::NavigationFilter()
 {
 	sub_exec = nh.subscribe("/control/exec/info", 1, &NavigationFilter::getExecInfoCallback, this);
 	pause_switch = false;
-	stopFlag = false;
+	stopFlag = true;
 	turnFlag = false;
+	
+	ranging_radio_client = nh.serviceClient<td_navigation::Localize>("localize");
 
   //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
 	filter.initialize_states(0,0,0,0,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
@@ -59,13 +61,17 @@ void NavigationFilter::run()
 	else if (stopFlag) //if stopped
 	{
 	  //re-initialize position if ranging radios are available
-	  //if()
-	  //{
-	  //  rr_heading=; //radians
-	  //  rr_x=;
-	  //  rr_y=;
-	  //  filter.initialize_states(filter.phi, rr_heading, filter.psi, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
-	  //}
+	  td_navigation::Localize rr_srv;
+	  rr_srv.request.average_length = 20; // value to be changed
+	  
+	  if(ranging_radio_client.call(rr_srv))
+	  {
+	    double rr_heading = rr_srv.response.heading; //radians
+	    double rr_x = rr_srv.response.x;
+	    double rr_y = rr_srv.response.y;
+	      //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
+	    filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+	  }
 	
 		if (!prev_stopped && !stop_request)
 		{

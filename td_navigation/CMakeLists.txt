@@ -103,7 +103,7 @@ add_definitions("-std=gnu++11")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES td_navigation
-  CATKIN_DEPENDS message_runtime hw_interface_plugin_timedomain
+  CATKIN_DEPENDS message_runtime messages hw_interface_plugin_timedomain
 #  DEPENDS system_lib
 )
 
