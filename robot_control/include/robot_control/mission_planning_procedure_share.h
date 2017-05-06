@@ -48,9 +48,14 @@ public:
     static bool atMineLocation;
     static bool bucketFull;
     static bool atDepositLocation;
+    static bool confirmedAtDepositLocation;
     static bool stuck;
-    const float depositWaypointX = 5.0; // m
+    const float depositWaypointX = 3.0; // m
     const float depositWaypointY = 0.0; // m
+    const float depositWaypointDistanceTolerance = 0.2; // m
+    const float depositWaypointAngleTolerance = 5.0; // deg
+    const float depositWaypointRecoverX = 6.0; // m
+    const float depositWaypointRecoverY = 0.0; // m
     const float queueEmptyTimerPeriod = 30.0; // sec
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
@@ -81,6 +86,7 @@ bool MissionPlanningProcedureShare::initialized;
 bool MissionPlanningProcedureShare::atMineLocation;
 bool MissionPlanningProcedureShare::bucketFull;
 bool MissionPlanningProcedureShare::atDepositLocation;
+bool MissionPlanningProcedureShare::confirmedAtDepositLocation;
 bool MissionPlanningProcedureShare::stuck;
 bool MissionPlanningProcedureShare::recoverCondition;
 bool MissionPlanningProcedureShare::queueEmptyTimedOut;

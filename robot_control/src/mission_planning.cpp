@@ -15,6 +15,7 @@ MissionPlanning::MissionPlanning()
     atMineLocation = false;
     bucketFull = false;
     atDepositLocation = false;
+    confirmedAtDepositLocation = false;
     stuck = false;
     pauseStarted = false;
     robotStatus.pauseSwitch = true;
@@ -99,7 +100,7 @@ void MissionPlanning::evalConditions_()
             ROS_INFO("to execute driveToDeposit");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !stuck) // Deposit
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck) // Deposit
         {
             procsToExecute[__deposit__] = true;
             ROS_INFO("to execute deposit");
