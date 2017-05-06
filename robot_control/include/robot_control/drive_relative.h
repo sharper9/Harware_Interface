@@ -26,11 +26,9 @@ private:
     float uYAct_;
     float newHeadingSign_;
     bool pushedToFront_;
+    bool driveBackwards_;
     bool driveCompleted_;
     void calculatePath_();
-    const float incrementalDriveDistance = 0.5; // m
-    const float finalPositionDistanceTolerance = 0.2; // m
-    const float finalHeadingAngleTolerance = 2.0; // deg
 };
 
 #endif // DRIVE_RELATIVE_H

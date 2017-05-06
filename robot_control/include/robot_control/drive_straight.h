@@ -8,6 +8,8 @@ public:
 	void init();
 	int run();
 private:
+    float initX_;
+    float initY_;
 	float initHeading_;
 	int driveSign_;
 	int pivotSign_;

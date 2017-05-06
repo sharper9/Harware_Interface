@@ -3,6 +3,8 @@
 void DriveStraight::init()
 {
 	traversedDistance_ = 0.0;
+    initX_ = robotStatus.xPos;
+    initY_ = robotStatus.yPos;
 	initHeading_ = robotStatus.heading;
 	desiredDistance_ = params.float1;
 	if(desiredDistance_<0.0) driveSign_ = -1;
@@ -22,7 +24,7 @@ int DriveStraight::run()
     robotOutputs.stopFlag = false;
     robotOutputs.turnFlag = false;
     vMax_ = robotStatus.vMax;
-	traversedDistance_ += robotStatus.deltaDistance;
+    traversedDistance_ = hypot(robotStatus.xPos - initX_, robotStatus.yPos - initY_);
 	remainingDistance_ = desiredDistance_ - traversedDistance_;
     //ROS_INFO("desiredDistance = %f",desiredDistance_);
     //ROS_INFO("remainingDistance = %f",remainingDistance_);

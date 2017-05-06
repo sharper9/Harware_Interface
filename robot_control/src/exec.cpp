@@ -71,7 +71,7 @@ void Exec::run()
     if(pause_==true && pausePrev_==false) pauseIdle_.driveHalt.init(); // Call init on driveHalt to begin possible drive hold
 	if(pause_)
 	{
-		ROS_INFO("exec pause");
+        ROS_INFO_THROTTLE(3,"exec pause");
 		pauseIdle_.run(); // If pause switch is true, run pause action
 		if(pushToFrontFlag_ || (newActionFlag_ && actionDeque_.size()==1)) actionDeque_.front()->init();
 	}
@@ -104,16 +104,14 @@ void Exec::run()
     newActionFlag_ = false;
     pushToFrontFlag_ = false;
 	pausePrev_ = pause_;
-	ROS_INFO("before packActuatorOut");
 	packActuatorMsgOut_();
-	ROS_INFO("before packInfoMsg");
 	packInfoMsgOut_();
     if(!manualOverride_)
     {
         actuatorPub.publish(actuatorMsgOut_);
         infoPub.publish(execInfoMsgOut_);
     }
-    std::printf("\n");
+    //std::printf("\n");
     /*execElapsedTime_ = ros::Time::now().toSec() - execStartTime_;
     ROS_INFO("*******\nexecElapsedTime = %f",execElapsedTime_);
     for(int i=0; i<NUM_ACTIONS; i++) ROS_INFO("actionPoolIndex[%i] = %i",i,actionPoolIndex_[i]);
@@ -126,7 +124,6 @@ void Exec::run()
 
 bool Exec::actionCallback_(messages::ExecAction::Request &req, messages::ExecAction::Response &res)
 {
-    ROS_INFO("execAction callback");
     nextActionType_ = static_cast<ACTION_TYPE_T>(req.nextActionType);
     newActionFlag_ = req.newActionFlag;
     pushToFrontFlag_ = req.pushToFrontFlag;
@@ -157,14 +154,12 @@ bool Exec::actionCallback_(messages::ExecAction::Request &req, messages::ExecAct
 
 bool Exec::manualOverrideCallback_(messages::ExecManualOverride::Request &req, messages::ExecManualOverride::Response &res)
 {
-    ROS_INFO("manualOverride callback");
     manualOverride_ = req.manualOverride;
     return true;
 }
 
 void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 {
-    ROS_INFO("nav callback");
     robotStatus.yawRate = msg->yaw_rate;
     robotStatus.rollAngle = msg->roll;
     robotStatus.pitchAngle = msg->pitch;
@@ -177,7 +172,6 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    ROS_INFO("scoop callback");
     // TODO: correctly set feedback
     //robotStatus.scoopStatus = msg->destination_reached[0] && msg->destination_reached[1];
     //robotStatus.scoopPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
@@ -185,7 +179,6 @@ void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::Const
 
 void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    ROS_INFO("arm callback");
     // TODO: correctly set feedback
     //robotStatus.armStatus = msg->destination_reached[0] && msg->destination_reached[1];
     //robotStatus.armPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
@@ -193,7 +186,6 @@ void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPt
 
 void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    ROS_INFO("bucket callback");
     // TODO: correctly set feedback
     //robotStatus.bucketStatus = msg->destination_reached[0] && msg->destination_reached[1];
     //robotStatus.bucketPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
@@ -201,7 +193,6 @@ void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::Cons
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)
 {
-    ROS_INFO("driveSpeeds callback");
     robotStatus.vMax = msg->vMax;
     robotStatus.rMax = msg->rMax;
 }

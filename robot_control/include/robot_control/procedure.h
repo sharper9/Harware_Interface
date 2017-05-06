@@ -16,7 +16,7 @@ public:
     virtual bool runProc() = 0;
     void clearAndResizeWTT();
 	void sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading, bool driveBackwards);
-	void sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque);
+    void sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque, bool driveBackwards);
     void sendDig();
     void sendDump();
 	void sendWait(float waitTime, bool pushToFront); // sec
@@ -85,7 +85,7 @@ void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float end
     }
 }
 
-void Procedure::sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque)
+void Procedure::sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque, bool driveBackwards)
 {
 	this->serialNum++;
     execActionSrv.request.nextActionType = _driveRelative;
@@ -103,7 +103,7 @@ void Procedure::sendDriveRel(float deltaDistance, float deltaHeading, bool endHe
     execActionSrv.request.int1 = 0;
 	execActionSrv.request.bool1 = endHeadingFlag;
 	execActionSrv.request.bool2 = frontOfDeque;
-	execActionSrv.request.bool3 = false;
+    execActionSrv.request.bool3 = driveBackwards;
 	execActionSrv.request.bool4 = false;
 	execActionSrv.request.bool5 = false;
 	execActionSrv.request.bool6 = false;
