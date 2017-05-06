@@ -7,10 +7,15 @@
 #define DEG2RAD PI/180.0
 #define RAD2DEG 180.0/PI
 
-#define GRABBER_OPEN 1000
-#define GRABBER_CLOSED -900
-#define GRABBER_DROPPED 1000
-#define GRABBER_RAISED -1000
+//#define SCOOP_RAISED 1000
+#define SCOOP_RAISED 0 // TODO: fix for closed loop
+#define SCOOP_LOWERED -900
+//#define ARM_RAISED 1000
+#define ARM_RAISED 0 // TODO: fix for CL
+#define ARM_LOWERED -900
+#define BUCKET_RAISED 1000
+//#define BUCKET_LOWERED -1000
+#define BUCKET_LOWERED 0 // TODO: fix for CL
 
 class RobotSim
 {
@@ -20,17 +25,18 @@ public:
 	double xPos; // m
 	double yPos; // m
 	double heading; // deg
-	// Grabber
-	int slidePos;
-	int slidePosCmdPrev;
-	int dropPos;
-	int dropPosCmdPrev;
-	int slideStop;
-	int dropStop;
-	bool grabAttempt;
+    // Linear Actuators
+    int scoopPos;
+    int scoopPosCmdPrev;
+    int armPos;
+    int armPosCmdPrev;
+    int bucketPos;
+    int bucketPosCmdPrev;
+    int scoopStop;
+    int armStop;
+    int bucketStop;
 	// Netburner
 	uint8_t nb1PauseSwitch = 255;
-	uint8_t nb2PauseSwitch = 255;
 	// Sim
 	double normalSpeedDT = 0.05;  // Default of 20 Hz, resulting in 1x speed
 	double dt = normalSpeedDT;
@@ -38,10 +44,11 @@ public:
 	RobotSim(double initX, double initY, double initHeading, double simRate); // Constructor
 	void drive(double linV, double angV); // Drive robot using linear and angular velocities as input. Arg units: m/s, deg/s
 	void teleport(double teleX, double teleY, double teleHeading); // Teleport robot to location. Arg units: m, m, deg
-	void runGrabber(int slidePosCmd, int dropPosCmd, int slideStopCmd, int dropStopCmd); // Manage grabber operations
+    void runLinearActuators(int scoopPosCmd, int armPosCmd, int bucketPosCmd, int scoopStopCmd, int armStopCmd, int bucketStopCmd); // Manage linear actuator operations
 private:
-	const double slideSpeed_ = 2000.0/5.0; // full range of -1000 to 1000 in 5 seconds
-	const double dropSpeed_ = 2000.0/5.0; // full range of -1000 to 1000 in 5 seconds
+    const double scoopSpeed_ = 2000.0/5.0; // full range of -1000 to 1000 in 5 seconds
+    const double armSpeed_ = 2000.0/5.0; // full range of -1000 to 1000 in 5 seconds
+    const double bucketSpeed_ = 2000.0/5.0; // full range of -1000 to 1000 in 5 seconds
 };
 
 #endif // ROBOT_SIM_H

@@ -178,6 +178,7 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
     ROS_INFO("scoop callback");
+    // TODO: correctly set feedback
     //robotStatus.scoopStatus = msg->destination_reached[0] && msg->destination_reached[1];
     //robotStatus.scoopPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
 }
@@ -185,6 +186,7 @@ void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::Const
 void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
     ROS_INFO("arm callback");
+    // TODO: correctly set feedback
     //robotStatus.armStatus = msg->destination_reached[0] && msg->destination_reached[1];
     //robotStatus.armPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
 }
@@ -192,6 +194,7 @@ void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPt
 void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
     ROS_INFO("bucket callback");
+    // TODO: correctly set feedback
     //robotStatus.bucketStatus = msg->destination_reached[0] && msg->destination_reached[1];
     //robotStatus.bucketPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
 }

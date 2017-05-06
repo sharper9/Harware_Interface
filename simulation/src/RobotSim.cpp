@@ -5,13 +5,14 @@ RobotSim::RobotSim(double initX, double initY, double initHeading, double simRat
 	teleport(initX, initY, initHeading);
     normalSpeedDT = 1.0/simRate;
     dt = normalSpeedDT;
-    slidePos = 1000;
-    dropPos = -1000;
-    slidePosCmdPrev = 1000;
-    dropPosCmdPrev = -1000;
-    slideStop = 1;
-    dropStop = 1;
-    grabAttempt = false;
+    scoopPos = SCOOP_RAISED;
+    armPos = ARM_LOWERED;
+    bucketPos = BUCKET_LOWERED;
+    scoopPosCmdPrev = SCOOP_RAISED;
+    armPosCmdPrev = ARM_LOWERED;
+    scoopStop = 1;
+    armStop = 1;
+    bucketStop = 1;
 }
 
 void RobotSim::drive(double linV, double angV)
@@ -28,27 +29,36 @@ void RobotSim::teleport(double teleX, double teleY, double teleHeading)
     heading = teleHeading;
 }
 
-void RobotSim::runGrabber(int slidePosCmd, int dropPosCmd, int slideStopCmd, int dropStopCmd)
+void RobotSim::runLinearActuators(int scoopPosCmd, int armPosCmd, int bucketPosCmd, int scoopStopCmd, int armStopCmd, int bucketStopCmd)
 {
-    if(slidePosCmd!=slidePosCmdPrev && slideStopCmd==0) slideStop = 0;
-    if(dropPosCmd!=dropPosCmdPrev && slideStopCmd==0) dropStop = 0;
-    if(slideStop==0)
+    if(scoopPosCmd!=scoopPosCmdPrev && scoopStopCmd==0) scoopStop = 0;
+    if(armPosCmd!=armPosCmdPrev && armStopCmd==0) armStop = 0;
+    if(bucketPosCmd!=bucketPosCmdPrev && bucketStopCmd==0) bucketStop = 0;
+    if(scoopStop==0)
     {
-        if(fabs(slidePos-slidePosCmd)<=(int)round(slideSpeed_*dt)) slidePos = slidePosCmd;
-        if(slidePosCmd > slidePos) slidePos += (int)round(slideSpeed_*dt);
-        else if(slidePosCmd < slidePos) slidePos -= (int)round(slideSpeed_*dt);
-        if(slidePos==slidePosCmd || slideStopCmd) slideStop = 1;
+        if(fabs(scoopPos-scoopPosCmd)<=(int)round(scoopSpeed_*dt)) scoopPos = scoopPosCmd;
+        if(scoopPosCmd > scoopPos) scoopPos += (int)round(scoopSpeed_*dt);
+        else if(scoopPosCmd < scoopPos) scoopPos -= (int)round(scoopSpeed_*dt);
+        if(scoopPos==scoopPosCmd || scoopStopCmd) scoopStop = 1;
     }
-    if(dropStop==0)
+    if(armStop==0)
     {
-        if(fabs(dropPos-dropPosCmd)<=(int)round(dropSpeed_*dt)) dropPos = dropPosCmd;
-        if(dropPosCmd > dropPos) dropPos += (int)round(dropSpeed_*dt);
-        else if(dropPosCmd < dropPos) dropPos -= (int)round(dropSpeed_*dt);
-        if(dropPos==dropPosCmd || dropStopCmd) dropStop = 1;
+        if(fabs(armPos-armPosCmd)<=(int)round(armSpeed_*dt)) armPos = armPosCmd;
+        if(armPosCmd > armPos) armPos += (int)round(armSpeed_*dt);
+        else if(armPosCmd < armPos) armPos -= (int)round(armSpeed_*dt);
+        if(armPos==armPosCmd || armStopCmd) armStop = 1;
     }
-    if(dropPos == GRABBER_DROPPED && slidePos > GRABBER_CLOSED && slidePosCmd == GRABBER_CLOSED) grabAttempt = true;
-    if(slideStopCmd) slidePosCmdPrev = slidePos;
-    else slidePosCmdPrev = slidePosCmd;
-    if(dropStopCmd) dropPosCmdPrev = dropPos;
-    else dropPosCmdPrev = dropPosCmd;
+    if(bucketStop==0)
+    {
+        if(fabs(bucketPos-bucketPosCmd)<=(int)round(bucketSpeed_*dt)) bucketPos = bucketPosCmd;
+        if(bucketPosCmd > bucketPos) bucketPos += (int)round(bucketSpeed_*dt);
+        else if(bucketPosCmd < bucketPos) bucketPos -= (int)round(bucketSpeed_*dt);
+        if(bucketPos==bucketPosCmd || bucketStopCmd) bucketStop = 1;
+    }
+    if(scoopStopCmd) scoopPosCmdPrev = scoopPos;
+    else scoopPosCmdPrev = scoopPosCmd;
+    if(armStopCmd) armPosCmdPrev = armPos;
+    else armPosCmdPrev = armPosCmd;
+    if(bucketStopCmd) bucketPosCmdPrev = bucketPos;
+    else bucketPosCmdPrev = bucketPosCmd;
 }

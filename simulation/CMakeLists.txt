@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   sensor_msgs
   robot_control
+  hw_interface_plugin_roboteq
 )
 
 ## System dependencies are found with CMake's conventions
@@ -112,21 +113,15 @@ include_directories(
 
 # Declare a cpp executable
  add_executable(simulation_node src/simulation_node.cpp)
- add_executable(sim_manager_node src/sim_manager_node.cpp)
 
 # Add cmake target dependencies of the executable/library
 # as an example, message headers may need to be generated before nodes
  add_dependencies(simulation_node simulation_generate_messages_cpp)
- add_dependencies(sim_manager_node simulation_generate_messages_cpp)
 
 # Specify libraries to link a library or executable target against
  target_link_libraries(simulation_node
    ${catkin_LIBRARIES}
    RobotSim
- )
-
- target_link_libraries(sim_manager_node
-   ${catkin_LIBRARIES}
  )
 #############
 ## Install ##
