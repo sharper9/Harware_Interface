@@ -47,6 +47,7 @@ private:
 	void resumeTimers_();
 	void calcnumProcsBeingOrToBeExecOrRes_();
 	void packAndPubInfoMsg_();
+	void initializeDigPlanningMap_();
 	void ExecActionEndedCallback_(const messages::ExecActionEnded::ConstPtr& msg);
 	void navCallback_(const messages::NavFilterOut::ConstPtr& msg);
 	void execInfoCallback_(const messages::ExecInfo::ConstPtr& msg);

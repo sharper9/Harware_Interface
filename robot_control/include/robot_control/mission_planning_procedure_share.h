@@ -12,6 +12,8 @@
 #include <math.h>
 #include <time.h>
 #include "mission_planning_types_defines.h"
+#include "planning_map_struct.hpp"
+#include "irl_grid_map.hpp"
 
 class MissionPlanningProcedureShare
 {
@@ -50,6 +52,7 @@ public:
     static bool atDepositLocation;
     static bool confirmedAtDepositLocation;
     static bool stuck;
+	static IRLGridMap<PlanningMapData> digPlanningMap;
     const float depositWaypointX = 3.0; // m
     const float depositWaypointY = 0.0; // m
     const float depositWaypointDistanceTolerance = 0.2; // m
@@ -59,6 +62,7 @@ public:
     const float queueEmptyTimerPeriod = 30.0; // sec
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
+	const float mapYOffset = 1.94; // m
 };
 
 bool MissionPlanningProcedureShare::procsToExecute[NUM_PROC_TYPES];
@@ -95,5 +99,6 @@ float MissionPlanningProcedureShare::angleToTurn; // deg
 double MissionPlanningProcedureShare::missionTime;
 double MissionPlanningProcedureShare::prevTime;
 bool MissionPlanningProcedureShare::missionStarted;
+IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(1.0, 7.38, 3.88);
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

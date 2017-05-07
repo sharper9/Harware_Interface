@@ -50,6 +50,7 @@ MissionPlanning::MissionPlanning()
         procsBeingExecuted[i] = false;
         procsToResume[i] = false;
     }
+    initializeDigPlanningMap_();
 }
 
 void MissionPlanning::run()
@@ -221,6 +222,11 @@ void MissionPlanning::packAndPubInfoMsg_()
     }
     infoMsg.missionTime = missionTime;
     infoPub.publish(infoMsg);
+}
+
+void MissionPlanning::initializeDigPlanningMap_()
+{
+
 }
 
 void MissionPlanning::ExecActionEndedCallback_(const messages::ExecActionEnded::ConstPtr &msg)
