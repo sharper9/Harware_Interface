@@ -16,21 +16,7 @@ bool hw_interface_plugin_roboteq::brushless::implStart()
   std::string wheelType;
   ros::param::get(pluginName+"/wheelType", wheelType);
 
-  std::string filename = script_list[wheelType];
-
-  std::ifstream roboteqInitFile (filename, std::ifstream::in);
-  if (!roboteqInitFile)
-  {
-    ROS_ERROR("Error locating RoboteQ startup script file");
-  }
-  else
-  {
-    //TODO: if roboteq disconnects do this again
-    roboteqInit.assign( (std::istreambuf_iterator<char>(roboteqInitFile)),
-                        (std::istreambuf_iterator<char>()) );
-    postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(roboteqInit));
-  }
-
+  postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(script_list[wheelType]));
 
   /*
    * Roboteq usage
