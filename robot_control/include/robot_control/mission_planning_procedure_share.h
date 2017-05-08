@@ -15,6 +15,10 @@
 #include "planning_map_struct.hpp"
 #include "irl_grid_map.hpp"
 
+#define DIG_MAP_RES 1.0
+#define DIG_MAP_X_LEN 7.38
+#define DIG_MAP_Y_LEN 3.88
+
 class MissionPlanningProcedureShare
 {
 public:
@@ -63,6 +67,9 @@ public:
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 	const float mapYOffset = 1.94; // m
+	const float miningRegionMinXDistance = 4.55; // m
+	const float miningRegionTargetXDistance = 4.65; // m
+	const float miningWallBufferDistance = 1.0; // m
 };
 
 bool MissionPlanningProcedureShare::procsToExecute[NUM_PROC_TYPES];
@@ -99,6 +106,6 @@ float MissionPlanningProcedureShare::angleToTurn; // deg
 double MissionPlanningProcedureShare::missionTime;
 double MissionPlanningProcedureShare::prevTime;
 bool MissionPlanningProcedureShare::missionStarted;
-IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(1.0, 7.38, 3.88);
+IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(DIG_MAP_RES, DIG_MAP_X_LEN, DIG_MAP_Y_LEN);
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

@@ -3,7 +3,6 @@
 
 struct PlanningMapData
 {
-	float distanceToDrive; // m
 	float headingUpperLimit; // deg
 	float headingLowerLimit; // deg
 };
