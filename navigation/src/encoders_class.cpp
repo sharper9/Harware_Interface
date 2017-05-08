@@ -144,12 +144,12 @@ void Encoders::calculateDeltaDistance4Wheels(int turnFlag, int stopFlag)
 	if(abs(minB) < abs(minF) || abs(minF)==0)
 	{
 	ROS_INFO("5");
-	  delta_distance = (double)logical*minB;
+	  delta_distance = -(double)logical*minB;
 	}
 	else
 	{
 	ROS_INFO("6");
-	  delta_distance = (double)logical*minF;
+	  delta_distance = -(double)logical*minF;
 	}
 	
 	//delta_distance  = (double)logical*1/2*( (fl_dist+bl_dist)/2 + (fr_dist+br_dist)/2 );

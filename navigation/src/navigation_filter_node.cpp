@@ -62,6 +62,7 @@ int main(int argc, char **argv)
 		msg_NavFilterOut.heading_init = navigationfilter.init_filter.psi*180.0/navigationfilter.PI;
 		msg_NavFilterOut.counter=navigationfilter.filter.counter;
 		msg_NavFilterOut.nav_status = navigationfilter.nav_status_output;
+		msg_NavFilterOut.imu_call_counter = navigationfilter.imu.call_counter1;
 
 		//publish navigation message
 		pub.publish(msg_NavFilterOut);

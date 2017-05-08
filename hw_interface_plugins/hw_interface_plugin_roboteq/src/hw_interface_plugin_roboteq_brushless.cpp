@@ -11,7 +11,7 @@ hw_interface_plugin_roboteq::brushless::brushless()
 bool hw_interface_plugin_roboteq::brushless::implStart()
 {
   ROS_INFO("%s:: Plugin start!", pluginName.c_str());
-
+  
   // TODO: error checking
   std::string wheelType;
   ros::param::get(pluginName+"/wheelType", wheelType);

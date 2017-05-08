@@ -25,3 +25,4 @@ float32 human_heading
 float32 bearing
 uint16 counter
 uint8 nav_status
+int8 imu_call_counter

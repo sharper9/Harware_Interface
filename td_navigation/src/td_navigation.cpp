@@ -59,7 +59,7 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
   int timeout = 0;
   //TODO: change back to about 200
 
-  ros::Rate loop_rate(2000);
+  ros::Rate loop_rate(500);
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -482,7 +482,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, node_type);
   ROS_INFO(" - ros::init complete");
 
-  td_navigation::worker worker(30, 1016, 101, 106, 0, 0);
+  td_navigation::worker worker(30, 733.425, 101, 106, 0, 0);
 
   ROS_DEBUG("td_navigation closing");
   return 0;
