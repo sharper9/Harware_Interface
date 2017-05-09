@@ -21,7 +21,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
         else if(!tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
         else if(!tempString.compare("Bucket_Roboteq")) { roboteqType = controller_t::Bucket_Roboteq; }
         else if(!tempString.compare("Arm_Roboteq")) { roboteqType = controller_t::Arm_Roboteq; }
-        else if(!tempString.compare("Scoop_Roboteq")) { roboteqType = controller_t::Scoop_Roboteq; }
+        else if(!tempString.compare("Wrist_Roboteq")) { roboteqType = controller_t::Wrist_Roboteq; }
         else { roboteqType = controller_t::Other; }
     }
     else
@@ -72,7 +72,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
-    else if(roboteqType == controller_t::Scoop_Roboteq)
+    else if(roboteqType == controller_t::Wrist_Roboteq)
     {
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
