@@ -116,6 +116,7 @@ include_directories(
  add_library(scoop_set_pos src/scoop_set_pos.cpp)
  add_library(arm_halt src/arm_halt.cpp)
  add_library(arm_set_pos src/arm_set_pos.cpp)
+ add_library(arm_shake src/arm_shake.cpp)
  add_library(bucket_halt src/bucket_halt.cpp)
  add_library(bucket_set_pos src/bucket_set_pos.cpp)
 
@@ -156,6 +157,7 @@ include_directories(
    scoop_set_pos
    arm_halt
    arm_set_pos
+   arm_shake
    bucket_halt
    bucket_set_pos
  )

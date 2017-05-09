@@ -41,6 +41,7 @@ Exec::Exec()
         pauseIdle_.taskPool[_scoopSetPos_][l] = new ScoopSetPos;
         pauseIdle_.taskPool[_armHalt_][l] = new ArmHalt;
         pauseIdle_.taskPool[_armSetPos_][l] = new ArmSetPos;
+        pauseIdle_.taskPool[_armShake_][l] = new ArmShake;
         pauseIdle_.taskPool[_bucketHalt_][l] = new BucketHalt;
         pauseIdle_.taskPool[_bucketSetPos_][l] = new BucketSetPos;
 	}

@@ -70,6 +70,7 @@ public:
 	const float miningRegionMinXDistance = 4.55; // m
 	const float miningRegionTargetXDistance = 4.65; // m
 	const float miningWallBufferDistance = 1.0; // m
+    const int numDigsPerMine = 3;
 };
 
 bool MissionPlanningProcedureShare::procsToExecute[NUM_PROC_TYPES];

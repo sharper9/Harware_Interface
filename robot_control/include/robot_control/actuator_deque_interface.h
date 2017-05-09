@@ -11,6 +11,7 @@
 #include "scoop_set_pos.h"
 #include "arm_halt.h"
 #include "arm_set_pos.h"
+#include "arm_shake.h"
 #include "bucket_halt.h"
 #include "bucket_set_pos.h"
 #define TASK_POOL_SIZE 100
