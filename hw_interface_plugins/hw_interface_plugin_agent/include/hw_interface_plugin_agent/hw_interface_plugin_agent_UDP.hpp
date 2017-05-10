@@ -10,7 +10,7 @@
 #include <sensor_msgs/Joy.h>
 
 #include <hw_interface_plugin_agent/LOS.h>
-#include <msgs_and_srvs/WebcamCommands.h>
+//#include <msgs_and_srvs/WebcamCommands.h>
 
 #include <topic_tools/shape_shifter.h>
 
@@ -87,7 +87,7 @@ namespace hw_interface_plugin_agent {
         void LOSTimeoutHandler(const boost::system::error_code& error);
         void msgCallback(const topic_tools::ShapeShifter::ConstPtr &msg, uint8_t type);
 
-        void webCamCmdCallback(const msgs_and_srvs::WebcamCommands::ConstPtr &msg);
+        //void webCamCmdCallback(const msgs_and_srvs::WebcamCommands::ConstPtr &msg);
 
         void compressedImageTransportCallback(const sensor_msgs::ImageConstPtr &msg);
 
@@ -119,7 +119,7 @@ namespace hw_interface_plugin_agent {
         image_transport::Subscriber imageTransportSub;
 
         sensor_msgs::Joy newJoyVal;
-        msgs_and_srvs::WebcamCommands webCamCmdFromCommand;
+        //msgs_and_srvs::WebcamCommands webCamCmdFromCommand;
 
 
         boost::mutex LOSTimeMutex;

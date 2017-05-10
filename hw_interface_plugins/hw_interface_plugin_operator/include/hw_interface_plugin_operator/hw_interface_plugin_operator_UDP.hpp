@@ -16,10 +16,6 @@
 #include <sensor_msgs/LaserScan.h>
 #include <image_transport/image_transport.h>
 
-#include <msgs_and_srvs/VirtualBumperStatus.h>
-
-//#include <msgs_and_srvs/
-
 #define MSG_TIMESTAMP_OFFSET    0
 #define MSG_TYPE_OFFSET         8 //1 after the double timestep which occupies [0-7], at byte index [8]
 #define MSG_OFFSET              9 //1 after the type at byte [8], this indicates the start of the serialized ros msg if the pkt contains one
