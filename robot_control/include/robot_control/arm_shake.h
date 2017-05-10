@@ -9,12 +9,12 @@ public:
     int run();
 private:
     int numShakesPerformed_;
-    float currentTime_;
-    float shakePrevTime_;
+    double currentTime_;
+    double shakePrevTime_;
     bool armAtOffsetPosition_;
     const int numShakesToPerform_ = 10;
     const int shakePosOffset_ = 5;
-    const float shakePeriod_ = 0.25; // sec
+    const double shakePeriod_ = 0.25; // sec
 };
 
 #endif // ARM_SHAKE_H

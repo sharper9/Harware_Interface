@@ -6,12 +6,13 @@ MissionPlanning::MissionPlanning()
     ExecActionEndedSub = nh.subscribe<messages::ExecActionEnded>("control/exec/actionended", 1, &MissionPlanning::ExecActionEndedCallback_, this);
     execInfoSub = nh.subscribe<messages::ExecInfo>("control/exec/info", 1, &MissionPlanning::execInfoCallback_, this);
     navSub = nh.subscribe<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout", 1, &MissionPlanning::navCallback_, this);
+    pauseSub = nh.subscribe<hw_interface_plugin_agent::pause>("/agent/pause", 1, &MissionPlanning::pauseCallback_, this);
     controlServ = nh.advertiseService("/control/missionplanning/control", &MissionPlanning::controlCallback_, this);
     infoPub = nh.advertise<messages::MissionPlanningInfo>("/control/missionplanning/info", 1);
     driveSpeedsPub = nh.advertise<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1);
     multiProcLockout = false;
     lockoutSum = 0;
-    initialized = false;
+    initialized = true; // TODO: TEMPORARY FOR TESTING!!! Should be false
     atMineLocation = false;
     bucketFull = false;
     atDepositLocation = false;
@@ -56,7 +57,6 @@ MissionPlanning::MissionPlanning()
 
 void MissionPlanning::run()
 {
-    robotStatus.pauseSwitch = false; // **********!!!!!!!!!! Need to figure out where this comes from
     ROS_INFO_THROTTLE(3,"Mission Planning running...");
     evalConditions_();
     ROS_DEBUG("robotStatus.pauseSwitch = %i",robotStatus.pauseSwitch);
@@ -272,6 +272,11 @@ void MissionPlanning::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)
 {
     execInfoMsg = *msg;
+}
+
+void MissionPlanning::pauseCallback_(const hw_interface_plugin_agent::pause::ConstPtr &msg)
+{
+    robotStatus.pauseSwitch = msg->pause;
 }
 
 bool MissionPlanning::controlCallback_(messages::MissionPlanningControl::Request &req, messages::MissionPlanningControl::Response &res)

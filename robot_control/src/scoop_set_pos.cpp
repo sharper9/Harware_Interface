@@ -10,7 +10,7 @@ void ScoopSetPos::init()
 int ScoopSetPos::run()
 {
     robotOutputs.scoopPosCmd = scoopPos_;
-    robotOutputs.armStopCmd = 0;
+    robotOutputs.scoopStopCmd = 0;
     if(abs(robotStatus.scoopPos - scoopPos_) <= scoopTol) {returnValue_ = 1; scoopEnded = true;}
     else {returnValue_ = 0; scoopEnded = false;}
     return returnValue_;

@@ -9,12 +9,12 @@ public:
     int run();
 private:
     int numShakesPerformed_;
-    float currentTime_;
-    float shakePrevTime_;
+    double currentTime_;
+    double shakePrevTime_;
     bool bucketAtOffsetPosition_;
     const int numShakesToPerform_ = 3;
     const int shakePosOffset_ = 5;
-    const float shakePeriod_ = 1.0; // sec
+    const double shakePeriod_ = 1.0; // sec
 };
 
 #endif // BUCKET_SHAKE_H

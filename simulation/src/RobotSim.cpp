@@ -13,6 +13,8 @@ RobotSim::RobotSim(double initX, double initY, double initHeading, double simRat
     scoopStop = 1;
     armStop = 1;
     bucketStop = 1;
+    leftBumper = false;
+    rightBumper = false;
 }
 
 void RobotSim::drive(double linV, double angV)
@@ -20,6 +22,16 @@ void RobotSim::drive(double linV, double angV)
     heading = heading + angV*dt;
     xPos = xPos + linV*cos(heading*DEG2RAD)*dt;
     yPos = yPos + linV*sin(heading*DEG2RAD)*dt;
+    if(xPos<0.2)
+    {
+        leftBumper = true;
+        rightBumper = true;
+    }
+    else
+    {
+        leftBumper = false;
+        rightBumper = false;
+    }
 }
 
 void RobotSim::teleport(double teleX, double teleY, double teleHeading)
@@ -31,6 +43,9 @@ void RobotSim::teleport(double teleX, double teleY, double teleHeading)
 
 void RobotSim::runLinearActuators(int scoopPosCmd, int armPosCmd, int bucketPosCmd, int scoopStopCmd, int armStopCmd, int bucketStopCmd)
 {
+    ROS_INFO("scoopCmd = %i, armCmd = %i, bucketCmd = %i",scoopPosCmd, armPosCmd, bucketPosCmd);
+    ROS_INFO("scoopPos = %i, armPos = %i, bucketPos = %i",scoopPos, armPos, bucketPos);
+    ROS_INFO("scoopStop = %i, armStop = %i, bucketStop = %i",scoopStop, armStop, bucketStop);
     if(scoopPosCmd!=scoopPosCmdPrev && scoopStopCmd==0) scoopStop = 0;
     if(armPosCmd!=armPosCmdPrev && armStopCmd==0) armStop = 0;
     if(bucketPosCmd!=bucketPosCmdPrev && bucketStopCmd==0) bucketStop = 0;

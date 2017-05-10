@@ -11,8 +11,8 @@ bool DriveToDig::runProc()
         computeDriveSpeeds();
         numWaypointsToTravel = 1;
         chosenHeading = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX))*
-                (digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos).headingUpperLimit -
-                 digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos).headingLowerLimit) + digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos).headingLowerLimit;
+                (digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingUpperLimit -
+                 digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit) + digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit;
         distanceToDrive = (miningRegionTargetXDistance - robotStatus.xPos)/cos(DEG2RAD*chosenHeading);
         angleToTurn = chosenHeading - robotStatus.heading;
         sendDriveRel(distanceToDrive, angleToTurn, false, 0.0, false, false);

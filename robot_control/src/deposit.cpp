@@ -30,7 +30,8 @@ bool Deposit::runProc()
         state = _exec_;
         break;
     case _finish_:
-        bucketFull = true;
+        bucketFull = false;
+        atDepositLocation = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;

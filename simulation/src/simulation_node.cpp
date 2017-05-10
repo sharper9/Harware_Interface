@@ -6,6 +6,7 @@
 #include <messages/nb1_to_i7_msg.h>
 #include <messages/NavFilterControl.h>
 #include <hw_interface_plugin_roboteq/Roboteq_Data.h>
+#include <hw_interface_plugin_agent/pause.h>
 #include <chrono>
 #include <random>
 
@@ -15,7 +16,8 @@ void rotateCoord(float origX, float origY, float &newX, float &newY, float angle
 
 const double simRate = 50.0; // Hz
 messages::ActuatorOut actuatorCmd;
-RobotSim robotSim(0.0, 0.0, 0.0,simRate);
+RobotSim robotSim(1.0, 0.0, 0.0,simRate);
+hw_interface_plugin_agent::pause pauseMsg;
 
 int main(int argc, char** argv)
 {
@@ -28,12 +30,16 @@ int main(int argc, char** argv)
     ros::Publisher scoopPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/scoop",1);
     ros::Publisher armPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/arm",1);
     ros::Publisher bucketPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/bucket",1);
-    ros::Publisher nb1Pub = nh.advertise<messages::nb1_to_i7_msg>("/hw_interface/hw_interface/nb1in/nb1in",1);
+    ros::Publisher pausePub = nh.advertise<hw_interface_plugin_agent::pause>("/agent/pause",1);
+    ros::Publisher leftDrivePub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/drivemotorin/left",1);
+    ros::Publisher rightDrivePub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/drivemotorin/right",1);
     messages::NavFilterOut navMsgOut;
     hw_interface_plugin_roboteq::Roboteq_Data scoopFeedbackMsg;
     hw_interface_plugin_roboteq::Roboteq_Data armFeedbackMsg;
     hw_interface_plugin_roboteq::Roboteq_Data bucketFeedbackMsg;
     messages::nb1_to_i7_msg nb1MsgOut;
+    hw_interface_plugin_roboteq::Roboteq_Data leftDriveFeedbackMsg;
+    hw_interface_plugin_roboteq::Roboteq_Data rightDriveFeedbackMsg;
 
     double linV; // m/s
     double angV; // deg/s
@@ -49,6 +55,12 @@ int main(int argc, char** argv)
     actuatorCmd.wrist_stop_cmd = 0;
     actuatorCmd.arm_stop_cmd = 0;
     actuatorCmd.bucket_stop_cmd = 0;
+    pauseMsg.pause = true; // Initialize pause to true
+    scoopFeedbackMsg.feedback.resize(2);
+    armFeedbackMsg.feedback.resize(2);
+    bucketFeedbackMsg.feedback.resize(2);
+    leftDriveFeedbackMsg.individual_digital_inputs.resize(6);
+    rightDriveFeedbackMsg.individual_digital_inputs.resize(6);
 
     ros::Rate loopRate(simRate);
     prevLoopTime = ros::Time::now().toSec();
@@ -65,19 +77,27 @@ int main(int argc, char** argv)
         //ROS_INFO("angV: %f",angV);
         robotSim.drive(linV, angV);
         robotSim.runLinearActuators(actuatorCmd.wrist_pos_cmd, actuatorCmd.arm_pos_cmd, actuatorCmd.bucket_pos_cmd, actuatorCmd.wrist_stop_cmd, actuatorCmd.arm_stop_cmd, actuatorCmd.bucket_stop_cmd);
-
+        scoopFeedbackMsg.feedback.at(0) = robotSim.scoopPos;
+        scoopFeedbackMsg.feedback.at(1) = robotSim.scoopPos;
+        armFeedbackMsg.feedback.at(0) = robotSim.armPos;
+        armFeedbackMsg.feedback.at(1) = robotSim.armPos;
+        bucketFeedbackMsg.feedback.at(0) = robotSim.bucketPos;
+        bucketFeedbackMsg.feedback.at(1) = robotSim.bucketPos;
+        leftDriveFeedbackMsg.individual_digital_inputs.at(5) = robotSim.leftBumper;
+        rightDriveFeedbackMsg.individual_digital_inputs.at(5) = robotSim.rightBumper;
         navMsgOut.x_position = robotSim.xPos;
         navMsgOut.y_position = robotSim.yPos;
         navMsgOut.velocity = linV;
         navMsgOut.yaw_rate = angV;
         navMsgOut.heading = robotSim.heading;
         navMsgOut.human_heading = fmod(robotSim.heading, 360.0);
-        nb1MsgOut.pause_switch = robotSim.nb1PauseSwitch;
         navPub.publish(navMsgOut);
         scoopPub.publish(scoopFeedbackMsg);
         armPub.publish(armFeedbackMsg);
         bucketPub.publish(bucketFeedbackMsg);
-        nb1Pub.publish(nb1MsgOut);
+        pausePub.publish(pauseMsg);
+        leftDrivePub.publish(leftDriveFeedbackMsg);
+        rightDrivePub.publish(rightDriveFeedbackMsg);
         loopRate.sleep();
         ros::spinOnce();
     }
@@ -99,8 +119,7 @@ void simControlCallback(const messages::SimControl::ConstPtr& msg)
     {
         if(msg->simSpeed>0.0) robotSim.dt = robotSim.normalSpeedDT*msg->simSpeed;
     }
-    if(msg->pauseSwitch) robotSim.nb1PauseSwitch = 255;
-    else robotSim.nb1PauseSwitch = 0;
+    pauseMsg.pause = msg->pauseSwitch;
 }
 
 void rotateCoord(float origX, float origY, float &newX, float &newY, float angleDeg)

@@ -177,23 +177,20 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    // TODO: correctly set feedback
     //robotStatus.scoopStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    //robotStatus.scoopPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.scoopPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
 }
 
 void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    // TODO: correctly set feedback
     //robotStatus.armStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    //robotStatus.armPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.armPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
 }
 
 void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    // TODO: correctly set feedback
     //robotStatus.bucketStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    //robotStatus.bucketPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.bucketPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
 }
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)

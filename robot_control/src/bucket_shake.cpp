@@ -14,8 +14,16 @@ int BucketShake::run()
     currentTime_ = ros::Time::now().toSec();
     if(currentTime_ - shakePrevTime_ > shakePeriod_)
     {
-        if(bucketAtOffsetPosition_) robotOutputs.bucketPosCmd = BUCKET_RAISED;
-        else robotOutputs.bucketPosCmd = BUCKET_RAISED - shakePosOffset_;
+        if(bucketAtOffsetPosition_)
+        {
+            robotOutputs.bucketPosCmd = BUCKET_RAISED;
+            bucketAtOffsetPosition_ = false;
+        }
+        else
+        {
+            robotOutputs.bucketPosCmd = BUCKET_RAISED - shakePosOffset_;
+            bucketAtOffsetPosition_ = true;
+        }
         shakePrevTime_ = currentTime_;
         numShakesPerformed_++;
     }

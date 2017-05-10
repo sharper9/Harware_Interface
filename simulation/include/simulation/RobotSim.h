@@ -2,20 +2,20 @@
 #define ROBOT_SIM_H
 #include <math.h>
 #include <stdint.h>
+#include <ros/ros.h>
 
 #define PI 3.14159265359
 #define DEG2RAD PI/180.0
 #define RAD2DEG 180.0/PI
 
-//#define SCOOP_RAISED 1000
-#define SCOOP_RAISED 0 // TODO: fix for closed loop
+// TODO: tune these values on the robot
+#define SCOOP_RAISED 1000
 #define SCOOP_LOWERED -900
-//#define ARM_RAISED 1000
-#define ARM_RAISED 0 // TODO: fix for CL
+#define ARM_RAISED 1000
 #define ARM_LOWERED -900
+#define ARM_DUMP 0
 #define BUCKET_RAISED 1000
-//#define BUCKET_LOWERED -1000
-#define BUCKET_LOWERED 0 // TODO: fix for CL
+#define BUCKET_LOWERED -1000
 
 class RobotSim
 {
@@ -25,6 +25,8 @@ public:
 	double xPos; // m
 	double yPos; // m
 	double heading; // deg
+    bool leftBumper;
+    bool rightBumper;
     // Linear Actuators
     int scoopPos;
     int scoopPosCmdPrev;
@@ -35,8 +37,6 @@ public:
     int scoopStop;
     int armStop;
     int bucketStop;
-	// Netburner
-	uint8_t nb1PauseSwitch = 255;
 	// Sim
 	double normalSpeedDT = 0.05;  // Default of 20 Hz, resulting in 1x speed
 	double dt = normalSpeedDT;

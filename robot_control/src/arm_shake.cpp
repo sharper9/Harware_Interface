@@ -14,8 +14,16 @@ int ArmShake::run()
     currentTime_ = ros::Time::now().toSec();
     if(currentTime_ - shakePrevTime_ > shakePeriod_)
     {
-        if(armAtOffsetPosition_) robotOutputs.armPosCmd = ARM_RAISED;
-        else robotOutputs.armPosCmd = ARM_RAISED - shakePosOffset_;
+        if(armAtOffsetPosition_)
+        {
+            robotOutputs.armPosCmd = ARM_RAISED;
+            armAtOffsetPosition_ = false;
+        }
+        else
+        {
+            robotOutputs.armPosCmd = ARM_RAISED - shakePosOffset_;
+            armAtOffsetPosition_ = true;
+        }
         shakePrevTime_ = currentTime_;
         numShakesPerformed_++;
     }

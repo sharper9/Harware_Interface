@@ -32,6 +32,7 @@ bool Mine::runProc()
         break;
     case _finish_:
         bucketFull = true;
+        atMineLocation = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
