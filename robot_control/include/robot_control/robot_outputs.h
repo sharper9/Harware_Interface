@@ -7,6 +7,7 @@
 //#define ARM_RAISED 1000
 #define ARM_RAISED 0 // TODO: fix for CL
 #define ARM_LOWERED -900
+#define ARM_DUMP 0
 #define BUCKET_RAISED 1000
 //#define BUCKET_LOWERED -1000
 #define BUCKET_LOWERED 0 // TODO: fix for CL

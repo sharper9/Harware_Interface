@@ -5,8 +5,8 @@
 #include "task_type_enum.h"
 #include "drive_halt.h"
 #include "drive_straight.h"
+#include "drive_until_limit.h"
 #include "drive_pivot.h"
-//#include "drive_arc.h"
 #include "scoop_halt.h"
 #include "scoop_set_pos.h"
 #include "arm_halt.h"
@@ -14,6 +14,7 @@
 #include "arm_shake.h"
 #include "bucket_halt.h"
 #include "bucket_set_pos.h"
+#include "bucket_shake.h"
 #define TASK_POOL_SIZE 100
 
 class ActuatorDequeInterface

@@ -8,6 +8,7 @@
 #include "idle.h"
 #include "drive_global.h"
 #include "drive_relative.h"
+#include "drive_to_wall.h"
 #include "dig.h"
 #include "dump.h"
 #include "wait.h"
@@ -38,6 +39,8 @@ public:
     ros::Subscriber armSub;
     ros::Subscriber bucketSub;
 	ros::Subscriber driveSpeedsSub;
+    ros::Subscriber leftDriveSub;
+    ros::Subscriber rightDriveSub;
 
 	const int loopRate = 20; // Hz
 	// Methods
@@ -74,6 +77,8 @@ private:
 	void armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
 	void bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
 	void driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr& msg);
+    void leftDriveCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
+    void rightDriveCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg);
 	void packActuatorMsgOut_();
 	void packInfoMsgOut_();
 };
