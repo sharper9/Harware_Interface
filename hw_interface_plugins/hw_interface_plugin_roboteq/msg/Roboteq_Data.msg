@@ -36,3 +36,6 @@ uint8 fault_flags
 # f6 = Brushless sensor fault
 # f7 = MOSFET failure
 # f8 = Default configuration loaded at startup
+
+# F
+int16[] feedback

@@ -17,4 +17,5 @@ Right_Roboteq:
         controllerType     : "Right_Drive",
         initializationCmd  : "absolute_brushless_counter individual_digital_inputs",
         initCmdCycle       : 20,
+        wheelType          : "Comp_Right",
     }
