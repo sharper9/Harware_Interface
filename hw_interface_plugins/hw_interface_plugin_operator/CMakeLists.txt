@@ -9,7 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   topic_tools
-  msgs_and_srvs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,7 +105,7 @@ add_definitions("-std=gnu++11")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES hw_interface_plugin_operator
-  CATKIN_DEPENDS hw_interface pluginlib roscpp topic_tools msgs_and_srvs
+  CATKIN_DEPENDS hw_interface pluginlib roscpp topic_tools
 #  DEPENDS system_lib
 )
 
