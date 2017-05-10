@@ -9,46 +9,53 @@ TeleOp::TeleOp()
 void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
 {
   messages::ActuatorOut actuator;
-  float joystickMagnitude = hypot(msg->axes[3], msg->axes[4]);
+  float joystickMagnitude = hypot(msg->axes[0], msg->axes[1]);
   if (joystickMagnitude > 1.0) joystickMagnitude = 1.0;
 
-  if (msg->axes[7] == -1.0) //arm down (crosspad down)
+  // TODO: fix bucket for closed loop
+  if (msg->buttons[Y_INDEX]) //bucket up
   {
-    actuator.arm_pos_cmd = -ROBOT_RANGE;
+    actuator.bucket_pos_cmd = -ROBOT_RANGE;
   }
-  else if (msg->axes[7] == 1.0) //arm up (crosspad up)
+  else if (msg->buttons[X_INDEX]) //bucket stow
+  {
+    actuator.bucket_pos_cmd = ROBOT_RANGE;
+  }
+  else if (msg->buttons[B_INDEX]) //bucket bump
+  {
+    actuator.bucket_pos_cmd = 0;
+  }
+
+  // TODO: fix arm for closed loop
+  if (msg->axes[RT_INDEX] == -1) //arm up (RT)
   {
     actuator.arm_pos_cmd = ROBOT_RANGE;
   }
-  else if (!msg->axes[7])
+  else if (msg->axes[LT_INDEX] == -1) //arm down (LT)
+  {
+    actuator.arm_pos_cmd = -ROBOT_RANGE;
+  }
+  else if (msg->axes[2] && msg->axes[5])
   {
     actuator.arm_pos_cmd = 0;
   }
 
-  if (msg->axes[5] == -1) //wrist down (RT)
-  {
-    actuator.wrist_pos_cmd = -ROBOT_RANGE;
-  }
-  else if (msg->axes[2] == -1) //wrist up (LT)
+  // TODO: fix wrist for closed loop
+  if (msg->buttons[RB_INDEX]) //wrist forward (RB)
   {
     actuator.wrist_pos_cmd = ROBOT_RANGE;
   }
-  else if (msg->axes[2] == 1 && msg->axes[5] == 1)
+  else if (msg->buttons[LB_INDEX]) //wrist backward (LB)
+  {
+    actuator.wrist_pos_cmd = -ROBOT_RANGE;
+  }
+  else if (!msg->buttons[RB_INDEX] && !msg->buttons[LB_INDEX])
   {
     actuator.wrist_pos_cmd = 0;
   }
-
-  if (msg->buttons[5] == 1) //bucket down (RB)
+  else if (msg->buttons[A_INDEX]) //reset wrist posiiton
   {
-    actuator.bucket_pos_cmd = -ROBOT_RANGE;
-  }
-  else if (msg->buttons[4] == 1) //bucket up (LB)
-  {
-    actuator.bucket_pos_cmd = ROBOT_RANGE;
-  }
-  else if (!msg->buttons[4] && !msg->buttons[5])
-  {
-    actuator.bucket_pos_cmd = 0;
+    actuator.wrist_pos_cmd = 0;
   }
 
   if(joystickMagnitude < JOYSTICK_DEADBAND)
@@ -62,39 +69,39 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
   {
     float speed = ROBOT_RANGE*pow(joystickMagnitude, 3.0);
 
-    if (msg->axes[4] >= JOYSTICK_DEADBAND) //forward
+    if (msg->axes[L_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND) //forward
     {
       actuator.fl_speed_cmd = speed;
       actuator.fr_speed_cmd = speed;
       actuator.bl_speed_cmd = speed;
       actuator.br_speed_cmd = speed;
 
-      if (msg->axes[0] >= JOYSTICK_DEADBAND) //left
-      {
-        actuator.fr_speed_cmd = -speed;
-        actuator.br_speed_cmd = -speed;
-      }
-      else if (msg->axes[0] <= -JOYSTICK_DEADBAND) //right
+      if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND) //left
       {
         actuator.fl_speed_cmd = -speed;
         actuator.bl_speed_cmd = -speed;
       }
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND) //right
+      {
+        actuator.fr_speed_cmd = -speed;
+        actuator.br_speed_cmd = -speed;
+      }
 
     }
 
-    else if (msg->axes[4] <= -JOYSTICK_DEADBAND)
+    else if (msg->axes[L_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND) //reverse
     {
       actuator.fl_speed_cmd = -speed;
       actuator.fr_speed_cmd = -speed;
       actuator.bl_speed_cmd = -speed;
       actuator.br_speed_cmd = -speed;
 
-      if (msg->axes[0] >= JOYSTICK_DEADBAND)
+      if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND) //left
       {
         actuator.fl_speed_cmd = speed;
         actuator.bl_speed_cmd = speed;
       }
-      else if (msg->axes[0] <= -JOYSTICK_DEADBAND)
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND) //right
       {
         actuator.fr_speed_cmd = speed;
         actuator.br_speed_cmd = speed;
