@@ -1,0 +1,19 @@
+plugin_names: 
+    {
+        operator_UDP : hw_interface_plugin_operator,
+    }
+    
+operator_UDP:
+    {
+        op_UDP : op_UDP,
+    }
+    
+op_UDP:
+    {
+        remoteAddress           : "139.78.85.131",
+        remotePort              : 12214,
+        localPort               : 9003,
+        heartbeatRate_ms        : 100,
+    }
+
+
