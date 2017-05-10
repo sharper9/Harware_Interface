@@ -10,7 +10,7 @@ base_classes::base_UDP_interface::base_UDP_interface()
     interfaceType = base_classes::UDP;
     interfaceStarted = false;
 
-    receivedData = boost::shared_array<uint8_t>(new uint8_t[500]);
+    receivedData = boost::shared_array<uint8_t>(new uint8_t[UDP_MAX_PKT_SIZE]);
     remoteEndpoint = boost::shared_ptr<boost::asio::ip::udp::endpoint>();
     localEndpoint = boost::shared_ptr<boost::asio::ip::udp::endpoint>();
     interfaceSocket = boost::shared_ptr<boost::asio::ip::udp::socket>();
@@ -28,6 +28,10 @@ bool base_classes::base_UDP_interface::interfaceReady()
 bool base_classes::base_UDP_interface::initPlugin(ros::NodeHandlePtr nhPtr,
                                                     const boost::shared_ptr<boost::asio::io_service> ioService)
 {
+    enableCompletionFunctor = false;
+    enableRegexReadUntil = false;
+    //initilize output data stream strand
+    interfaceSynchronousStrand = boost::shared_ptr<boost::asio::strand>(new boost::asio::strand(*ioService));
     //call plugin setup
     ROS_DEBUG_EXTRA_SINGLE("Calling Plugin's Init");
     subPluginInit(nhPtr);
@@ -52,10 +56,14 @@ bool base_classes::base_UDP_interface::startWork()
 
     if(!interfaceStarted)
     {
-        interfaceStarted = true;
+        interfaceStarted = pluginStart();
+        ROS_INFO("Setting Socket send size to %d", UDP_MAX_PKT_SIZE);
+        boost::asio::socket_base::send_buffer_size option(UDP_MAX_PKT_SIZE);
+        interfaceSocket->set_option(option);
     }
+    ROS_DEBUG("Starting UDP Work");
 
-    interfaceSocket.get()->async_receive(boost::asio::buffer(receivedData.get(), 100),
+    interfaceSocket.get()->async_receive_from(boost::asio::buffer(receivedData.get(), UDP_MAX_PKT_SIZE), senderEndpoint,
                                             boost::bind(&base_UDP_interface::handleIORequest, this,
                                                             boost::asio::placeholders::error(),
                                                             boost::asio::placeholders::bytes_transferred()));
@@ -79,10 +87,11 @@ bool base_classes::base_UDP_interface::stopWork()
 
 bool base_classes::base_UDP_interface::handleIORequest(const boost::system::error_code &ec, size_t bytesReceived)
 {
-    printMetrics(true);
-    ROS_INFO_THROTTLE(4,"Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesReceived);
+    //printMetrics(true);
+    ROS_INFO_THROTTLE(5,"Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesReceived);
 
     //call plugin's data handler
+    dataArrayStart=0;
     if(!interfaceReadHandler(bytesReceived, dataArrayStart))
     {
         ROS_ERROR("Error Occurred in plugin data Handler <%s>", this->pluginName.c_str());
@@ -90,4 +99,24 @@ bool base_classes::base_UDP_interface::handleIORequest(const boost::system::erro
 
     //restart the work
     return startWork();
+}
+
+void base_classes::base_UDP_interface::postInterfaceWriteRequest(const hw_interface_support_types::shared_const_buffer &buffer)
+{
+    ROS_DEBUG("%s:: Requesting interface write", pluginName.c_str());
+    interfaceSynchronousStrand->post(boost::bind(&base_UDP_interface::interfaceWriteHandler, this,
+                                                    buffer));
+}
+
+void base_classes::base_UDP_interface::interfaceWriteHandler(const hw_interface_support_types::shared_const_buffer &buffer)
+{
+    ROS_DEBUG("%s:: Writing Commands to interface", pluginName.c_str());
+    try {
+        //boost::system::system_error e();
+        interfaceSocket->send_to(buffer,*remoteEndpoint);
+    }
+    catch(boost::system::system_error &ec)
+    {
+        ROS_ERROR("%s:: Caught Exception on WRITE!! %s", pluginName.c_str(), ec.what());
+    }
 }

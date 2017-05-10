@@ -14,7 +14,7 @@ void mySigintHandler(int sig)
 
 int main(int argc, char **argv)
 {
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
     std::string node_type;

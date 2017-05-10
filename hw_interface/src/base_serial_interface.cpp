@@ -32,6 +32,8 @@ bool base_classes::base_serial_interface::interfaceReady()
 bool base_classes::base_serial_interface::initPlugin(ros::NodeHandlePtr nhPtr,
                                                         const boost::shared_ptr<boost::asio::io_service> ioService)
 {
+    enableCompletionFunctor = false;
+    enableRegexReadUntil = false;
     //initilize output data stream strand
     interfaceSynchronousStrand = boost::shared_ptr<boost::asio::strand>(new boost::asio::strand(*ioService));
 
@@ -126,7 +128,7 @@ bool base_classes::base_serial_interface::handleRegexRequest(const boost::system
 
 		ROS_INFO("Data -> %s", receivedRegexData.c_str());
 
-    if(!interfaceReadHandler(bytesTransferred, dataArrayStart))
+    if(!interfaceReadHandler(bytesTransferred, dataArrayStart, e))
     {
         ROS_ERROR("Error Occurred in data handler for plugin <%s>", this->pluginName.c_str());
     }
@@ -142,7 +144,7 @@ bool base_classes::base_serial_interface::handleRegexRequest(const boost::system
 bool base_classes::base_serial_interface::handleIORequest(const boost::system::error_code &ec, size_t bytesReceived)
 {
     printMetrics(true);
-    ROS_INFO("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesReceived);
+    ROS_DEBUG("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesReceived);
 
     //TODO: in future, copy buffer contents to prevent data races (if any data race can happen)
 
@@ -154,7 +156,7 @@ bool base_classes::base_serial_interface::handleIORequest(const boost::system::e
 
     //call plugin's data handler
     //SHORTCUT, if the first boolean check fails, the other is not called and avoids the worry of a null pointer
-    if(!interfaceReadHandler(bytesReceived, dataArrayStart))
+    if(!interfaceReadHandler(bytesReceived, dataArrayStart, ec))
     {
         ROS_ERROR("Error Occurred in plugin data Handler <%s>", this->pluginName.c_str());
     }
@@ -178,6 +180,7 @@ void base_classes::base_serial_interface::interfaceWriteHandler(const hw_interfa
     }
     catch(boost::system::system_error &ec)
     {
-        ROS_ERROR("%s:: Caught Exception on WRITE!! %s", pluginName.c_str(), ec.what());
+        ROS_ERROR_THROTTLE(5,"%s:: Caught Exception on WRITE!! %s", pluginName.c_str(), ec.what());
     }
+    ROS_DEBUG("%s:: Writing done", pluginName.c_str());
 }
