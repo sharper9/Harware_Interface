@@ -35,12 +35,12 @@ void hw_interface_plugin_agent::agent_UDP::msgCallback(const topic_tools::ShapeS
         else
         {
             boost::lock_guard<boost::mutex> guard(webCamCmdMutex);
-            if(webCamCmdFromCommand.start && (type==MSG_TYPE_CAMERA_IMAGE))
+            if(/*webCamCmdFromCommand.start && */(type==MSG_TYPE_CAMERA_IMAGE))
             {
                 ROS_INFO("Camera IMAGE");
                 postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
             }
-            else if(!(webCamCmdFromCommand.start) && (type==MSG_TYPE_LASER_SCAN))
+            else if(!/*(webCamCmdFromCommand.start) &&*/ (type==MSG_TYPE_LASER_SCAN))
             {
                 ROS_INFO("scan");
                 postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
@@ -49,12 +49,12 @@ void hw_interface_plugin_agent::agent_UDP::msgCallback(const topic_tools::ShapeS
     }
 }
 
-void hw_interface_plugin_agent::agent_UDP::webCamCmdCallback(const msgs_and_srvs::WebcamCommands::ConstPtr &msg)
+/*void hw_interface_plugin_agent::agent_UDP::webCamCmdCallback(const msgs_and_srvs::WebcamCommands::ConstPtr &msg)
 {
     boost::lock_guard<boost::mutex> guard(webCamCmdMutex);
     webCamCmdFromCommand=*msg;
 }
-
+*/
 
 bool hw_interface_plugin_agent::agent_UDP::pluginStart()
 {
@@ -92,7 +92,7 @@ bool hw_interface_plugin_agent::agent_UDP::subPluginInit(ros::NodeHandlePtr nhPt
     }
 
     LOSPub = nhPtr->advertise<hw_interface_plugin_agent::LOS>("/agent/LOS",1,true);
-    webCamCmdPub = nhPtr->advertise<msgs_and_srvs::WebcamCommands>("/agent/operatorIP",1,true);
+    //webCamCmdPub = nhPtr->advertise<msgs_and_srvs::WebcamCommands>("/agent/operatorIP",1,true);
 
     scanSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/scan",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
     bumperParamsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/vvirtualbumperparams",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
@@ -101,7 +101,7 @@ bool hw_interface_plugin_agent::agent_UDP::subPluginInit(ros::NodeHandlePtr nhPt
     driveCommandsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/drivecommands",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_DRIVE_CMDS));
     armModeSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/armmanualmode",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_ARM_MODE));
     cameraImageSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/webcam/publishimages/image",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_CAMERA_IMAGE));
-    webCamCmdSub = nhPtr->subscribe<msgs_and_srvs::WebcamCommands>("/command/interface/webcam",1,&hw_interface_plugin_agent::agent_UDP::webCamCmdCallback,this);
+    //webCamCmdSub = nhPtr->subscribe<msgs_and_srvs::WebcamCommands>("/command/interface/webcam",1,&hw_interface_plugin_agent::agent_UDP::webCamCmdCallback,this);
 
 //    nhPtr->setParam("~image_transport","compressed");
 //    image_transport::ImageTransport it(*nhPtr);
@@ -139,9 +139,9 @@ void hw_interface_plugin_agent::agent_UDP::LOSTimeoutHandler(const boost::system
             hw_interface_plugin_agent::LOS losMsg;
             losMsg.LOS=0;
             LOSPub.publish(losMsg);
-            msgs_and_srvs::WebcamCommands webCamCmd;
-            webCamCmd.serverAddress=remoteEndpoint->address().to_string();
-            webCamCmdPub.publish(webCamCmd);
+            //msgs_and_srvs::WebcamCommands webCamCmd;
+            //webCamCmd.serverAddress=remoteEndpoint->address().to_string();
+            //webCamCmdPub.publish(webCamCmd);
         }
     }
     LOSUpdateTimer->expires_from_now(boost::posix_time::milliseconds(1000));

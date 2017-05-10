@@ -80,7 +80,7 @@ namespace base_classes
         virtual bool subPluginInit(ros::NodeHandlePtr nhPtr) = 0;
         virtual void setInterfaceOptions() = 0;
 
-        virtual bool interfaceReadHandler(const size_t &bufferSize, int arrayStartPos, const boost::system::error_code &ec) = 0;
+        virtual bool interfaceReadHandler(const size_t &bufferSize, int arrayStartPos, const boost::system::error_code &ec);
 
         void interfaceWriteHandler(const hw_interface_support_types::shared_const_buffer &buffer);
         void postInterfaceWriteRequest(const hw_interface_support_types::shared_const_buffer &buffer);
