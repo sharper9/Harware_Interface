@@ -128,6 +128,7 @@ include_directories(
  add_library(drive_to_dig src/drive_to_dig.cpp)
  add_library(mine src/mine.cpp)
  add_library(drive_to_deposit src/drive_to_deposit.cpp)
+ add_library(deposit_realign src/deposit_realign.cpp)
  add_library(deposit src/deposit.cpp)
  add_library(recover src/recover.cpp)
  add_library(pause src/pause.cpp)
@@ -175,6 +176,7 @@ include_directories(
    drive_to_dig
    mine
    drive_to_deposit
+   deposit_realign
    deposit
    recover
    pause

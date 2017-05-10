@@ -10,6 +10,7 @@
 #include "drive_to_dig.h"
 #include "mine.h"
 #include "drive_to_deposit.h"
+#include "deposit_realign.h"
 #include "deposit.h"
 #include "recover.h"
 #include "pause.h"
@@ -33,6 +34,7 @@ public:
     DriveToDig driveToDig;
     Mine mine;
     DriveToDeposit driveToDeposit;
+    DepositRealign depositRealign;
     Deposit deposit;
     Recover recover;
     Pause pause;

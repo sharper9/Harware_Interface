@@ -25,6 +25,7 @@ MissionPlanning::MissionPlanning()
     driveToDig.reg(__driveToDig__);
     mine.reg(__mine__);
     driveToDeposit.reg(__driveToDeposit__);
+    depositRealign.reg(__depositRealign__);
     deposit.reg(__deposit__);
     recover.reg(__recover__);
     missionTime = 0.0;
@@ -101,6 +102,12 @@ void MissionPlanning::evalConditions_()
             ROS_INFO("to execute driveToDeposit");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !confirmedAtDepositLocation && !stuck) // DepositRealign
+        {
+            procsToExecute[__depositRealign__] = true;
+            ROS_INFO("to execute depositRealign");
+        }
+        calcnumProcsBeingOrToBeExecOrRes_();
         if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck) // Deposit
         {
             procsToExecute[__deposit__] = true;
@@ -150,6 +157,8 @@ void MissionPlanning::runProcedures_()
     driveToDig.run();
     mine.run();
     driveToDeposit.run();
+    depositRealign.run();
+    deposit.run();
     recover.run();
 }
 
