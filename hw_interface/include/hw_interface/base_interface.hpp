@@ -31,6 +31,10 @@
 #define LINENUMBER_C_STR boost::lexical_cast<std::string>(__LINE__).c_str()
 #define ROS_INFO_EXTRA_SINGLE(arg1  ) ROS_INFO("%s %s:: " arg1 ,FILENAME_C_STR, LINENUMBER_C_STR)
 #define ROS_INFO_EXTRA(arg1, args...) ROS_INFO("%s %s:: " arg1 ,FILENAME_C_STR, LINENUMBER_C_STR, args)
+#define ROS_INFO_EXTRA_NAME(arg1, args...) ROS_INFO("%s:: " arg1 , pluginName.c_str(), args)
+#define ROS_DEBUG_EXTRA_NAME(arg1, args...) ROS_DEBUG("%s:: " arg1 , pluginName.c_str(), args)
+#define ROS_WARN_EXTRA_NAME(arg1, args...) ROS_WARN("%s:: " arg1 , pluginName.c_str(), args)
+#define ROS_ERROR_EXTRA_NAME(arg1, args...) ROS_ERROR("%s:: " arg1 , pluginName.c_str(), args)
 #define ROS_ERROR_EXTRA_SINGLE(arg1  ) ROS_ERROR("%s %s:: " arg1 ,FILENAME_C_STR, LINENUMBER_C_STR)
 #define ROS_ERROR_EXTRA(arg1, args...) ROS_ERROR("%s %s:: " arg1 ,FILENAME_C_STR, LINENUMBER_C_STR, args)
 #define ROS_DEBUG_EXTRA_SINGLE(arg1  ) ROS_DEBUG("%s %s:: " arg1 ,FILENAME_C_STR, LINENUMBER_C_STR)
@@ -92,10 +96,10 @@ namespace base_classes
         virtual bool handleIORequest(const boost::system::error_code &ec, size_t bytesReceived) {}
 
         virtual void postInterfaceWriteRequest(const hw_interface_support_types::shared_const_buffer &buffer) {}
-        virtual void interfaceWriteHandler(const hw_interface_support_types::shared_const_buffer &buffer) {}
+        virtual void interfaceWriteHandler(const hw_interface_support_types::shared_const_buffer &buffer, const boost::system::error_code &ec) {}
 
-        uint16_t calcCRC16Block(const void * const buf, std::size_t numOfBytes);
-        uint32_t calcCRC32Block(const void * const buf, std::size_t numOfBytes);
+        static uint16_t calcCRC16Block(const void * const buf, std::size_t numOfBytes);
+        static uint32_t calcCRC32Block(const void * const buf, std::size_t numOfBytes);
 
         void setupStreamMatcherDelimAndLength(const int packetLengthInBytes, const char *headerSequence,
                                               const char *footerSequence)

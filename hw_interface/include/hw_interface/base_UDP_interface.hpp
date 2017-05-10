@@ -13,6 +13,7 @@
 #include <boost/system/error_code.hpp>
 
 #define UDP_FRAME_BUFFER_SIZE 1500
+#define UDP_MAX_PKT_SIZE 65500
 
 namespace base_classes
 {
@@ -21,10 +22,6 @@ namespace base_classes
         //friend class hw_interface;
 
     private:
-
-        boost::shared_ptr<boost::asio::ip::udp::socket> interfaceSocket;
-        boost::shared_ptr<boost::asio::ip::udp::endpoint> localEndpoint;
-        boost::shared_ptr<boost::asio::ip::udp::endpoint> remoteEndpoint;
 
         bool interfaceReady();
         bool initPlugin(ros::NodeHandlePtr nhPtr,
@@ -39,11 +36,26 @@ namespace base_classes
 
         base_UDP_interface();
 
+        boost::shared_ptr<boost::asio::ip::udp::socket> interfaceSocket;
+        boost::shared_ptr<boost::asio::ip::udp::endpoint> localEndpoint;
+        boost::shared_ptr<boost::asio::ip::udp::endpoint> remoteEndpoint;
+        boost::asio::ip::udp::endpoint senderEndpoint;
+
         //needs better name
         //this function calls the plugin's function to read in ROS params,
         //subscribe to topics, publish topics. This function should fill
         //in the protected member's info
         virtual bool subPluginInit(ros::NodeHandlePtr nhPtr) = 0;
+
+        virtual bool pluginStart()
+        {
+            return true;
+        }
+
+        virtual bool pluginStop()
+        {
+            return true;
+        }
 
         boost::asio::ip::address localAddress;
         int localPort;
@@ -52,6 +64,9 @@ namespace base_classes
 
         //plugin provided data handler that moves data into ROS
         virtual bool interfaceReadHandler(const size_t &bufferSize, int arrayStartPos) = 0;
+
+        void interfaceWriteHandler(const hw_interface_support_types::shared_const_buffer &buffer);
+        void postInterfaceWriteRequest(const hw_interface_support_types::shared_const_buffer &buffer);
 
     public:
         bool handleIORequest(const boost::system::error_code &ec, size_t bytesReceived);
