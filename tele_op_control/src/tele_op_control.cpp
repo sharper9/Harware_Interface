@@ -40,24 +40,14 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
   {
     if (exec_manual_override_srv_.request.manualOverride)
     {
-<<<<<<< HEAD
       ROS_WARN_THROTTLE(2, "ENAGAE MANUAL OVERRIDE");
       exec_manual_override_srv_.request.manualOverride = false;
-=======
-      ROS_WARN("ENAGAE MANUAL OVERRIDE");
-      exec_manual_override_srv_.request.manualOverride = true;
->>>>>>> rmc2016/master
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }
     else
     {
-<<<<<<< HEAD
       ROS_WARN_THROTTLE(2, "DISENAGAE MANUAL OVERRIDE");
       exec_manual_override_srv_.request.manualOverride = true;
-=======
-      ROS_WARN("DISENAGAE MANUAL OVERRIDE");
-      exec_manual_override_srv_.request.manualOverride = false;
->>>>>>> rmc2016/master
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }
   }
