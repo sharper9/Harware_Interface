@@ -14,12 +14,18 @@
 
 #define ROBOT_RANGE 1000 // -1000 to 1000
 #define JOYSTICK_DEADBAND 0.2
-#define SCOOP_RAISED -1000
-#define SCOOP_LOWERED 0
+
+#define WRIST_RAISED 1000
+#define WRIST_LOWERED -1000
+#define WRIST_OFFSET 10
+
 #define ARM_RAISED 1000
-#define ARM_LOWERED -900
+#define ARM_LOWERED -1000
+#define ARM_OFFSET 10
+
 #define BUCKET_RAISED 1000
 #define BUCKET_LOWERED -1000
+#define BUCKET_BUMP 850
 
 // button indexes
 #define A_INDEX 0
@@ -65,6 +71,8 @@ private:
   Toggle pause_toggle_;
   Toggle manual_override_toggle_;
   Leading_Edge_Latch manual_override_latch_;
+  
+  int bucket_pos_, wrist_pos_, arm_pos_;
 
   void joystickCallback(const sensor_msgs::JoyConstPtr &msg);
 };
