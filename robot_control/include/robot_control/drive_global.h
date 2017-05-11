@@ -16,7 +16,6 @@ private:
 	float rMax_;
 	float desiredEndHeading_;
 	bool endHeading_;
-	float candidateEndHeadingAngleToTurn_[2];
 	float distanceToDrive_;
 	float angleToTurn_;
 	float xErr_;
@@ -26,6 +25,11 @@ private:
 	float uXAct_;
 	float uYAct_;
 	float newHeadingSign_;
+    float uXDesiredEndHeading_;
+    float uYDesiredEndHeading_;
+    float uXCurrentHeading_;
+    float uYCurrentHeading_;
+    float signDesiredEndHeading_;
 	bool pushedToFront_;
 	bool driveBackwards_;
     bool driveCompleted_;
