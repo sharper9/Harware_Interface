@@ -10,6 +10,8 @@ Exec::Exec()
     armSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/arm", 1, &Exec::armCallback_, this);
     bucketSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/bucket", 1, &Exec::bucketCallback_, this);
     driveSpeedsSub = nh.subscribe<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1, &Exec::driveSpeedsCallback_, this);
+    leftDriveSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/drivemotorin/left", 1, &Exec::leftDriveCallback_, this);
+    rightDriveSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/drivemotorin/right", 1, &Exec::rightDriveCallback_, this);
 	actuatorPub = nh.advertise<messages::ActuatorOut>("control/actuatorout/all",1);
 	infoPub = nh.advertise<messages::ExecInfo>("control/exec/info",1);
     actionEndedPub = nh.advertise<messages::ExecActionEnded>("control/exec/actionended",1);
@@ -23,6 +25,7 @@ Exec::Exec()
         actionPool_[_idle][j] = new Idle;
 		actionPool_[_driveGlobal][j] = new DriveGlobal;
 		actionPool_[_driveRelative][j] = new DriveRelative;
+        actionPool_[_driveToWall][j] = new DriveToWall;
         actionPool_[_dig][j] = new Dig;
         actionPool_[_dump][j] = new Dump;
         actionPool_[_wait][j] = new Wait;
@@ -35,14 +38,16 @@ Exec::Exec()
 	{
 		pauseIdle_.taskPool[_driveHalt_][l] = new DriveHalt;
 		pauseIdle_.taskPool[_driveStraight_][l] = new DriveStraight;
+        pauseIdle_.taskPool[_driveUntilLimit_][l] = new DriveUntilLimit;
 		pauseIdle_.taskPool[_pivot_][l] = new DrivePivot;
-        //pauseIdle_.taskPool[_driveArc_][l] = new DriveArc;
         pauseIdle_.taskPool[_scoopHalt_][l] = new ScoopHalt;
         pauseIdle_.taskPool[_scoopSetPos_][l] = new ScoopSetPos;
         pauseIdle_.taskPool[_armHalt_][l] = new ArmHalt;
         pauseIdle_.taskPool[_armSetPos_][l] = new ArmSetPos;
+        pauseIdle_.taskPool[_armShake_][l] = new ArmShake;
         pauseIdle_.taskPool[_bucketHalt_][l] = new BucketHalt;
         pauseIdle_.taskPool[_bucketSetPos_][l] = new BucketSetPos;
+        pauseIdle_.taskPool[_bucketShake_][l] = new BucketShake;
 	}
     execStartTime_ = ros::Time::now().toSec();
     actionDequeEmptyPrev_ = true;
@@ -71,7 +76,7 @@ void Exec::run()
     if(pause_==true && pausePrev_==false) pauseIdle_.driveHalt.init(); // Call init on driveHalt to begin possible drive hold
 	if(pause_)
 	{
-		ROS_INFO("exec pause");
+        ROS_INFO_THROTTLE(3,"exec pause");
 		pauseIdle_.run(); // If pause switch is true, run pause action
 		if(pushToFrontFlag_ || (newActionFlag_ && actionDeque_.size()==1)) actionDeque_.front()->init();
 	}
@@ -104,16 +109,14 @@ void Exec::run()
     newActionFlag_ = false;
     pushToFrontFlag_ = false;
 	pausePrev_ = pause_;
-	ROS_INFO("before packActuatorOut");
 	packActuatorMsgOut_();
-	ROS_INFO("before packInfoMsg");
 	packInfoMsgOut_();
     if(!manualOverride_)
     {
         actuatorPub.publish(actuatorMsgOut_);
         infoPub.publish(execInfoMsgOut_);
     }
-    std::printf("\n");
+    //std::printf("\n");
     /*execElapsedTime_ = ros::Time::now().toSec() - execStartTime_;
     ROS_INFO("*******\nexecElapsedTime = %f",execElapsedTime_);
     for(int i=0; i<NUM_ACTIONS; i++) ROS_INFO("actionPoolIndex[%i] = %i",i,actionPoolIndex_[i]);
@@ -126,7 +129,6 @@ void Exec::run()
 
 bool Exec::actionCallback_(messages::ExecAction::Request &req, messages::ExecAction::Response &res)
 {
-    ROS_INFO("execAction callback");
     nextActionType_ = static_cast<ACTION_TYPE_T>(req.nextActionType);
     newActionFlag_ = req.newActionFlag;
     pushToFrontFlag_ = req.pushToFrontFlag;
@@ -157,14 +159,12 @@ bool Exec::actionCallback_(messages::ExecAction::Request &req, messages::ExecAct
 
 bool Exec::manualOverrideCallback_(messages::ExecManualOverride::Request &req, messages::ExecManualOverride::Response &res)
 {
-    ROS_INFO("manualOverride callback");
     manualOverride_ = req.manualOverride;
     return true;
 }
 
 void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 {
-    ROS_INFO("nav callback");
     robotStatus.yawRate = msg->yaw_rate;
     robotStatus.rollAngle = msg->roll;
     robotStatus.pitchAngle = msg->pitch;
@@ -177,30 +177,36 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    ROS_INFO("scoop callback");
     //robotStatus.scoopStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    //robotStatus.scoopPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.scoopPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
 }
 
 void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    ROS_INFO("arm callback");
     //robotStatus.armStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    //robotStatus.armPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.armPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
 }
 
 void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
-    ROS_INFO("bucket callback");
     //robotStatus.bucketStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    //robotStatus.bucketPos = (msg->analog_inputs[0] + msg->analog_inputs[1])/2.0; // !!! This may not be the right way to get the feedback position...
+    robotStatus.bucketPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
 }
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)
 {
-    ROS_INFO("driveSpeeds callback");
     robotStatus.vMax = msg->vMax;
     robotStatus.rMax = msg->rMax;
+}
+
+void Exec::leftDriveCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr &msg)
+{
+    robotStatus.leftBumper = msg->individual_digital_inputs.at(5);
+}
+
+void Exec::rightDriveCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr &msg)
+{
+    robotStatus.rightBumper = msg->individual_digital_inputs.at(5);
 }
 
 void Exec::packActuatorMsgOut_()

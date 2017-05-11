@@ -1,0 +1,5 @@
+<library path="lib/libhw_interface_plugin_operator_UDP">
+  <class type="hw_interface_plugin_operator::operator_UDP" base_class_type="base_classes::base_interface">
+    <description>operator UDP Interface</description>
+  </class>
+</library>

@@ -6,15 +6,17 @@ MissionPlanning::MissionPlanning()
     ExecActionEndedSub = nh.subscribe<messages::ExecActionEnded>("control/exec/actionended", 1, &MissionPlanning::ExecActionEndedCallback_, this);
     execInfoSub = nh.subscribe<messages::ExecInfo>("control/exec/info", 1, &MissionPlanning::execInfoCallback_, this);
     navSub = nh.subscribe<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout", 1, &MissionPlanning::navCallback_, this);
+    pauseSub = nh.subscribe<hw_interface_plugin_agent::pause>("/agent/pause", 1, &MissionPlanning::pauseCallback_, this);
     controlServ = nh.advertiseService("/control/missionplanning/control", &MissionPlanning::controlCallback_, this);
     infoPub = nh.advertise<messages::MissionPlanningInfo>("/control/missionplanning/info", 1);
     driveSpeedsPub = nh.advertise<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1);
     multiProcLockout = false;
     lockoutSum = 0;
-    initialized = false;
+    initialized = true; // TODO: TEMPORARY FOR TESTING!!! Should be false
     atMineLocation = false;
     bucketFull = false;
     atDepositLocation = false;
+    confirmedAtDepositLocation = false;
     stuck = false;
     pauseStarted = false;
     robotStatus.pauseSwitch = true;
@@ -24,6 +26,7 @@ MissionPlanning::MissionPlanning()
     driveToDig.reg(__driveToDig__);
     mine.reg(__mine__);
     driveToDeposit.reg(__driveToDeposit__);
+    depositRealign.reg(__depositRealign__);
     deposit.reg(__deposit__);
     recover.reg(__recover__);
     missionTime = 0.0;
@@ -49,11 +52,11 @@ MissionPlanning::MissionPlanning()
         procsBeingExecuted[i] = false;
         procsToResume[i] = false;
     }
+    initializeDigPlanningMap_();
 }
 
 void MissionPlanning::run()
 {
-    robotStatus.pauseSwitch = false; // **********!!!!!!!!!! Need to figure out where this comes from
     ROS_INFO_THROTTLE(3,"Mission Planning running...");
     evalConditions_();
     ROS_DEBUG("robotStatus.pauseSwitch = %i",robotStatus.pauseSwitch);
@@ -99,7 +102,13 @@ void MissionPlanning::evalConditions_()
             ROS_INFO("to execute driveToDeposit");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !stuck) // Deposit
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !confirmedAtDepositLocation && !stuck) // DepositRealign
+        {
+            procsToExecute[__depositRealign__] = true;
+            ROS_INFO("to execute depositRealign");
+        }
+        calcnumProcsBeingOrToBeExecOrRes_();
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck) // Deposit
         {
             procsToExecute[__deposit__] = true;
             ROS_INFO("to execute deposit");
@@ -148,6 +157,8 @@ void MissionPlanning::runProcedures_()
     driveToDig.run();
     mine.run();
     driveToDeposit.run();
+    depositRealign.run();
+    deposit.run();
     recover.run();
 }
 
@@ -222,6 +233,26 @@ void MissionPlanning::packAndPubInfoMsg_()
     infoPub.publish(infoMsg);
 }
 
+void MissionPlanning::initializeDigPlanningMap_()
+{
+    size_t xSize = (size_t)ceil(DIG_MAP_X_LEN/DIG_MAP_RES);
+    size_t ySize = (size_t)ceil(DIG_MAP_Y_LEN/DIG_MAP_RES);
+    float cornerPointX[2] = {DIG_MAP_X_LEN - miningWallBufferDistance, DIG_MAP_X_LEN - miningWallBufferDistance};
+    float cornerPointY[2] = {miningWallBufferDistance, DIG_MAP_Y_LEN - miningWallBufferDistance};
+    float cellXPos;
+    float cellYPos;
+    for(int i=0; i<xSize; i++)
+    {
+        for(int j=0; j<ySize; j++)
+        {
+            cellXPos = i*DIG_MAP_RES + DIG_MAP_RES/2.0;
+            cellXPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0;
+            digPlanningMap.atIndex(i,j).headingLowerLimit = RAD2DEG*atan2(cornerPointY[0] - cellYPos, cornerPointX[0] - cellXPos);
+            digPlanningMap.atIndex(i,j).headingUpperLimit = RAD2DEG*atan2(cornerPointY[1] - cellYPos, cornerPointX[1] - cellXPos);
+        }
+    }
+}
+
 void MissionPlanning::ExecActionEndedCallback_(const messages::ExecActionEnded::ConstPtr &msg)
 {
     execDequeEmpty = msg->dequeEmpty;
@@ -241,6 +272,11 @@ void MissionPlanning::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)
 {
     execInfoMsg = *msg;
+}
+
+void MissionPlanning::pauseCallback_(const hw_interface_plugin_agent::pause::ConstPtr &msg)
+{
+    robotStatus.pauseSwitch = msg->pause;
 }
 
 bool MissionPlanning::controlCallback_(messages::MissionPlanningControl::Request &req, messages::MissionPlanningControl::Response &res)

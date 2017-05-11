@@ -2,13 +2,13 @@
 
 void Action::pushTask(TASK_TYPE_T taskType)
 {
-    if(taskType==_driveHalt_ || taskType==_driveStraight_/* || taskType==_driveArc_*/ || taskType==_pivot_)
+    if(taskType==_driveHalt_ || taskType==_driveStraight_ || taskType==_pivot_ || taskType==_driveUntilLimit_)
 		driveDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
     else if(taskType==_scoopHalt_ || taskType==_scoopSetPos_)
         scoopDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
-    else if(taskType==_armHalt_ || taskType==_armSetPos_)
+    else if(taskType==_armHalt_ || taskType==_armSetPos_ || taskType==_armShake_)
         armDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
-    else if(taskType==_bucketHalt_ || taskType==_bucketSetPos_)
+    else if(taskType==_bucketHalt_ || taskType==_bucketSetPos_ || taskType==_bucketShake_)
         bucketDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
 	else ROS_ERROR("attempted to push back invalid TASK type");
 	taskPoolIndex[taskType]++;

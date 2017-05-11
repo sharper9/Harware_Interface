@@ -10,7 +10,7 @@ void BucketSetPos::init()
 int BucketSetPos::run()
 {
     robotOutputs.bucketPosCmd = bucketPos_;
-    robotOutputs.armStopCmd = 0;
+    robotOutputs.bucketStopCmd = 0;
     if(abs(robotStatus.bucketPos - bucketPos_) <= bucketTol) {returnValue_ = 1; bucketEnded = true;}
     else {returnValue_ = 0; bucketEnded = false;}
     return returnValue_;

@@ -10,10 +10,12 @@ bool DriveToDig::runProc()
         procsToResume[procType] = false;
         computeDriveSpeeds();
         numWaypointsToTravel = 1;
-        clearAndResizeWTT();
-        waypointsToTravel.at(0).x = 5.0; // TODO: Figure out how to compute these
-        waypointsToTravel.at(0).y = 5.0;
-        sendDriveGlobal(false, false, 0.0, false);
+        chosenHeading = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX))*
+                (digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingUpperLimit -
+                 digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit) + digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit;
+        distanceToDrive = (miningRegionTargetXDistance - robotStatus.xPos)/cos(DEG2RAD*chosenHeading);
+        angleToTurn = chosenHeading - robotStatus.heading;
+        sendDriveRel(distanceToDrive, angleToTurn, false, 0.0, false, false);
         state = _exec_;
         resetQueueEmptyCondition();
         break;
@@ -26,14 +28,14 @@ bool DriveToDig::runProc()
         else state = _exec_;
         serviceQueueEmptyCondition();
         break;
-
     case _interrupt_:
         procsBeingExecuted[procType] = false;
         procsToInterrupt[procType] = false;
         state = _exec_;
         break;
     case _finish_:
-        atMineLocation = true;
+        if(robotStatus.xPos > miningRegionMinXDistance) atMineLocation = true; // TODO: need to wait for ranging radio update before reevaluating this
+        else atMineLocation = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
