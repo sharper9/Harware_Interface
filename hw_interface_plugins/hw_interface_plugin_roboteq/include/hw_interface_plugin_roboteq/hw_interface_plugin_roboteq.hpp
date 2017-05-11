@@ -77,7 +77,8 @@ namespace hw_interface_plugin_roboteq {
           {"absolute_brushless_counter", "CB"},
           {"brushless_count_relative", "BCR"},
           {"battery_amps", "BA"},
-          {"feedback", "F"}
+          {"feedback", "F"},
+          {"var_2", "VAR 2"}
         };
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);

@@ -35,7 +35,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|F|FF|BCR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
+    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|F|FF|BCR|BA|VAR){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
     m_numCmdsMatched = 0;
 
     deviceName = "";
@@ -62,8 +62,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     }
     else if(roboteqType == controller_t::Bucket_Roboteq)
     {
-        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
-        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
+        motorSpeedCmds += "!VAR 1 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else if(roboteqType == controller_t::Arm_Roboteq)
@@ -318,6 +317,11 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterato
         roboteqData.feedback.push_back(value);
         ++tok_iter;
       }
+    }
+    else if (!m_command.compare("VAR"))
+    {
+      int32_t value = boost::lexical_cast<int32_t>(tok_iter->c_str());
+      roboteqData.user_integer_variable = value;
     }
     else
     {
