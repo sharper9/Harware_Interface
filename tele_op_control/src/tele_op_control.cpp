@@ -40,7 +40,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
   {
     if (exec_manual_override_srv_.request.manualOverride)
     {
-      ROS_WARN_THROTTLE(2, "ENAGAE MANUAL OVERRIDE");
+      ROS_WARN_THROTTLE(2, "ENGAGE MANUAL OVERRIDE");
       exec_manual_override_srv_.request.manualOverride = false;
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }
@@ -151,6 +151,8 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
   if(exec_manual_override_srv_.request.manualOverride)
   {
     actuator.bucket_pos_cmd = bucket_pos_;
+    actuator.arm_pos_cmd = arm_pos_;
+    actuator.wrist_pos_cmd = wrist_pos_;
     actuator_pub_.publish(actuator);
   }
 
