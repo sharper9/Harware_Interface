@@ -15,6 +15,10 @@ TeleOp::TeleOp()
   pause_toggle_.toggle(0); // Set pause toggle to true to start
   manual_override_toggle_.toggle(0);
   manual_override_latch_.LE_Latch(0);
+  
+  bucket_pos_ = -1000;
+  arm_pos_ = 0;
+  wrist_pos_ = 0;
 }
 
 void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
@@ -37,13 +41,13 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     if (exec_manual_override_srv_.request.manualOverride)
     {
       ROS_WARN("ENAGAE MANUAL OVERRIDE");
-      exec_manual_override_srv_.request.manualOverride = false;
+      exec_manual_override_srv_.request.manualOverride = true;
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }
     else
     {
       ROS_WARN("DISENAGAE MANUAL OVERRIDE");
-      exec_manual_override_srv_.request.manualOverride = true;
+      exec_manual_override_srv_.request.manualOverride = false;
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }
   }
@@ -52,50 +56,43 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
   float joystickMagnitude = hypot(msg->axes[0], msg->axes[1]);
   if (joystickMagnitude > 1.0) joystickMagnitude = 1.0;
 
-  // TODO: fix bucket for closed loop
   if (msg->buttons[Y_INDEX]) //bucket up
   {
-    actuator.bucket_pos_cmd = BUCKET_RAISED;
+    bucket_pos_ = BUCKET_RAISED;
   }
   else if (msg->buttons[X_INDEX]) //bucket stow
   {
-    actuator.bucket_pos_cmd = BUCKET_LOWERED;
+    bucket_pos_ = BUCKET_LOWERED;
   }
   else if (msg->buttons[B_INDEX]) //bucket bump
   {
-    actuator.bucket_pos_cmd = 0;
+    bucket_pos_ = BUCKET_BUMP;
   }
 
-  // TODO: fix arm for closed loop
   if (msg->axes[RT_INDEX] == -1) //arm up (RT)
   {
-    actuator.arm_pos_cmd = ARM_RAISED;
+    arm_pos_ += ARM_OFFSET;
+    arm_pos_ = (arm_pos_ > ARM_RAISED) ? ARM_RAISED : arm_pos_;
   }
   else if (msg->axes[LT_INDEX] == -1) //arm down (LT)
   {
-    actuator.arm_pos_cmd = ARM_LOWERED;
-  }
-  else if (msg->axes[2] && msg->axes[5])
-  {
-    actuator.arm_pos_cmd = 0;
+    arm_pos_ -= ARM_OFFSET;
+    arm_pos_ = (arm_pos_ < ARM_LOWERED) ? ARM_LOWERED : arm_pos_;
   }
 
-  // TODO: fix wrist for closed loop
   if (msg->buttons[RB_INDEX]) //wrist forward (RB)
   {
-    actuator.wrist_pos_cmd = SCOOP_LOWERED;
+    wrist_pos_ += WRIST_OFFSET;
+    wrist_pos_ = (wrist_pos_ > WRIST_RAISED) ? WRIST_RAISED : wrist_pos_; 
   }
   else if (msg->buttons[LB_INDEX]) //wrist backward (LB)
   {
-    actuator.wrist_pos_cmd = SCOOP_RAISED;
-  }
-  else if (!msg->buttons[RB_INDEX] && !msg->buttons[LB_INDEX])
-  {
-    actuator.wrist_pos_cmd = 0;
+    wrist_pos_ -= WRIST_OFFSET;
+    wrist_pos_ = (wrist_pos_ < WRIST_LOWERED) ? WRIST_LOWERED : wrist_pos_;
   }
   else if (msg->buttons[A_INDEX]) //reset wrist posiiton
   {
-    actuator.wrist_pos_cmd = 0;
+    wrist_pos_ = 0;
   }
 
   if(joystickMagnitude < JOYSTICK_DEADBAND)
@@ -150,8 +147,10 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     }
 
   }
+  
   if(exec_manual_override_srv_.request.manualOverride)
   {
+    actuator.bucket_pos_cmd = bucket_pos_;
     actuator_pub_.publish(actuator);
   }
 
