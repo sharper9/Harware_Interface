@@ -78,7 +78,7 @@ namespace hw_interface_plugin_roboteq {
           {"brushless_count_relative", "BCR"},
           {"battery_amps", "BA"},
           {"feedback", "F"},
-          {"var_2", "VAR 2"}
+          {"var_2", "VAR"}
         };
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);
@@ -87,6 +87,9 @@ namespace hw_interface_plugin_roboteq {
       private:
         int m_numInitCmds; // # of commands from launch file
         int m_numCmdsMatched; // # of commands matched regex from roboteqs
+        
+        bool m_exStop;
+        
         bool dataHandler(tokenizer::iterator tok_iter, tokenizer tokens);
 
    };

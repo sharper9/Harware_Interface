@@ -41,4 +41,4 @@ uint8 fault_flags
 int16[] feedback
 
 # VAR
-int32 user_integer_variable
+int32[] user_integer_variable
