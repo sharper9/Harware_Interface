@@ -122,7 +122,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
         ROS_WARN("%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
     }
 
-    ROS_INFO("%s", motorSpeedCmds.c_str());
+    ROS_DEBUG("%s", motorSpeedCmds.c_str());
 
     //need to add monitoring facilities to monitor health
 }
@@ -163,7 +163,7 @@ std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::st
 
   while ( tok_iter != tokens.end() )
   {
-    ROS_INFO("Init Cmd -> %s", tok_iter->c_str());
+    ROS_DEBUG("Init Cmd -> %s", tok_iter->c_str());
 
     if (!command_list[*tok_iter].length())
     {

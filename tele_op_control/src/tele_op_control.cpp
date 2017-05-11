@@ -21,13 +21,13 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
 {
   if (pause_toggle_.toggle(msg->buttons[START_INDEX]))
   {
-    ROS_WARN("PAUSE");
+    ROS_WARN_THROTTLE(2, "PAUSE");
     pause_msg_.pause = true;
     pause_robot_control_pub_.publish(pause_msg_);
   }
   else
   {
-    ROS_WARN("UNPAUSE");
+    ROS_WARN_THROTTLE(2, "UNPAUSE");
     pause_msg_.pause = false;
     pause_robot_control_pub_.publish(pause_msg_);
   }
@@ -36,13 +36,13 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
   {
     if (exec_manual_override_srv_.request.manualOverride)
     {
-      ROS_WARN("ENAGAE MANUAL OVERRIDE");
+      ROS_WARN_THROTTLE(2, "ENAGAE MANUAL OVERRIDE");
       exec_manual_override_srv_.request.manualOverride = false;
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }
     else
     {
-      ROS_WARN("DISENAGAE MANUAL OVERRIDE");
+      ROS_WARN_THROTTLE(2, "DISENAGAE MANUAL OVERRIDE");
       exec_manual_override_srv_.request.manualOverride = true;
       exec_manual_override_client_.call(exec_manual_override_srv_);
     }

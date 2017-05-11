@@ -126,7 +126,7 @@ bool base_classes::base_serial_interface::handleRegexRequest(const boost::system
       receivedRegexData = submatch;
     }
 
-		ROS_INFO("Data -> %s", receivedRegexData.c_str());
+		ROS_DEBUG("Data -> %s", receivedRegexData.c_str());
 
     if(!interfaceReadHandler(bytesTransferred, dataArrayStart, e))
     {
