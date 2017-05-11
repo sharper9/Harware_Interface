@@ -15,6 +15,6 @@ Bucket_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/brushed/bucket",
         controllerType     : "Bucket_Roboteq",
-        initializationCmd  : "feedback",
+        initializationCmd  : "feedback var_2",
         initCmdCycle       : 50,
     }
