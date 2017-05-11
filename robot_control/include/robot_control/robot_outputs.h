@@ -2,9 +2,8 @@
 #define ROBOT_OUTPUTS_H
 #include <stdint.h>
 
-// TODO: tune these values on the robot
-#define SCOOP_RAISED 1000
-#define SCOOP_LOWERED -900
+#define SCOOP_RAISED -1000
+#define SCOOP_LOWERED 0
 #define ARM_RAISED 1000
 #define ARM_LOWERED -900
 #define ARM_DUMP 0

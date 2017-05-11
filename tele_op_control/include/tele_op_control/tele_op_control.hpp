@@ -7,12 +7,19 @@
 
 #include <messages/ActuatorOut.h>
 #include <messages/ExecInfo.h>
+#include <messages/ExecManualOverride.h>
 
 #include <hw_interface_plugin_agent/pause.h>
 #include <robot_control/bit_utils.h>
 
 #define ROBOT_RANGE 1000 // -1000 to 1000
 #define JOYSTICK_DEADBAND 0.2
+#define SCOOP_RAISED -1000
+#define SCOOP_LOWERED 0
+#define ARM_RAISED 1000
+#define ARM_LOWERED -900
+#define BUCKET_RAISED 1000
+#define BUCKET_LOWERED -1000
 
 // button indexes
 #define A_INDEX 0
@@ -51,9 +58,13 @@ private:
   ros::Publisher actuator_pub_;
   ros::Subscriber joystick_sub_;
 
+  ros::ServiceClient exec_manual_override_client_;
   ros::Publisher pause_robot_control_pub_;
   hw_interface_plugin_agent::pause pause_msg_;
-  Toggle toggle;
+  messages::ExecManualOverride exec_manual_override_srv_;
+  Toggle pause_toggle_;
+  Toggle manual_override_toggle_;
+  Leading_Edge_Latch manual_override_latch_;
 
   void joystickCallback(const sensor_msgs::JoyConstPtr &msg);
 };
