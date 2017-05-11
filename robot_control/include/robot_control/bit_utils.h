@@ -40,4 +40,17 @@ public:
 	int TE_Latch(int input_val) {TE_val = (zero_one(input_val)!=last_val) && (last_val==1); last_val = input_val; return TE_val;}
 	int get_val() {return TE_val;}
 };
+
+class Toggle:public Utils_Base
+{
+private:
+    int val;
+    Leading_Edge_Latch latch;
+public:
+    Toggle() {val = 0;}
+    //int toggle(int input_val) {if(input_val && val==0){val=1;} else if(input_val && val==1){val=0;} return val;}
+    int toggle(int input_val) {latch.LE_Latch(input_val); if(latch.get_val() && val==0){val=1;} else if(latch.get_val() && val==1){val=0;} return val;}
+    int get_val() {return val;}
+};
+
 #endif /* BIT_UTILS_H */
