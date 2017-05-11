@@ -31,7 +31,7 @@ int DriveGlobal::run()
             pushTask(_driveStraight_);
             driveDeque.back()->params.float1 = distanceToDrive_;
             pushTask(_pivot_);
-            candidateEndHeadingAngleToTurn_[0] = fmod(desiredEndHeading_ - 360.0, 360.0) - fmod(robotStatus.heading + angleToTurn_, 360.0);
+            candidateEndHeadingAngleToTurn_[0] = fmod(desiredEndHeading_, 360.0) + 360.0 - fmod(fmod(robotStatus.heading + angleToTurn_, 360.0) + 360.0, 360.0);
             candidateEndHeadingAngleToTurn_[1] = fmod(desiredEndHeading_, 360.0) - fmod(robotStatus.heading + angleToTurn_, 360.0);
             if(fabs(candidateEndHeadingAngleToTurn_[0]) < fabs(candidateEndHeadingAngleToTurn_[1]))
                 driveDeque.back()->params.float1 = candidateEndHeadingAngleToTurn_[0];

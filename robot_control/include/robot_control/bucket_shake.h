@@ -12,8 +12,8 @@ private:
     double currentTime_;
     double shakePrevTime_;
     bool bucketAtOffsetPosition_;
-    const int numShakesToPerform_ = 3;
-    const int shakePosOffset_ = 5;
+    const int numShakesToPerform_ = 5;
+    const int shakePosOffset_ = 100;
     const double shakePeriod_ = 1.0; // sec
 };
 

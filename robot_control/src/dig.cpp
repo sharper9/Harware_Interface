@@ -88,14 +88,5 @@ int Dig::run()
         taskFinished_ = false;
         taskPushed_ = true;
     }
-    std::printf("========================\n");
-    ROS_INFO("digCompleted = %d",digCompleted_);
-    ROS_INFO("taskPushed = %d",taskPushed_);
-    ROS_INFO("taskFinished = %d",taskFinished_);
-    ROS_INFO("taskToPush = %i",taskToPush_);
-    ROS_INFO("typeOfTaskPushed = %i",typeOfTaskPushed_);
-    ROS_INFO("valueToPush = %f",valueToPush_);
-    ROS_INFO("step = %i",step_);
-    std::printf("\n");
     return (digCompleted_ && taskFinished_);
 }

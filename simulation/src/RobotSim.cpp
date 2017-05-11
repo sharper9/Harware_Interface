@@ -43,9 +43,9 @@ void RobotSim::teleport(double teleX, double teleY, double teleHeading)
 
 void RobotSim::runLinearActuators(int scoopPosCmd, int armPosCmd, int bucketPosCmd, int scoopStopCmd, int armStopCmd, int bucketStopCmd)
 {
-    ROS_INFO("scoopCmd = %i, armCmd = %i, bucketCmd = %i",scoopPosCmd, armPosCmd, bucketPosCmd);
-    ROS_INFO("scoopPos = %i, armPos = %i, bucketPos = %i",scoopPos, armPos, bucketPos);
-    ROS_INFO("scoopStop = %i, armStop = %i, bucketStop = %i",scoopStop, armStop, bucketStop);
+    //ROS_INFO("scoopCmd = %i, armCmd = %i, bucketCmd = %i",scoopPosCmd, armPosCmd, bucketPosCmd);
+    //ROS_INFO("scoopPos = %i, armPos = %i, bucketPos = %i",scoopPos, armPos, bucketPos);
+    //ROS_INFO("scoopStop = %i, armStop = %i, bucketStop = %i",scoopStop, armStop, bucketStop);
     if(scoopPosCmd!=scoopPosCmdPrev && scoopStopCmd==0) scoopStop = 0;
     if(armPosCmd!=armPosCmdPrev && armStopCmd==0) armStop = 0;
     if(bucketPosCmd!=bucketPosCmdPrev && bucketStopCmd==0) bucketStop = 0;
