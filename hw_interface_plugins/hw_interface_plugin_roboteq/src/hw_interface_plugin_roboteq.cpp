@@ -175,8 +175,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
     ROS_INFO("%s :: Device: %s :: Baudrate %d", pluginName.c_str(), deviceName.c_str(), tempBaudRate);
 }
 
-bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const size_t &length,
-                                                                            int arrayStartPos)
+bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const size_t &length, int arrayStartPos, const boost::system::error_code &ec)
 {
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Data Handler");
 

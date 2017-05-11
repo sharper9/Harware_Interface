@@ -44,7 +44,7 @@ namespace hw_interface_plugin_netburner {
 
     protected:
         bool subPluginInit(ros::NodeHandlePtr nhPtr);
-        bool interfaceReadHandler(const size_t &bufferSize, int arrayStartPos);
+        bool interfaceReadHandler(const size_t &bufferSize, int arrayStartPos, const boost::system::error_code &ec);
         bool verifyChecksum();
         
         ros::Publisher nbDataPub;

@@ -149,7 +149,7 @@ void hw_interface_plugin_agent::agent_UDP::LOSTimeoutHandler(const boost::system
 }
 
 
-bool hw_interface_plugin_agent::agent_UDP::interfaceReadHandler(const size_t &bufferSize, int arrayStartPos)
+bool hw_interface_plugin_agent::agent_UDP::interfaceReadHandler(const size_t &bufferSize, int arrayStartPos, const boost::system::error_code &ec)
 {
     double currentAgentTime = ros::Time::now().toSec();
     //ROS_INFO("agent Plugin Data Handler %lu  %d", bufferSize, arrayStartPos);
