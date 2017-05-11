@@ -4,10 +4,27 @@ TeleOp::TeleOp()
 {
   actuator_pub_  = nh.advertise<messages::ActuatorOut>("/control/actuatorout/all", 1);
   joystick_sub_ = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &TeleOp::joystickCallback, this);
+
+  pause_robot_control_pub_ = nh.advertise<hw_interface_plugin_agent::pause>("/agent/pause", 1);
+
+  pause_msg_.pause = false;
+  toggle.toggle(0);
 }
 
 void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
 {
+  if (toggle.toggle(msg->buttons[START_INDEX]))
+  {
+    pause_msg_.pause = true;
+    pause_robot_control_pub_.publish(pause_msg_);
+  }
+  else
+  {
+    pause_msg_.pause = false;
+    pause_robot_control_pub_.publish(pause_msg_);
+  }
+
+
   messages::ActuatorOut actuator;
   float joystickMagnitude = hypot(msg->axes[0], msg->axes[1]);
   if (joystickMagnitude > 1.0) joystickMagnitude = 1.0;

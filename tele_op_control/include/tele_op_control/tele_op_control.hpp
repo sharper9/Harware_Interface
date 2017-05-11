@@ -8,6 +8,9 @@
 #include <messages/ActuatorOut.h>
 #include <messages/ExecInfo.h>
 
+#include <hw_interface_plugin_agent/pause.h>
+#include <robot_control/bit_utils.h>
+
 #define ROBOT_RANGE 1000 // -1000 to 1000
 #define JOYSTICK_DEADBAND 0.2
 
@@ -47,6 +50,10 @@ public:
 private:
   ros::Publisher actuator_pub_;
   ros::Subscriber joystick_sub_;
+
+  ros::Publisher pause_robot_control_pub_;
+  hw_interface_plugin_agent::pause pause_msg_;
+  Toggle toggle;
 
   void joystickCallback(const sensor_msgs::JoyConstPtr &msg);
 };

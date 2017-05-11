@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   messages
   grid_map_ros
+  robot_control
 )
 
 ## System dependencies are found with CMake's conventions
