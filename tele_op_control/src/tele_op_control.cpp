@@ -90,8 +90,9 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     wrist_pos_ -= WRIST_OFFSET;
     wrist_pos_ = (wrist_pos_ < WRIST_LOWERED) ? WRIST_LOWERED : wrist_pos_;
   }
-  else if (msg->buttons[A_INDEX]) //reset wrist posiiton
+  else if (msg->buttons[A_INDEX]) //reset wrist and arm posiiton
   {
+    arm_pos_ = 0;
     wrist_pos_ = 0;
   }
 
