@@ -150,7 +150,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     }
 
   }
-  if(!exec_manual_override_srv_.request.manualOverride)
+  if(exec_manual_override_srv_.request.manualOverride)
   {
     actuator_pub_.publish(actuator);
   }
