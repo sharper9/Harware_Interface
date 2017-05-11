@@ -30,7 +30,7 @@ namespace hw_interface_plugin_timedomain {
             //they must be defined
         bool subPluginInit(ros::NodeHandlePtr nhPtr);
         void setInterfaceOptions();
-        bool interfaceReadHandler(const size_t &length, int arrayStartPos);
+        bool interfaceReadHandler(const size_t &length, int arrayStartPos, const boost::system::error_code &ec);
         bool verifyChecksum();
 
         void rosMsgCallback(const hw_interface_plugin_timedomain::Range_Request::ConstPtr &msg);

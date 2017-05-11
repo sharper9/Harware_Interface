@@ -38,7 +38,7 @@ std::string base_classes::base_interface::printMetrics(bool printSideEffect)
         this->lastTimeMetric = ros::Time::now();
         if(printSideEffect)
         {
-            ROS_DEBUG("%s", output.get());
+            ROS_WARN_THROTTLE(5, "%s", output.get());
         }
 
         std::string outputString(1, *output);
