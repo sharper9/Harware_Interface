@@ -43,7 +43,7 @@ namespace hw_interface_plugin_roboteq {
 
         bool subPluginInit(ros::NodeHandlePtr nhPtr);
         void setInterfaceOptions();
-        bool interfaceReadHandler(const size_t &length, int arrayStartPost);
+        bool interfaceReadHandler(const size_t &length, int arrayStartPos, const boost::system::error_code &ec);
         bool verifyChecksum();
 
         bool pluginStart()

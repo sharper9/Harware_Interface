@@ -150,7 +150,7 @@ bool hw_interface_plugin_operator::operator_UDP::pluginStart()
 }
 
 
-bool hw_interface_plugin_operator::operator_UDP::interfaceReadHandler(const size_t &bufferSize, int arrayStartPos)
+bool hw_interface_plugin_operator::operator_UDP::interfaceReadHandler(const size_t &bufferSize, int arrayStartPos, const boost::system::error_code &ec)
 {
     double currentAgentTime = ros::Time::now().toSec();
     ROS_INFO("Operator Plugin Data Handler %lu  %d", bufferSize, arrayStartPos);
