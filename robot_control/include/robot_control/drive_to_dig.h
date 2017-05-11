@@ -8,7 +8,7 @@ public:
     // Methods
     bool runProc();
     // Members
-
+	float chosenHeading; // deg
 };
 
 #endif // DRIVE_TO_DIG_H

@@ -23,6 +23,8 @@ public:
 	long int blEncoder = 0;
 	long int frEncoder = 0;
 	long int brEncoder = 0;
+    bool leftBumper = false;
+    bool rightBumper = false;
 	// Scoop data
 	int scoopStatus = 0;
 	int scoopPos = 0;

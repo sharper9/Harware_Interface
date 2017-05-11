@@ -1,37 +1,32 @@
-#include <robot_control/drive_straight.h>
+#include <robot_control/drive_until_limit.h>
 
-void DriveStraight::init()
+void DriveUntilLimit::init()
 {
 	traversedDistance_ = 0.0;
     initX_ = robotStatus.xPos;
     initY_ = robotStatus.yPos;
 	initHeading_ = robotStatus.heading;
-	desiredDistance_ = params.float1;
-	if(desiredDistance_<0.0) driveSign_ = -1;
-	else driveSign_ = 1;
-	timeoutValue_ = (unsigned int)round((30.0 + 1.0*fabs(desiredDistance_))*robotStatus.loopRate);
+    timeoutValue_ = (unsigned int)round((30.0)*robotStatus.loopRate);
 	timeoutCounter_ = 0;
 	headingErrorSpeedI_ = 0.0;
     robotOutputs.stopFlag = false;
     robotOutputs.turnFlag = false;
 }
 
-int DriveStraight::run()
+int DriveUntilLimit::run()
 {
     //int temp;
-    ROS_INFO_THROTTLE(1, "drive straight running");
+    ROS_INFO_THROTTLE(1, "drive until limit running");
     //ROS_INFO("============================");
     robotOutputs.stopFlag = false;
     robotOutputs.turnFlag = false;
     vMax_ = robotStatus.vMax;
     traversedDistance_ = hypot(robotStatus.xPos - initX_, robotStatus.yPos - initY_);
-	remainingDistance_ = desiredDistance_ - traversedDistance_;
     //ROS_INFO("desiredDistance = %f",desiredDistance_);
-    //ROS_INFO("remainingDistance = %f",remainingDistance_);
     //ROS_INFO("traversedDistance = %f",traversedDistance_);
     //ROS_INFO("stopFlag = %i",robotOutputs.stopFlag);
     //ROS_INFO("turnFlag = %i",robotOutputs.turnFlag);
-	vDesRaw_ = kpV_*remainingDistance_;
+    vDesRaw_ = constantBackupSpeed_;
     //ROS_INFO("vDesRaw_ = %f",vDesRaw_);
 	if(vDesRaw_>0.0) vDesCoerc_ = vDesRaw_+vMin_;
 	else if(vDesRaw_<0.0) vDesCoerc_ = vDesRaw_-vMin_;
@@ -68,7 +63,7 @@ int DriveStraight::run()
     //ROS_INFO("leftSpeed_ = %i",leftSpeed_);
     //ROS_INFO("rightSpeed_ = %i",rightSpeed_);
 	timeoutCounter_++;
-	if(fabs(traversedDistance_) >= fabs(desiredDistance_) || timeoutCounter_ >= timeoutValue_)
+    if((robotStatus.leftBumper && robotStatus.rightBumper) || (fabs(traversedDistance_) >= fabs(maxPossibleDistance_)) || (timeoutCounter_ >= timeoutValue_))
 	{
 		robotOutputs.flMotorSpeed = 0;
 		robotOutputs.blMotorSpeed = 0;

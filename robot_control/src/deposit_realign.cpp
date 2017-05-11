@@ -1,6 +1,6 @@
-#include <robot_control/drive_to_deposit.h>
+#include <robot_control/deposit_realign.h>
 
-bool DriveToDeposit::runProc()
+bool DepositRealign::runProc()
 {
     switch(state)
     {
@@ -11,9 +11,9 @@ bool DriveToDeposit::runProc()
         computeDriveSpeeds();
         numWaypointsToTravel = 1;
         clearAndResizeWTT();
-        waypointsToTravel.at(0).x = depositWaypointX;
-        waypointsToTravel.at(0).y = depositWaypointY;
-        sendDriveGlobal(false, true, 0.0, true);
+        waypointsToTravel.at(0).x = depositWaypointRecoverX;
+        waypointsToTravel.at(0).y = depositWaypointRecoverY;
+        sendDriveGlobal(false, true, 0.0, false);
         state = _exec_;
         resetQueueEmptyCondition();
         break;
@@ -32,11 +32,8 @@ bool DriveToDeposit::runProc()
         state = _exec_;
         break;
     case _finish_:
-        atDepositLocation = true;
-        if((hypot(robotStatus.xPos - depositWaypointX, robotStatus.yPos - depositWaypointY) < depositWaypointDistanceTolerance) &&
-                (fabs(fmod(robotStatus.heading + 180.0, 360.0) - 180.0) < depositWaypointDistanceTolerance))
-            confirmedAtDepositLocation = true;
-        else confirmedAtDepositLocation = false;
+        atDepositLocation = false;
+        confirmedAtDepositLocation = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;

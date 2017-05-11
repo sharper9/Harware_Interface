@@ -1,8 +1,8 @@
-#ifndef DRIVE_STRAIGHT_H
-#define DRIVE_STRAIGHT_H
+#ifndef DRIVE_UNTIL_LIMIT_H
+#define DRIVE_UNTIL_LIMIT_H
 #include "task.h"
 
-class DriveStraight : public Task
+class DriveUntilLimit : public Task
 {
 public:
 	void init();
@@ -13,7 +13,6 @@ private:
 	float initHeading_;
 	int driveSign_;
 	int pivotSign_;
-	float desiredDistance_;
 	float remainingDistance_;
 	float traversedDistance_;
 	float deltaHeading_;
@@ -31,6 +30,8 @@ private:
 	unsigned int timeoutValue_;
 	unsigned int timeoutCounter_;
 	int taskEnded_;
+    const float constantBackupSpeed_ = -0.6; // m/s
+    const float maxPossibleDistance_ = 5.0; // m
 	const float vMin_ = 0.03; // m/s
 	const float kpV_ = 2.2; // m/(s*m)
 	const float kVOutput_ = 900/1.2; // 90% of max speed at 1.2 m/s
@@ -42,4 +43,4 @@ private:
 	const float maxHeadingErrorSpeedI_ = 30.0;
 };
 
-#endif // DRIVE_STRAIGHT_H
+#endif // DRIVE_UNTIL_LIMIT_H
