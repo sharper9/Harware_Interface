@@ -35,7 +35,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BCR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
+    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|F|FF|BCR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
     m_numCmdsMatched = 0;
 
     deviceName = "";
@@ -309,6 +309,16 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterato
     {
       uint8_t value = boost::lexical_cast<uint8_t>(tok_iter->c_str());
       roboteqData.fault_flags = value;
+    }
+    else if (!m_command.compare("F"))
+    {
+      roboteqData.feedback.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.feedback.push_back(value);
+        ++tok_iter;
+      }
     }
     else
     {
