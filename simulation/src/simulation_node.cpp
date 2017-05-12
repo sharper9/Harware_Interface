@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     ros::Subscriber actuatorSub = nh.subscribe<messages::ActuatorOut>("control/actuatorout/all",1,actuatorCallback);
     ros::Subscriber simConSub = nh.subscribe<messages::SimControl>("simulation/simcontrol/simcontrol",1,simControlCallback);
     ros::Publisher navPub = nh.advertise<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout",1);
-    ros::Publisher scoopPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/scoop",1);
+    ros::Publisher scoopPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/wrist",1);
     ros::Publisher armPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/arm",1);
     ros::Publisher bucketPub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/bucket",1);
     ros::Publisher pausePub = nh.advertise<hw_interface_plugin_agent::pause>("/agent/pause",1);

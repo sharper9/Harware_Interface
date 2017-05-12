@@ -23,14 +23,14 @@ int DrivePivot::run()
     robotOutputs.turnFlag = true;
     rMax_ = robotStatus.rMax;
 	deltaHeading_ = robotStatus.heading - initHeading_;
-    //ROS_INFO("desiredDeltaHeading = %f", desiredDeltaHeading_);
-    //ROS_INFO("deltaHeading_ = %f",deltaHeading_);
+    ROS_INFO("desiredDeltaHeading = %f", desiredDeltaHeading_);
+    ROS_INFO("deltaHeading_ = %f",deltaHeading_);
 	rDes_ = kpR_*(desiredDeltaHeading_-deltaHeading_);
 	if(rDes_>rMax_) rDes_ = rMax_;
 	else if(rDes_<(-rMax_)) rDes_ = -rMax_;
     if(std::isnan(robotStatus.yawRate)) {ROS_ERROR("yaw rate is nan"); robotStatus.yawRate = yawRatePrev_;}
     else yawRatePrev_ = robotStatus.yawRate;
-    //ROS_INFO("yawRate = %f",robotStatus.yawRate);
+    ROS_INFO("yawRate = %f",robotStatus.yawRate);
 	errorR_ = rDes_ - robotStatus.yawRate;
     //ROS_INFO("errorR_ = %f",errorR_);
 	rSpeedP_ = kROutput_*rDes_;

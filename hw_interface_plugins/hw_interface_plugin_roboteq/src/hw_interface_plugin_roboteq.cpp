@@ -68,13 +68,13 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
         {
             m_exStop=true;
             std::string exStop = "!EX\r";
-            postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
         }
         else if(!msgIn->bucket_stop_cmd && m_exStop)
         {
             m_exStop=false;
             std::string unExStop = "!MG\r";
-            postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
         }
         //motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
         //motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
@@ -87,13 +87,13 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
         {
             m_exStop=true;
             std::string exStop = "!EX\r";
-            postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
         }
         else if(!msgIn->arm_stop_cmd && m_exStop)
         {
             m_exStop=false;
             std::string unExStop = "!MG\r";
-            postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
         }
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
@@ -105,13 +105,13 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
         {
             m_exStop=true;
             std::string exStop = "!EX\r";
-            postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
         }
         else if(!msgIn->wrist_stop_cmd && m_exStop)
         {
             m_exStop=false;
             std::string unExStop = "!MG\r";
-            postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
         }
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";

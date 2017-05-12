@@ -13,5 +13,6 @@ int ScoopSetPos::run()
     robotOutputs.scoopStopCmd = 0;
     if(abs(robotStatus.scoopPos - scoopPos_) <= scoopTol) {returnValue_ = 1; scoopEnded = true;}
     else {returnValue_ = 0; scoopEnded = false;}
+    ROS_INFO("ScoopPos_ %d :: remaining %d :: scoopTol %d :: retval %d", scoopPos_, abs(robotStatus.scoopPos - scoopPos_), scoopTol, returnValue_);
     return returnValue_;
 }

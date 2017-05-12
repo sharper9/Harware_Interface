@@ -71,7 +71,7 @@ void NavigationFilter::run()
 	{
 	  //re-initialize position if ranging radios are available
 	  td_navigation::Localize rr_srv;
-	  rr_srv.request.average_length = 20; // value to be changed
+	  rr_srv.request.average_length = 2; // value to be changed
 	  
 	  if(ranging_radio_client.call(rr_srv))
 	  {

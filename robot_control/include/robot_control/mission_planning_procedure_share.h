@@ -59,8 +59,8 @@ public:
 	static IRLGridMap<PlanningMapData> digPlanningMap;
     const float depositWaypointX = 1.0; // m
     const float depositWaypointY = 0.0; // m
-    const float depositWaypointDistanceTolerance = 0.3; // m
-    const float depositWaypointAngleTolerance = 5.0; // deg
+    const float depositWaypointDistanceTolerance = 0.5; // m (0.3)
+    const float depositWaypointAngleTolerance = 15.0; // deg (5.0)
     const float depositWaypointRecoverX = 2.5; // m
     const float depositWaypointRecoverY = 0.0; // m
     const float queueEmptyTimerPeriod = 30.0; // sec
