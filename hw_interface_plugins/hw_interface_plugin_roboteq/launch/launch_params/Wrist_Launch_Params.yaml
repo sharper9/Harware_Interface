@@ -15,5 +15,5 @@ Wrist_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/brushed/wrist",
         controllerType     : "Wrist_Roboteq",
-        initializationCmd  : "analog_inputs",
+        initializationCmd  : "feedback",
     }

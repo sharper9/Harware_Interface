@@ -38,7 +38,7 @@ std::string base_classes::base_interface::printMetrics(bool printSideEffect)
         this->lastTimeMetric = ros::Time::now();
         if(printSideEffect)
         {
-            ROS_WARN_THROTTLE(5, "%s", output.get());
+            ROS_DEBUG_THROTTLE(5, "%s", output.get());
         }
 
         std::string outputString(1, *output);
@@ -81,44 +81,46 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
     if((packetLengthInBytes - totalBytesInBuffer) <= 0)
     {
         ROS_DEBUG("%s:: Full Length Packet Received", pluginName.c_str());
+        /*    
         std::printf("Contents: ");
-	    for(int i = 0; i < totalBytesInBuffer; i++)
-	    {
-            std::printf("%c, %X | ", receivedData[i], receivedData[i]);
-	    }
-	    std::printf("\r\n");
+	      for(int i = 0; i < totalBytesInBuffer; i++)
+	      {
+              std::printf("%c, %X | ", receivedData[i], receivedData[i]);
+	      }
+	      std::printf("\r\n");
+	    */
         const int footerLength = std::strlen(footerSequence);
         int i = 0;
         int j = footerLength-1;
-        std::cout << "Footer: ";
+        //std::cout << "Footer: ";
         for(i = 0; i < footerLength; i++)
         {
-            std::printf("%c | ", receivedData[ totalBytesInBuffer - 1 - i ]);
+            //std::printf("%c | ", receivedData[ totalBytesInBuffer - 1 - i ]);
             if(receivedData[ totalBytesInBuffer - 1 - i ] != footerSequence[j])
             {
                 //THIS IS WHERE AN HSM invalid message can be sent
-                std::printf("\r\n");
+                //std::printf("\r\n");
                 ROS_ERROR("%s:: Invalid Footer\r\n", pluginName.c_str());
                 return footerLength;
             }
             j--;
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
         const int headerLength = std::strlen(headerSequence);
-        std::printf("%d Header: ", headerLength);
+        //std::printf("%d Header: ", headerLength);
         for(i = 0; i < headerLength; i++)
         {
-            std::printf("%x, %x, %d| ", receivedData[totalBytesInBuffer - packetLengthInBytes + i], (headerSequence[i] & 0xff),
-                        receivedData[totalBytesInBuffer - packetLengthInBytes + i] == headerSequence[i]);
+            //std::printf("%x, %x, %d| ", receivedData[totalBytesInBuffer - packetLengthInBytes + i], (headerSequence[i] & 0xff),
+              //          receivedData[totalBytesInBuffer - packetLengthInBytes + i] == headerSequence[i]);
             if(receivedData[totalBytesInBuffer - packetLengthInBytes + i] != (headerSequence[i] & 0xff))
             {
                 //THIS IS WHERE AN HSM invalid message can be sent
-                std::printf("\r\n");
+                //std::printf("\r\n");
                 ROS_ERROR("%s:: Invalid Header\r\n", pluginName.c_str());
                 return packetLengthInBytes;
             }
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
         //should post something to HSM here.
 
         ROS_DEBUG("%s:: Header Found, Footer Found, Correct Length, Good Packet", pluginName.c_str());

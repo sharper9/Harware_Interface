@@ -88,7 +88,7 @@ bool base_classes::base_UDP_interface::stopWork()
 bool base_classes::base_UDP_interface::handleIORequest(const boost::system::error_code &ec, size_t bytesReceived)
 {
     //printMetrics(true);
-    ROS_INFO_THROTTLE(5,"Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesReceived);
+    ROS_DEBUG_THROTTLE(2,"Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesReceived);
 
     //call plugin's data handler
     dataArrayStart=0;

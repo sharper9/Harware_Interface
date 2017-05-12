@@ -87,7 +87,7 @@ bool base_classes::base_serial_interface::startWork()
         }
         else
         {
-          ROS_INFO_ONCE("BASE INTERFACE_READ");
+          ROS_DEBUG("BASE INTERFACE_READ");
           boost::asio::async_read(*interfacePort, boost::asio::buffer(receivedData.get(), MAX_SERIAL_READ),
                                           boost::bind(&base_serial_interface::handleIORequest,this,
                                                           boost::asio::placeholders::error(),
@@ -113,7 +113,7 @@ bool base_classes::base_serial_interface::stopWork()
 bool base_classes::base_serial_interface::handleRegexRequest(const boost::system::error_code& e, std::size_t bytesTransferred)
 {
 	printMetrics(true);
-  ROS_INFO("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesTransferred);
+  ROS_DEBUG("Thread <%s>:: %s:: Received Packet!:: Size %lu", THREAD_ID_TO_C_STR, this->pluginName.c_str(), bytesTransferred);
 
 	if (!e)
 	{

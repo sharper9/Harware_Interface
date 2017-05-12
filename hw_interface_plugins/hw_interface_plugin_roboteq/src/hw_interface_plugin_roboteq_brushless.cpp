@@ -2,7 +2,7 @@
 
 hw_interface_plugin_roboteq::brushless::brushless()
 {
-  if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+  if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
   {
     ros::console::notifyLoggerLevelsChanged();
   }

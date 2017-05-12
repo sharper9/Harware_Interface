@@ -210,8 +210,8 @@ for(int i = 0; i < max; i++){
 }
 
 //service response
-res.x = x;
-res.y = y;
+res.x = x/1000.0;
+res.y = y/1000.0;
 res.heading = heading;
 res.bearing = bearing;
 res.avg_error = get_avg_error(req.average_length);
@@ -446,8 +446,8 @@ int td_navigation::worker::run(){
 
     aa.heading = heading * 180.0 / PI;
     aa.bearing = bearing * 180.0 / PI;
-    aa.x = x;
-    aa.y = y;
+    aa.x = x/1000.0;
+    aa.y = y/1000.0;
     aa.rad0toL = get_avg_dist0_l(average_length);
     aa.rad0toR = get_avg_dist0_r(average_length);
     aa.rad1toL = get_avg_dist1_l(average_length);

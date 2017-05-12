@@ -8,7 +8,7 @@ hw_interface_plugin_agent::agent_UDP::agent_UDP()
     ROS_DEBUG_EXTRA_SINGLE("A Wild agent Plugin Appeared!");
     //localAddress = boost::asio::ip::address::from_string("192.168.2.122");
 
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
     enableMetrics();
@@ -37,12 +37,12 @@ void hw_interface_plugin_agent::agent_UDP::msgCallback(const topic_tools::ShapeS
             boost::lock_guard<boost::mutex> guard(webCamCmdMutex);
             if(/*webCamCmdFromCommand.start && */(type==MSG_TYPE_CAMERA_IMAGE))
             {
-                ROS_INFO("Camera IMAGE");
+                ROS_DEBUG("Camera IMAGE");
                 postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
             }
             else if(!/*(webCamCmdFromCommand.start) &&*/ (type==MSG_TYPE_LASER_SCAN))
             {
-                ROS_INFO("scan");
+                ROS_DEBUG("scan");
                 postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
             }
         }
@@ -159,9 +159,9 @@ bool hw_interface_plugin_agent::agent_UDP::interfaceReadHandler(const size_t &bu
    // }
     //std::printf("\r\n");
 
-    ROS_INFO_THROTTLE(2,"Remote Address?: %s", senderEndpoint.address().to_string().c_str());
+    ROS_DEBUG_THROTTLE(2,"Remote Address?: %s", senderEndpoint.address().to_string().c_str());
 
-    ROS_DEBUG_THROTTLE(1,"Incoming Pkt timestamp %2.9f", *((double*) &(receivedData[MSG_TIMESTAMP_OFFSET])));
+    ROS_INFO_THROTTLE(1,"Incoming Pkt timestamp %2.9f", *((double*) &(receivedData[MSG_TIMESTAMP_OFFSET])));
     ROS_DEBUG_THROTTLE(1,"Time at Receipt:       %2.9f", currentAgentTime);
     if(lastMsgTimeStamp < *((double*) &(receivedData[MSG_TIMESTAMP_OFFSET])))
     {

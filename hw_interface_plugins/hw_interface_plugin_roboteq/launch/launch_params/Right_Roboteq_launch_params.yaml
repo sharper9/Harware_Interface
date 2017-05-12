@@ -10,7 +10,7 @@ brushless:
 
 Right_Roboteq:
     {
-        deviceName         : "/dev/ttyS1",
+        deviceName         : "/dev/ttyS0",
         baudrate           : 115200,
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/drivemotorin/right",

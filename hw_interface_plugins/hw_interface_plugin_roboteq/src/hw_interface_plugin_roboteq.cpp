@@ -2,12 +2,12 @@
 
 hw_interface_plugin_roboteq::roboteq_serial::roboteq_serial()
 {
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
     {
         ros::console::notifyLoggerLevelsChanged();
     }
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Instantiated");
-    m_exStop=false;
+    m_exStop=true;
 }
 
 bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandlePtr nhPtr)
@@ -70,7 +70,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
             std::string exStop = "!EX\r";
             postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
         }
-        else if(m_exStop)
+        else if(!msgIn->bucket_stop_cmd && m_exStop)
         {
             m_exStop=false;
             std::string unExStop = "!MG\r";
@@ -89,7 +89,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
             std::string exStop = "!EX\r";
             postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
         }
-        else if(m_exStop)
+        else if(!msgIn->arm_stop_cmd && m_exStop)
         {
             m_exStop=false;
             std::string unExStop = "!MG\r";
@@ -107,7 +107,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
             std::string exStop = "!EX\r";
             postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
         }
-        else if(m_exStop)
+        else if(!msgIn->wrist_stop_cmd && m_exStop)
         {
             m_exStop=false;
             std::string unExStop = "!MG\r";
@@ -119,7 +119,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     }
     else
     {
-        ROS_WARN("%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
+        ROS_WARN_THROTTLE(2,"%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
     }
 
     ROS_DEBUG("%s", motorSpeedCmds.c_str());
@@ -216,7 +216,7 @@ void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
 
 bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const size_t &length, int arrayStartPos, const boost::system::error_code &ec)
 {
-    ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Data Handler");
+    ROS_DEBUG_THROTTLE(2,"Roboteq Plugin Data Handler");
 
     ROS_DEBUG("\n\nContents: %s\n", receivedRegexData.c_str());
 
@@ -381,7 +381,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterato
       ROS_ERROR("REGEX Container %s", receivedRegexData.c_str());
   }
 
-  if (m_numInitCmds == m_numCmdsMatched)
+  if (m_numCmdsMatched >= m_numInitCmds)
   {
     rosDataPub.publish(roboteqData);
     m_numCmdsMatched = 0;

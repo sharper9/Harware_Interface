@@ -8,7 +8,7 @@ hw_interface_plugin_netburner::netburner_UDP::netburner_UDP()
     ROS_DEBUG_EXTRA_SINGLE("A Wild NB Plugin Appeared!");
     //localAddress = boost::asio::ip::address::from_string("192.168.2.122");
 
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
     enableMetrics();

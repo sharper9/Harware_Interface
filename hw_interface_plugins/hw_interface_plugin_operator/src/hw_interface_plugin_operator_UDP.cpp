@@ -8,7 +8,7 @@ hw_interface_plugin_operator::operator_UDP::operator_UDP()
     ROS_DEBUG_EXTRA_SINGLE("A Wild Operator Plugin Appeared!");
     //localAddress = boost::asio::ip::address::from_string("192.168.2.122");
 
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
     enableMetrics();
@@ -153,14 +153,14 @@ bool hw_interface_plugin_operator::operator_UDP::pluginStart()
 bool hw_interface_plugin_operator::operator_UDP::interfaceReadHandler(const size_t &bufferSize, int arrayStartPos, const boost::system::error_code &ec)
 {
     double currentAgentTime = ros::Time::now().toSec();
-    ROS_INFO("Operator Plugin Data Handler %lu  %d", bufferSize, arrayStartPos);
+    ROS_DEBUG("Operator Plugin Data Handler %lu  %d", bufferSize, arrayStartPos);
     //for(uint32_t i = 0; i < bufferSize; i++)
     //{
     //   std::printf("%x %c || ", receivedData[i],receivedData[i]);
     //}
     //std::printf("\r\n");
 
-    ROS_INFO("Remote Address?: %s", senderEndpoint.address().to_string().c_str());
+    ROS_DEBUG("Remote Address?: %s", senderEndpoint.address().to_string().c_str());
 
     ROS_DEBUG("Incoming Pkt timestamp %2.9f", *((double*) &(receivedData[MSG_TIMESTAMP_OFFSET])));
     ROS_DEBUG("Time at Receipt:       %2.9f", currentAgentTime);
