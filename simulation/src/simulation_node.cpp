@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     pauseMsg.pause = true; // Initialize pause to true
     scoopFeedbackMsg.feedback.resize(2);
     armFeedbackMsg.feedback.resize(2);
-    bucketFeedbackMsg.feedback.resize(2);
+    bucketFeedbackMsg.user_integer_variable.resize(2);
     leftDriveFeedbackMsg.individual_digital_inputs.resize(6);
     rightDriveFeedbackMsg.individual_digital_inputs.resize(6);
 
@@ -81,8 +81,8 @@ int main(int argc, char** argv)
         scoopFeedbackMsg.feedback.at(1) = robotSim.scoopPos;
         armFeedbackMsg.feedback.at(0) = robotSim.armPos;
         armFeedbackMsg.feedback.at(1) = robotSim.armPos;
-        bucketFeedbackMsg.feedback.at(0) = robotSim.bucketPos;
-        bucketFeedbackMsg.feedback.at(1) = robotSim.bucketPos;
+        bucketFeedbackMsg.user_integer_variable.at(0) = robotSim.bucketPos;
+        bucketFeedbackMsg.user_integer_variable.at(1) = robotSim.bucketPos;
         leftDriveFeedbackMsg.individual_digital_inputs.at(5) = robotSim.leftBumper;
         rightDriveFeedbackMsg.individual_digital_inputs.at(5) = robotSim.rightBumper;
         navMsgOut.x_position = robotSim.xPos;

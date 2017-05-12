@@ -10,6 +10,7 @@ bool DriveToDig::runProc()
         procsToResume[procType] = false;
         computeDriveSpeeds();
         numWaypointsToTravel = 1;
+        ROS_WARN("dig planning map, upper = %f, lower = %f", digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingUpperLimit, digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit);
         chosenHeading = (static_cast<float>(rand()) / static_cast<float>(RAND_MAX))*
                 (digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingUpperLimit -
                  digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit) + digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit;

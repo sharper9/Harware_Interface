@@ -52,6 +52,8 @@ MissionPlanning::MissionPlanning()
         procsBeingExecuted[i] = false;
         procsToResume[i] = false;
     }
+    depositWaypointDistanceTolerance = depositWaypointDistanceToleranceInit;
+    depositWaypointAngleTolerance = depositWaypointAngleToleranceInit;
     initializeDigPlanningMap_();
 }
 
@@ -246,7 +248,7 @@ void MissionPlanning::initializeDigPlanningMap_()
         for(int j=0; j<ySize; j++)
         {
             cellXPos = i*DIG_MAP_RES + DIG_MAP_RES/2.0;
-            cellXPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0;
+            cellYPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0;
             digPlanningMap.atIndex(i,j).headingLowerLimit = RAD2DEG*atan2(cornerPointY[0] - cellYPos, cornerPointX[0] - cellXPos);
             digPlanningMap.atIndex(i,j).headingUpperLimit = RAD2DEG*atan2(cornerPointY[1] - cellYPos, cornerPointX[1] - cellXPos);
         }
