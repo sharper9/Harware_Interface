@@ -31,12 +31,14 @@ int DriveGlobal::run()
             pushTask(_driveStraight_);
             driveDeque.back()->params.float1 = distanceToDrive_;
             pushTask(_pivot_);
-            candidateEndHeadingAngleToTurn_[0] = fmod(desiredEndHeading_, 360.0) + 360.0 - fmod(fmod(robotStatus.heading + angleToTurn_, 360.0) + 360.0, 360.0);
-            candidateEndHeadingAngleToTurn_[1] = fmod(desiredEndHeading_, 360.0) - fmod(robotStatus.heading + angleToTurn_, 360.0);
-            if(fabs(candidateEndHeadingAngleToTurn_[0]) < fabs(candidateEndHeadingAngleToTurn_[1]))
-                driveDeque.back()->params.float1 = candidateEndHeadingAngleToTurn_[0];
-            else
-                driveDeque.back()->params.float1 = candidateEndHeadingAngleToTurn_[1];
+            uXCurrentHeading_ = cos(DEG2RAD*(robotStatus.heading+angleToTurn_));
+            uYCurrentHeading_ = sin(DEG2RAD*(robotStatus.heading+angleToTurn_));
+            uXDesiredEndHeading_ = cos(DEG2RAD*desiredEndHeading_);
+            uYDesiredEndHeading_ = sin(DEG2RAD*desiredEndHeading_);
+            if(asin(uXCurrentHeading_*uYDesiredEndHeading_ - uXDesiredEndHeading_*uYCurrentHeading_)>=0.0) signDesiredEndHeading_ = 1.0;
+            else signDesiredEndHeading_ = -1.0;
+            driveDeque.back()->params.float1 = RAD2DEG*signDesiredEndHeading_*acos(uXCurrentHeading_*uXDesiredEndHeading_ + uYCurrentHeading_*uYDesiredEndHeading_);
+            ROS_WARN("current heading = %f, desired heading  = %f, angle to turn = %f", fmod(robotStatus.heading, 360.0), desiredEndHeading_, driveDeque.back()->params.float1);
             driveCompleted_ = false;
         }
         else
@@ -60,22 +62,23 @@ int DriveGlobal::run()
 
 void DriveGlobal::calculatePath_()
 {
-	xErr_ = desiredX_-robotStatus.xPos;
-	yErr_ = desiredY_-robotStatus.yPos;
-	uXDes_ = xErr_/hypot(xErr_,yErr_);
-	uYDes_ = yErr_/hypot(xErr_,yErr_);
-	uXAct_ = cos(robotStatus.heading*PI/180.0);
-	uYAct_ = sin(robotStatus.heading*PI/180.0);
-	if(asin(uXAct_*uYDes_-uXDes_*uYAct_)>=0) newHeadingSign_ = 1.0;
-	else newHeadingSign_ = -1.0;
+    xErr_ = desiredX_-robotStatus.xPos;
+    yErr_ = desiredY_-robotStatus.yPos;
+    uXDes_ = xErr_/hypot(xErr_,yErr_);
+    uYDes_ = yErr_/hypot(xErr_,yErr_);
     if(driveBackwards_)
     {
-        angleToTurn_ = (180.0/PI)*(newHeadingSign_)*acos(uXAct_*uXDes_+uYAct_*uYDes_)+180.0;
+        uXAct_ = -cos(robotStatus.heading*PI/180.0);
+        uYAct_ = -sin(robotStatus.heading*PI/180.0);
         distanceToDrive_ = -hypot(xErr_,yErr_);
     }
     else
     {
-        angleToTurn_ = (180.0/PI)*(newHeadingSign_)*acos(uXAct_*uXDes_+uYAct_*uYDes_);
+        uXAct_ = cos(robotStatus.heading*PI/180.0);
+        uYAct_ = sin(robotStatus.heading*PI/180.0);
         distanceToDrive_ = hypot(xErr_,yErr_);
     }
+    if(asin(uXAct_*uYDes_-uXDes_*uYAct_)>=0) newHeadingSign_ = 1.0;
+    else newHeadingSign_ = -1.0;
+    angleToTurn_ = (180.0/PI)*(newHeadingSign_)*acos(uXAct_*uXDes_+uYAct_*uYDes_);
 }

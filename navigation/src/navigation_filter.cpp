@@ -10,14 +10,23 @@ NavigationFilter::NavigationFilter()
 	ranging_radio_client = nh.serviceClient<td_navigation::Localize>("localize");
 
   //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
-	filter.initialize_states(0,0,0,0,0,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
+    filter.initialize_states(0,0,initHeading,initX,initY,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
 
-  encoders.set_wheel_radius(REG_WHEEL_RADIUS);
-  encoders.set_counts_per_revolution_front_right(REG_WHEEL_COUNTS_PER_REV_FRONT_RIGHT);
-  encoders.set_counts_per_revolution_front_left(REG_WHEEL_COUNTS_PER_REV_FRONT_LEFT);
-  encoders.set_counts_per_revolution_back_right(REG_WHEEL_COUNTS_PER_REV_BACK_RIGHT);
-  encoders.set_counts_per_revolution_back_left(REG_WHEEL_COUNTS_PER_REV_BACK_LEFT);
-  current_time = ros::Time::now().toSec();
+#ifdef USE_COMP_WHEELS
+    encoders.set_wheel_radius(COMP_WHEEL_RADIUS);
+    encoders.set_counts_per_revolution_front_right(COMP_WHEEL_COUNTS_PER_REV_FRONT_RIGHT);
+    encoders.set_counts_per_revolution_front_left(COMP_WHEEL_COUNTS_PER_REV_FRONT_LEFT);
+    encoders.set_counts_per_revolution_back_right(COMP_WHEEL_COUNTS_PER_REV_BACK_RIGHT);
+    encoders.set_counts_per_revolution_back_left(COMP_WHEEL_COUNTS_PER_REV_BACK_LEFT);
+#else
+    encoders.set_wheel_radius(REG_WHEEL_RADIUS);
+    encoders.set_counts_per_revolution_front_right(REG_WHEEL_COUNTS_PER_REV_FRONT_RIGHT);
+    encoders.set_counts_per_revolution_front_left(REG_WHEEL_COUNTS_PER_REV_FRONT_LEFT);
+    encoders.set_counts_per_revolution_back_right(REG_WHEEL_COUNTS_PER_REV_BACK_RIGHT);
+    encoders.set_counts_per_revolution_back_left(REG_WHEEL_COUNTS_PER_REV_BACK_LEFT);
+#endif // USE_COMP_WHEELS
+
+    current_time = ros::Time::now().toSec();
 
     //added for new User Interface -Matt G.
     std::string tempServiceName = "";

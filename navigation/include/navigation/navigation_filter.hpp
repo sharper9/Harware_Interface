@@ -26,6 +26,8 @@
 #define COMP_WHEEL_COUNTS_PER_REV_BACK_RIGHT 1358
 #define COMP_WHEEL_COUNTS_PER_REV_BACK_LEFT 1358
 
+//#define USE_COMP_WHEELS
+
 class NavigationFilter
 {
 	public:
@@ -72,6 +74,9 @@ class NavigationFilter
 		bool first_pass = true;
 		bool stop_request = false;
 		int nav_status_output = 0;
+        const float initX = 1.0; // m
+        const float initY = 0.0; // m
+        const float initHeading = 0.0; // rad
 
 	private:
 		void getExecInfoCallback(const messages::ExecInfo::ConstPtr &msg);
