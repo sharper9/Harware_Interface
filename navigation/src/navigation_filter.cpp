@@ -86,7 +86,7 @@ void NavigationFilter::run()
         }
 
         //if no motion detected
-        if ((fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.075 && sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0075) && encoders.delta_distance == 0) //if no motion detected
+        if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/ (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0175) && encoders.delta_distance == 0) //if no motion detected
         {
             if(!rr_found_full_pose)
             {
@@ -161,6 +161,10 @@ void NavigationFilter::run()
         }
         else //if motion is detected then predict states
         {
+            ROS_WARN("Stop Flag set but motion detected! %2.12f  %2.12f %2.3f", 
+                                    fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1), 
+                                    sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r)),
+                                    encoders.delta_distance);
             rr_found_full_pose=false;
             if (imu.new_nb1!=0)
             {

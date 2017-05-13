@@ -63,6 +63,7 @@ public:
 private:
   ros::Publisher actuator_pub_;
   ros::Subscriber joystick_sub_;
+  ros::Publisher exec_info_pub_;
 
   ros::ServiceClient exec_manual_override_client_;
   ros::Publisher pause_robot_control_pub_;
