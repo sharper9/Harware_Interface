@@ -8,6 +8,10 @@ bool DepositRealign::runProc()
         procsBeingExecuted[procType] = true;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
+        depositWaypointDistanceTolerance += depositWaypointDistanceToleranceIncrement;
+        if(depositWaypointDistanceTolerance > depositWaypointDistanceToleranceMax) depositWaypointDistanceTolerance = depositWaypointDistanceToleranceMax;
+        depositWaypointAngleTolerance += depositWaypointAngleToleranceIncrement;
+        if(depositWaypointAngleTolerance > depositWaypointAngleToleranceMax) depositWaypointAngleTolerance = depositWaypointAngleToleranceMax;
         computeDriveSpeeds();
         numWaypointsToTravel = 1;
         clearAndResizeWTT();

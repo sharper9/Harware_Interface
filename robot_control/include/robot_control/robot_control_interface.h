@@ -19,7 +19,7 @@ public:
     static bool scoopFailed;
     static bool armFailed;
     static bool bucketFailed;
-    const int scoopTol = 30;
+    const int scoopTol = 50;
     const int armTol = 50;
     const int bucketTol = 50;
 };

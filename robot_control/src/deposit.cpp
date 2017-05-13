@@ -8,6 +8,8 @@ bool Deposit::runProc()
         procsBeingExecuted[procType] = true;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
+        depositWaypointDistanceTolerance = depositWaypointDistanceToleranceInit;
+        depositWaypointAngleTolerance = depositWaypointAngleToleranceInit;
         computeDriveSpeeds();
         sendDriveToWall();
         sendDump();
