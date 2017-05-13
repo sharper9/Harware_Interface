@@ -106,24 +106,29 @@ include_directories(
  add_library(idle src/idle.cpp)
  add_library(drive_global src/drive_global.cpp)
  add_library(drive_relative src/drive_relative.cpp)
+ add_library(drive_to_wall src/drive_to_wall.cpp)
  add_library(dig src/dig.cpp)
  add_library(dump src/dump.cpp)
  add_library(wait src/wait.cpp)
  add_library(drive_halt src/drive_halt.cpp)
  add_library(drive_straight src/drive_straight.cpp)
+ add_library(drive_until_limit src/drive_until_limit.cpp)
  add_library(drive_pivot src/drive_pivot.cpp)
  add_library(scoop_halt src/scoop_halt.cpp)
  add_library(scoop_set_pos src/scoop_set_pos.cpp)
  add_library(arm_halt src/arm_halt.cpp)
  add_library(arm_set_pos src/arm_set_pos.cpp)
+ add_library(arm_shake src/arm_shake.cpp)
  add_library(bucket_halt src/bucket_halt.cpp)
  add_library(bucket_set_pos src/bucket_set_pos.cpp)
+ add_library(bucket_shake src/bucket_shake.cpp)
 
  add_library(mission_planning src/mission_planning.cpp)
  add_library(initialize src/initialize.cpp)
  add_library(drive_to_dig src/drive_to_dig.cpp)
  add_library(mine src/mine.cpp)
  add_library(drive_to_deposit src/drive_to_deposit.cpp)
+ add_library(deposit_realign src/deposit_realign.cpp)
  add_library(deposit src/deposit.cpp)
  add_library(recover src/recover.cpp)
  add_library(pause src/pause.cpp)
@@ -146,18 +151,22 @@ include_directories(
    idle
    drive_global
    drive_relative
+   drive_to_wall
    dig
    dump
    wait
    drive_halt
    drive_straight
+   drive_until_limit
    drive_pivot
    scoop_halt
    scoop_set_pos
    arm_halt
    arm_set_pos
+   arm_shake
    bucket_halt
    bucket_set_pos
+   bucket_shake
  )
 
  target_link_libraries(mission_planning_node
@@ -167,6 +176,7 @@ include_directories(
    drive_to_dig
    mine
    drive_to_deposit
+   deposit_realign
    deposit
    recover
    pause

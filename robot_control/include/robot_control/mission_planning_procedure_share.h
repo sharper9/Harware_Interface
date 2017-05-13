@@ -12,6 +12,12 @@
 #include <math.h>
 #include <time.h>
 #include "mission_planning_types_defines.h"
+#include "planning_map_struct.hpp"
+#include "irl_grid_map.hpp"
+
+#define DIG_MAP_RES 1.0
+#define DIG_MAP_X_LEN 7.38
+#define DIG_MAP_Y_LEN 3.88
 
 class MissionPlanningProcedureShare
 {
@@ -48,12 +54,29 @@ public:
     static bool atMineLocation;
     static bool bucketFull;
     static bool atDepositLocation;
+    static bool confirmedAtDepositLocation;
     static bool stuck;
-    const float depositWaypointX = 5.0; // m
+	static IRLGridMap<PlanningMapData> digPlanningMap;
+    static float depositWaypointDistanceTolerance;
+    static float depositWaypointAngleTolerance;
+    const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
+    const float depositWaypointDistanceToleranceInit = 0.3; // m
+    const float depositWaypointAngleToleranceInit = 5.0; // deg
+    const float depositWaypointDistanceToleranceMax = 0.6; // m
+    const float depositWaypointAngleToleranceMax = 20.0; // deg
+    const float depositWaypointDistanceToleranceIncrement = 0.1; // m
+    const float depositWaypointAngleToleranceIncrement = 5.0; // deg
+    const float depositWaypointRecoverX = 2.0; // m
+    const float depositWaypointRecoverY = 0.0; // m
     const float queueEmptyTimerPeriod = 30.0; // sec
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
+	const float mapYOffset = 1.94; // m
+	const float miningRegionMinXDistance = 4.55; // m
+	const float miningRegionTargetXDistance = 4.65; // m
+	const float miningWallBufferDistance = 1.0; // m
+    const int numDigsPerMine = 3;
 };
 
 bool MissionPlanningProcedureShare::procsToExecute[NUM_PROC_TYPES];
@@ -81,6 +104,7 @@ bool MissionPlanningProcedureShare::initialized;
 bool MissionPlanningProcedureShare::atMineLocation;
 bool MissionPlanningProcedureShare::bucketFull;
 bool MissionPlanningProcedureShare::atDepositLocation;
+bool MissionPlanningProcedureShare::confirmedAtDepositLocation;
 bool MissionPlanningProcedureShare::stuck;
 bool MissionPlanningProcedureShare::recoverCondition;
 bool MissionPlanningProcedureShare::queueEmptyTimedOut;
@@ -89,5 +113,8 @@ float MissionPlanningProcedureShare::angleToTurn; // deg
 double MissionPlanningProcedureShare::missionTime;
 double MissionPlanningProcedureShare::prevTime;
 bool MissionPlanningProcedureShare::missionStarted;
+IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(DIG_MAP_RES, DIG_MAP_X_LEN, DIG_MAP_Y_LEN);
+float MissionPlanningProcedureShare::depositWaypointDistanceTolerance;
+float MissionPlanningProcedureShare::depositWaypointAngleTolerance;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

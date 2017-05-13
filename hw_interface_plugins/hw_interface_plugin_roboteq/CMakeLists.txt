@@ -48,8 +48,6 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    Roboteq_Data.msg
-   Analog_Input_Info.msg
-   Analog_Input_Conversion_Info.msg
  )
 
 ## Generate services in the 'srv' folder

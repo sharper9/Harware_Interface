@@ -44,8 +44,9 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>hw_interface_plugin_timedomain</build_depend>
   <build_depend>message_generation</build_depend>
-  
-<run_depend>message_runtime</run_depend>
+  <build_depend>messages</build_depend>
+  <run_depend>messages</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>hw_interface_plugin_timedomain</run_depend>

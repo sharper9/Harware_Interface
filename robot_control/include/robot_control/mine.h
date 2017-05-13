@@ -8,7 +8,6 @@ public:
     // Methods
     bool runProc();
     // Members
-
 };
 
 #endif // MINE_H

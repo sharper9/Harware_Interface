@@ -8,7 +8,7 @@ hw_interface_plugin_timedomain::timedomain_serial::timedomain_serial()
     ROS_INFO("A Wild Timedomain Plugin Appeared!");
 
     //force the ROS Console level to Debug Level
-    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug) ) {
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
            ros::console::notifyLoggerLevelsChanged();
         }
 
@@ -95,10 +95,10 @@ void hw_interface_plugin_timedomain::timedomain_serial::setInterfaceOptions()
 
 void hw_interface_plugin_timedomain::timedomain_serial::rosMsgCallback(const hw_interface_plugin_timedomain::Range_Request::ConstPtr &msg)
 {
-    ROS_INFO("Timedomain callback");
+    ROS_DEBUG_THROTTLE(2,"Timedomain callback");
     if(!isRequestInProgress() && msg->send_range_request && (msg->radio_id_to_target >= 0))
     {
-        ROS_INFO("Sending Range Request");
+        ROS_DEBUG("Sending Range Request");
         requestInProgress = true;
         ranging_radio_types::Range_Request_t rangeRequest;
         rangeRequest.msg.sync = 0xA5A5;
@@ -129,32 +129,35 @@ void hw_interface_plugin_timedomain::timedomain_serial::rosMsgCallback(const hw_
 //this is called automatically when data that passes the streamMatcher is okay
     //this function is called with a data length and a position in an inherited array member
         //named 'receivedData'
-bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(const size_t &length,
-                                                                            int arrayStartPos)
+bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(const size_t &length, int arrayStartPos, const boost::system::error_code &ec)
 {
-    ROS_INFO("TimeDomain Plugin Data Handler, %ld, %d", length, arrayStartPos);
+    ROS_DEBUG_THROTTLE(2,"TimeDomain Plugin Data Handler, %ld, %d", length, arrayStartPos);
 
     ROS_DEBUG("Buf Pointer: 0x%p\r\n", &receivedData[arrayStartPos]);
+    /*
+    
     std::printf("Contents: ");
     for(int i = 0; i < length; i++)
     {
         std::printf("%x | ", receivedData[arrayStartPos + i]);
     }
     std::printf("\r\n");
+    
+    */
 
     ranging_radio_types::Pre_Response_t preRead;
     ranging_radio_types::bigToLittleEndian((const uint8_t*)receivedData.get(), preRead.msgData, ranging_radio_types::PRE_READ_SIZE);
 
     if(preRead.msg.msgType == SEND_RANGE_CONFIRM_MSGTYPE)
     {
-        ROS_INFO_EXTRA("%s Received Range Confirm", pluginName.c_str());
+        ROS_DEBUG_EXTRA("%s Received Range Confirm", pluginName.c_str());
         //because the last message received was a range confirm, the next message will be a range info
         readLength = ranging_radio_types::RCM_RANGE_INFO_SIZE;
         setupStreamMatcherDelimAndLength(ranging_radio_types::RCM_RANGE_INFO_SIZE,headerString.c_str(),"");
     }
     else if(preRead.msg.msgType == RCM_RANGE_INFO_MSGTYPE)
     {
-        ROS_INFO_EXTRA("%s Received Range Info", pluginName.c_str());
+        ROS_DEBUG_EXTRA("%s Received Range Info", pluginName.c_str());
         requestInProgress = false;
         readLength = ranging_radio_types::SEND_RANGE_CONFIRM_SIZE;
         setupStreamMatcherDelimAndLength(ranging_radio_types::SEND_RANGE_CONFIRM_SIZE,headerString.c_str(),"");

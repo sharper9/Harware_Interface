@@ -2,11 +2,12 @@
 
 hw_interface_plugin_roboteq::roboteq_serial::roboteq_serial()
 {
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
     {
         ros::console::notifyLoggerLevelsChanged();
     }
     ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Instantiated");
+    m_exStop=true;
 }
 
 bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandlePtr nhPtr)
@@ -21,7 +22,7 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
         else if(!tempString.compare("Left_Drive")) { roboteqType = controller_t::Left_Drive_Roboteq; }
         else if(!tempString.compare("Bucket_Roboteq")) { roboteqType = controller_t::Bucket_Roboteq; }
         else if(!tempString.compare("Arm_Roboteq")) { roboteqType = controller_t::Arm_Roboteq; }
-        else if(!tempString.compare("Scoop_Roboteq")) { roboteqType = controller_t::Scoop_Roboteq; }
+        else if(!tempString.compare("Wrist_Roboteq")) { roboteqType = controller_t::Wrist_Roboteq; }
         else { roboteqType = controller_t::Other; }
     }
     else
@@ -35,7 +36,8 @@ bool hw_interface_plugin_roboteq::roboteq_serial::subPluginInit(ros::NodeHandleP
     enableMetrics();
 
     enableRegexReadUntil = true;
-    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|FF|BCR|BA){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
+    regexExpr = "(CB|A|AI|AIC|BS|DI|DR|F|FF|BCR|BA|VAR){1}=((-?\\d+):)+(-?\\d+)+((\\r){2})";
+    m_numCmdsMatched = 0;
 
     deviceName = "";
     ros::param::get(pluginName+"/deviceName", deviceName);
@@ -61,28 +63,66 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
     }
     else if(roboteqType == controller_t::Bucket_Roboteq)
     {
-        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(-msgIn->bucket_pos_cmd) + "\r";
-        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
+
+        if(msgIn->bucket_stop_cmd && !m_exStop)
+        {
+            m_exStop=true;
+            std::string exStop = "!EX\r";
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
+        }
+        else if(!msgIn->bucket_stop_cmd && m_exStop)
+        {
+            m_exStop=false;
+            std::string unExStop = "!MG\r";
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
+        }
+        //motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
+        //motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
+        motorSpeedCmds += "!VAR 1 " + boost::lexical_cast<std::string>(msgIn->bucket_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else if(roboteqType == controller_t::Arm_Roboteq)
     {
+        if(msgIn->arm_stop_cmd && !m_exStop)
+        {
+            m_exStop=true;
+            std::string exStop = "!EX\r";
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
+        }
+        else if(!msgIn->arm_stop_cmd && m_exStop)
+        {
+            m_exStop=false;
+            std::string unExStop = "!MG\r";
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
+        }
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->arm_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
-    else if(roboteqType == controller_t::Scoop_Roboteq)
+    else if(roboteqType == controller_t::Wrist_Roboteq)
     {
+        if(msgIn->wrist_stop_cmd && !m_exStop)
+        {
+            m_exStop=true;
+            std::string exStop = "!EX\r";
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(exStop));
+        }
+        else if(!msgIn->wrist_stop_cmd && m_exStop)
+        {
+            m_exStop=false;
+            std::string unExStop = "!MG\r";
+            //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
+        }
         motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
         motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else
     {
-        ROS_WARN("%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
+        ROS_WARN_THROTTLE(2,"%s:: No Data written because of Incorrect Roboteq Type", pluginName.c_str());
     }
 
-    ROS_INFO("%s", motorSpeedCmds.c_str());
+    ROS_DEBUG("%s", motorSpeedCmds.c_str());
 
     //need to add monitoring facilities to monitor health
 }
@@ -119,29 +159,29 @@ std::string hw_interface_plugin_roboteq::roboteq_serial::getInitCommands(std::st
   tokenizer::iterator tok_iter = tokens.begin();
 
   initializationCmd = "\r^ECHOF 1\r# C\r";
-  int numCmds = 0;
+  m_numInitCmds = 0;
 
   while ( tok_iter != tokens.end() )
   {
-    ROS_INFO("Init Cmd -> %s", tok_iter->c_str());
+    ROS_DEBUG("Init Cmd -> %s", tok_iter->c_str());
 
     if (!command_list[*tok_iter].length())
     {
-      ROS_WARN("Roboteq command << %s >> was not found", tok_iter->c_str());
+      ROS_WARN("RoboteQ command << %s >> was not found", tok_iter->c_str());
     }
     else
     {
       initializationCmd += "?" + command_list[*tok_iter] + "\r";
-      numCmds++;
+      ++m_numInitCmds;
     }
 
     ++tok_iter;
   }
-  if (!numCmds)
+  if (!m_numInitCmds)
   {
-    numCmds = 1;
+    m_numInitCmds = 1;
   }
-  initCmdCycle = initCmdCycle / numCmds;
+  initCmdCycle = initCmdCycle / m_numInitCmds;
   std::string cycle = boost::lexical_cast<std::string>(initCmdCycle);
   return initializationCmd += "# " + cycle + " \r";
 }
@@ -174,10 +214,9 @@ void hw_interface_plugin_roboteq::roboteq_serial::setInterfaceOptions()
     ROS_INFO("%s :: Device: %s :: Baudrate %d", pluginName.c_str(), deviceName.c_str(), tempBaudRate);
 }
 
-bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const size_t &length,
-                                                                            int arrayStartPos)
+bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const size_t &length, int arrayStartPos, const boost::system::error_code &ec)
 {
-    ROS_INFO_EXTRA_SINGLE("Roboteq Plugin Data Handler");
+    ROS_DEBUG_THROTTLE(2,"Roboteq Plugin Data Handler");
 
     ROS_DEBUG("\n\nContents: %s\n", receivedRegexData.c_str());
 
@@ -190,7 +229,6 @@ bool hw_interface_plugin_roboteq::roboteq_serial::interfaceReadHandler(const siz
 
       if(tok_iter != tokens.end())
       {
-        ROS_INFO("%s",tok_iter->c_str());
         m_command = tok_iter->c_str();
         ++tok_iter;
       }
@@ -310,7 +348,32 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterato
       uint8_t value = boost::lexical_cast<uint8_t>(tok_iter->c_str());
       roboteqData.fault_flags = value;
     }
-
+    else if (!m_command.compare("F"))
+    {
+      roboteqData.feedback.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int16_t value = boost::lexical_cast<int16_t>(tok_iter->c_str());
+        roboteqData.feedback.push_back(value);
+        ++tok_iter;
+      }
+    }
+    else if (!m_command.compare("VAR"))
+    {
+      roboteqData.user_integer_variable.clear();
+      while ( tok_iter != tokens.end() )
+      {
+        int32_t value = boost::lexical_cast<int32_t>(tok_iter->c_str());
+        roboteqData.user_integer_variable.push_back(value);
+        ++tok_iter;
+      }
+    }
+    else
+    {
+      ROS_ERROR_EXTRA("RoboteQ Data Handler found no match for << %s >> command", m_command.c_str());
+      return false;
+    }
+    ++m_numCmdsMatched;
   }
   catch(const std::exception &ex)
   {
@@ -318,7 +381,11 @@ bool hw_interface_plugin_roboteq::roboteq_serial::dataHandler(tokenizer::iterato
       ROS_ERROR("REGEX Container %s", receivedRegexData.c_str());
   }
 
-  rosDataPub.publish(roboteqData);
+  if (m_numCmdsMatched >= m_numInitCmds)
+  {
+    rosDataPub.publish(roboteqData);
+    m_numCmdsMatched = 0;
+  }
   return true;
 }
 
