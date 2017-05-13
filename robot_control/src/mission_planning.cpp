@@ -269,6 +269,7 @@ void MissionPlanning::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.xPos = msg->x_position;
     robotStatus.yPos = msg->y_position;
     robotStatus.heading = msg->heading;
+    robotStatus.fullPoseFound = msg->full_pose_found;
 }
 
 void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)
