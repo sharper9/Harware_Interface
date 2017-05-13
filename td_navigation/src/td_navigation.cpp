@@ -199,8 +199,8 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
 }
 
 void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::ConstPtr &msg){
-  heading = msg->heading;
-  bearing = msg->bearing;
+  heading = msg->heading*PI/180.0;
+  bearing = msg->bearing*PI/180.0;
 }
 
 
@@ -576,8 +576,8 @@ int td_navigation::worker::run_half_pose(){
 
     td_navigation::Running_Half_Pose rhp;
 
-    rhp.x = x;
-    rhp.y = y;
+    rhp.x = x/1000.0;
+    rhp.y = y/1000.0;
 
     rhp_pub.publish(rhp);
 
