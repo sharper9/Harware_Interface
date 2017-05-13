@@ -218,7 +218,10 @@ if(req.average_length <= average_length){
 }
 
 for(int i = 0; i < max; i++){
-  run();
+  if (run() != 0){
+    res.fail = true;
+    return false;
+  }
 }
 
 //service response
@@ -470,6 +473,7 @@ int td_navigation::worker::run(){
 
   }else {
     ROS_DEBUG("Problem encountered with triangulation!");
+    return -1;
 
   }
 
@@ -478,6 +482,8 @@ int td_navigation::worker::run(){
   if(count >= 32000){
     count = 0;
 }
+
+return 0;
 
 }
 
@@ -540,7 +546,7 @@ int td_navigation::worker::run_half_pose(){
 
   }else {
     ROS_DEBUG("Problem encountered with triangulation!");
-
+    return -1;
   }
 
   //update count
@@ -548,6 +554,8 @@ int td_navigation::worker::run_half_pose(){
   if(count >= 32000){
     count = 0;
 }
+
+return 0;
 
 }
 
