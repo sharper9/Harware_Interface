@@ -597,7 +597,11 @@ return 0;
 
 }
 
-
+/*
+td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
+                              int rad_L_val, int rad_R_val, int z_estimate_val,
+                              int robot_length_offset_val, int mob_rad_dist_value)
+*/
 
 int main(int argc, char **argv)
 {
@@ -611,7 +615,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(30, 1016, 101, 106, 0, 0, 0);
+  td_navigation::worker worker(10, 725.4875, 101, 106, 0, 673, 546);
 
   ROS_DEBUG("td_navigation closing");
   return 0;
