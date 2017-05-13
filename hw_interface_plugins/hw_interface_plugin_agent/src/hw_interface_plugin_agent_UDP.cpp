@@ -133,6 +133,15 @@ void hw_interface_plugin_agent::agent_UDP::LOSTimeoutHandler(const boost::system
             hw_interface_plugin_agent::LOS losMsg;
             losMsg.LOS=1;
             LOSPub.publish(losMsg);
+            for(int i = 0; i < newJoyVal.axes.size(); i++)
+            {
+                newJoyVal.axes[i]=0.0;
+            }
+            for(int i = 0; i < newJoyVal.buttons.size(); i++)
+            {
+                newJoyVal.buttons[i]=0;
+            }
+            joyPublisher.publish(newJoyVal);
         }
         else
         {

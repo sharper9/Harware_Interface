@@ -78,6 +78,8 @@ class NavigationFilter
         const float initY = 0.0; // m
         const float initHeading = 0.0; // rad
 
+                bool rr_found_full_pose = false;
+
 	private:
 		void getExecInfoCallback(const messages::ExecInfo::ConstPtr &msg);
 
