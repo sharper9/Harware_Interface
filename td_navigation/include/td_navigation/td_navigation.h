@@ -69,6 +69,8 @@ namespace td_navigation
     bool srvCallBack(td_navigation::Localize::Request &req, td_navigation::Localize::Response &res);
     int set_current_pos(double x_val, double y_val, double bearing_val, double heading_val);
     double get_avg_error(int amount_to_avg);
+    double get_avg_error_left(int amount_to_avg);
+    double get_avg_error_right(int amount_to_avg);
     double get_max_error(int amount_to_avg);
     double get_min_error(int amount_to_avg);
     double get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg);

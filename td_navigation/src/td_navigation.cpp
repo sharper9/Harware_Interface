@@ -232,6 +232,16 @@ res.bearing = bearing;
 res.avg_error = get_avg_error(req.average_length);
 res.max_error = get_max_error(req.average_length);
 res.min_error = get_min_error(req.average_length);
+res.left_interference = false;
+res.right_interference = false;
+if(get_avg_error_left(req.average_length) > 13){
+  res.left_interference = true;
+}
+
+if(get_avg_error_right(req.average_length) > 13){
+  res.right_interference = true;
+}
+
 res.fail = false;
 
 return true;
@@ -295,6 +305,32 @@ double td_navigation::worker::get_avg_error(int amount_to_avg){
   }
   for(int i = 0; i < max; i++){
     sum += dist0_l[i][1] + dist0_r[i][1] + dist1_l[i][1] + dist1_r[i][1];
+  }
+
+  return sum/(max * 4);
+}
+
+double td_navigation::worker::get_avg_error_left(int amount_to_avg){
+  double sum = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    sum += dist0_l[i][1] + dist0_r[i][1];
+  }
+
+  return sum/(max * 4);
+}
+
+double td_navigation::worker::get_avg_error_right(int amount_to_avg){
+  double sum = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    sum += dist1_l[i][1] + dist1_r[i][1];
   }
 
   return sum/(max * 4);
