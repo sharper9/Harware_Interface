@@ -58,6 +58,7 @@ find_package(catkin REQUIRED COMPONENTS
    RobotPose.msg
    MissionPlanningInfo.msg
    NextWaypointOut.msg
+   SimControl.msg
    #added for Comm port, remove
    nb1_to_i7_msg.msg
    nb2_3_to_i7_msg.msg
@@ -71,6 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
    ExecAction.srv
    MissionPlanningControl.srv
    ExecManualOverride.srv
+   NavFilterControl.srv
  )
 
 ## Generate actions in the 'action' folder

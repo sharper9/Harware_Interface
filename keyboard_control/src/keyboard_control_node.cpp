@@ -42,6 +42,8 @@ int main(int argc, char **argv)
 	int grabberDropPos  = fully_raised;
 	
 	int arm = 0;
+	int bucket = 0;
+	int wrist = 0;
 	
 	float servoIncrement = 45.0;
 	float servoAngleCmd = 180.0;
@@ -106,34 +108,52 @@ int main(int argc, char **argv)
     		        left[0] = -speed; left[1] = -speed; left[2] = -speed;
 				    break;
 				    
-			//arm control
-				case 119: //w arm up
+			//bucket control - open loop
+				case 119: //w bucket up
 					numTimeOuts = 0;
                     exec_msg.stopFlag = false;
+                    exec_msg.turnFlag = false;
+					clear();printw("Bucket Up");
+					bucket = speed*3;
+					break;
+				case 115: //s bucket down
+					numTimeOuts = 0;
+                    exec_msg.stopFlag = false;
+                    exec_msg.turnFlag = false;
+					clear();printw("Bucket Down");
+          bucket = -speed*3;
+					break;
+					
+			//arm control - open loop
+				case 101: //e arm up
+					numTimeOuts = 0;
+                    exec_msg.stopFlag = true;
                     exec_msg.turnFlag = false;
 					clear();printw("Arm Up");
 					arm = speed;
 					break;
-				case 115: //s arm down
-					numTimeOuts = 0;
-                    exec_msg.stopFlag = false;
-                    exec_msg.turnFlag = false;
-					clear();printw("Arm Down");
-          arm = -speed;
-					break;
-				case 101: //e grabber slides open
-					numTimeOuts = 0;
-                    exec_msg.stopFlag = true;
-                    exec_msg.turnFlag = false;
-					clear();printw("Grabber Slides Open");
-          grabberSlidePos = fully_open;
-					break;
-				case 100: //d grabber slides closed
+				case 100: //d arm down
     				numTimeOuts = 0;
                     exec_msg.stopFlag = true;
                     exec_msg.turnFlag = false;
-					clear();printw("Grabber Slides Closed");
-					grabberSlidePos = fully_closed;
+					clear();printw("Arm Down");
+          arm = -speed;
+					break;	
+			
+			//wrist control - open loop
+				case 114: //r wrist up
+					numTimeOuts = 0;
+                    exec_msg.stopFlag = true;
+                    exec_msg.turnFlag = false;
+					clear();printw("Wrist Up");
+					wrist = -speed;
+					break;
+				case 102: //f wrist down
+    				numTimeOuts = 0;
+                    exec_msg.stopFlag = true;
+                    exec_msg.turnFlag = false;
+					clear();printw("Wrist Down");
+          wrist = speed;
 					break;	
 			
 			//camera control	
@@ -201,19 +221,22 @@ int main(int argc, char **argv)
 				    }
 				    if(numTimeOuts > initTimeouts)
 				    {
-				        printw("Keys 1, 2, 3 .. 0 are drive speed controls, 1 is the slowest : 0 is the fastest\n");
-				        printw("Key 'p' rotates camera clockwise, Key 'o' rotates camera counter-clockwise\n");
+				        printw("Keys 1, 2, 3 .. 0 are drive speed controls, 1 is the slowest : 0 is the fastest\n\n");
+				        //printw("Key 'p' rotates camera clockwise, Key 'o' rotates camera counter-clockwise\n");
                         //printw("Key 'x' toggles Stop Flag");
-				        printw("Spacebar will take a picture and store it\n\n");
-   				        printw("Arrow keys drive the robot\n");
-				        printw("Key 'w' raises the arm, Key 's' lowers the arm\n");
-				        printw("Key 'e' opens grabber slides, Key 'd' closes grabber slides\n\n");
+				        //printw("Spacebar will take a picture and store it\n\n");
+   				      printw("Arrow keys drive the robot\n");
+				        printw("Key 'w' raises the bucket, Key 's' lowers the bucket\n");
+				        printw("Key 'e' raises the arm, Key 'd' lowers the arm\n");
+				        printw("Key 'r' raises the wrist, Key 'd' lowers the wrist\n\n");
 				        printw("Key 'q' will close all rosnodes and end keyboard control\n");
 				        printw("'Control + c' will close just keyboard control\n");
 				    } 
     		        right[0] = 0; right[1] = 0; right[2] = 0;
     		        left[0] = 0; left[1] = 0; left[2] = 0;
     		        arm = 0;
+    		        bucket = 0;
+    		        wrist = 0;
     		        //keys_msg.spacebar = false;
 				    break;
 				    
@@ -226,6 +249,8 @@ int main(int argc, char **argv)
     		        right[0] = 0; right[1] = 0; right[2] = 0;
     		        left[0] = 0; left[1] = 0; left[2] = 0;
     		        arm = 0;
+    		        bucket = 0;
+    		        wrist = 0;
     	//	        keys_msg.spacebar = false;
     		        break;
 		    }
@@ -249,6 +274,8 @@ int main(int argc, char **argv)
 			actuator_msg.br_speed_cmd = right[2];
 			
 			actuator_msg.arm_pos_cmd = arm;
+			actuator_msg.bucket_pos_cmd = bucket;
+			actuator_msg.wrist_pos_cmd = wrist;
 //	        actuator_msg.slide_pos_cmd = grabberSlidePos;
 //	        actuator_msg.drop_pos_cmd = grabberDropPos;
 	        

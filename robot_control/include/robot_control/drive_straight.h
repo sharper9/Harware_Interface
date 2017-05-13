@@ -8,6 +8,8 @@ public:
 	void init();
 	int run();
 private:
+    float initX_;
+    float initY_;
 	float initHeading_;
 	int driveSign_;
 	int pivotSign_;
@@ -30,7 +32,7 @@ private:
 	unsigned int timeoutCounter_;
 	int taskEnded_;
 	const float vMin_ = 0.03; // m/s
-	const float kpV_ = 1.2; // m/(s*m)
+	const float kpV_ = 1.8; // m/(s*m)
 	const float kVOutput_ = 900/1.2; // 90% of max speed at 1.2 m/s
 	const float kpR_ = 1.5; // deg/(s*deg)
 	const float kiR_ = 0.1;

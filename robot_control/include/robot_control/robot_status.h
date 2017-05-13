@@ -10,7 +10,7 @@ public:
 	float yPos = 0.0; // m
 	float heading = 0.0; // deg
 	float bearing = 0.0; // deg
-	bool homingUpdated = false;
+    bool fullPoseFound = false;
 	float distToOrigin = 0.0; // m
 	float deltaDistance = 0.0; // m
 	float yawRate = 0.0; // deg/s
@@ -23,6 +23,8 @@ public:
 	long int blEncoder = 0;
 	long int frEncoder = 0;
 	long int brEncoder = 0;
+    bool leftBumper = false;
+    bool rightBumper = false;
 	// Scoop data
 	int scoopStatus = 0;
 	int scoopPos = 0;

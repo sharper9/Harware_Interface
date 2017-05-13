@@ -2,7 +2,7 @@
 
 hw_interface_plugin_roboteq::brushless::brushless()
 {
-  if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+  if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
   {
     ros::console::notifyLoggerLevelsChanged();
   }
@@ -11,6 +11,12 @@ hw_interface_plugin_roboteq::brushless::brushless()
 bool hw_interface_plugin_roboteq::brushless::implStart()
 {
   ROS_INFO("%s:: Plugin start!", pluginName.c_str());
+  
+  // TODO: error checking
+  std::string wheelType;
+  ros::param::get(pluginName+"/wheelType", wheelType);
+
+  postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(script_list[wheelType]));
 
   /*
    * Roboteq usage

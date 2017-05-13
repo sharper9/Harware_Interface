@@ -65,8 +65,10 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
 bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
   int wait = 0;
   int timeout = 0;
+
   //TODO: change back to about 5000
   ros::Rate loop_rate(5000);
+
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -225,8 +227,8 @@ for(int i = 0; i < max; i++){
 }
 
 //service response
-res.x = x;
-res.y = y;
+res.x = x/1000.0;
+res.y = y/1000.0;
 res.heading = heading;
 res.bearing = bearing;
 res.avg_error = get_avg_error(req.average_length);
@@ -487,7 +489,7 @@ int td_navigation::worker::run(){
     y = ( (rad_nav.get_mobile_radio_coordinate(0,1) + rad_nav.get_mobile_radio_coordinate(1,1)) / 2.0 ) +
          (sin(heading) * robot_length_offset);
 
-    bearing = smart_atan(x,y);
+    bearing = -smart_atan(x,y);
 
 
     ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
@@ -497,8 +499,8 @@ int td_navigation::worker::run(){
 
     aa.heading = heading * 180.0 / PI;
     aa.bearing = bearing * 180.0 / PI;
-    aa.x = x;
-    aa.y = y;
+    aa.x = x/1000.0;
+    aa.y = y/1000.0;
     aa.rad0toL = get_avg_dist0_l(average_length);
     aa.rad0toR = get_avg_dist0_r(average_length);
     aa.rad1toL = get_avg_dist1_l(average_length);
