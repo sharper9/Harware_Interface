@@ -31,7 +31,7 @@ class radio_nav
     double x, y, z, bearing;
 
     mobile_radio(){
-      distance_to_base_rads.reserve(3);
+      distance_to_base_rads.resize(3);
       x = 0;
       y = 0;
       z = 0;
