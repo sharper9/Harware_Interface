@@ -49,6 +49,7 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    Average_angle.msg
+   Running_Half_Pose.msg
  )
 
 ## Generate services in the 'srv' folder
