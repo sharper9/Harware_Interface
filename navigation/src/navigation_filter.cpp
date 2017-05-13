@@ -52,6 +52,7 @@ void NavigationFilter::run()
     if (turnFlag) //if turing in place
     {
         rr_found_full_pose=false;
+        rr_full_pose_failed_counter = 0;
         prev_stopped = false;
         collecting_accelerometer_data = false;
         collected_gyro_data = false;
@@ -88,23 +89,38 @@ void NavigationFilter::run()
         //if no motion detected
         if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/ (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0175) && encoders.delta_distance == 0) //if no motion detected
         {
-            if(!rr_found_full_pose)
+            if(!rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
             {
                 td_navigation::Localize rr_srv;
                 rr_srv.request.average_length = 10; // value to be changed
 
                 if(ranging_radio_client.call(rr_srv))
                 {
-                    //todo
-                    //need to check full pose result for sanity here instead of blindly trusting it
-
-                    rr_found_full_pose=true;
-
-                    double rr_heading = rr_srv.response.heading; //radians
-                    double rr_x = rr_srv.response.x;
-                    double rr_y = rr_srv.response.y;
-                    //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
-                    filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+                    double rr_heading; //radians
+                    double rr_x;
+                    double rr_y;
+                    if(fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
+                    {
+                        rr_x = rr_srv.response.x;
+                        rr_y = rr_srv.response.y;
+                        rr_heading = rr_srv.response.heading;
+                        //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
+                        filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+                        rr_found_full_pose = true;
+                        rr_full_pose_failed_counter = 0;
+                    }
+                    else // RR heading update too far off from current heading. Do not trust
+                    {
+                        rr_found_full_pose = false;
+                        rr_full_pose_failed_counter++;
+                        ROS_WARN("RR heading too far from current heading. Not updating pose.");
+                    }
+                }
+                else // RR service request failed
+                {
+                    rr_found_full_pose = false;
+                    rr_full_pose_failed_counter++;
+                    ROS_WARN("RR service request failed. Not updating pose.");
                 }
             }
 
@@ -166,6 +182,7 @@ void NavigationFilter::run()
                                     sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r)),
                                     encoders.delta_distance);
             rr_found_full_pose=false;
+            rr_full_pose_failed_counter = 0;
             if (imu.new_nb1!=0)
             {
                 filter.dead_reckoning(imu.nb1_p,imu.nb1_q,imu.nb1_r,encoders.delta_distance,imu.dt);
@@ -183,6 +200,7 @@ void NavigationFilter::run()
         collecting_accelerometer_data = false;
         collected_gyro_data = false;
         rr_found_full_pose=false;
+        rr_full_pose_failed_counter = 0;
         filter.clear_accelerometer_values();
         imu.clear_gyro_values();
         if (imu.new_nb1!=0)
