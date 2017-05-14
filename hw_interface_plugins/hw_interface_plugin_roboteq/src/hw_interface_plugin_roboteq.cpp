@@ -113,8 +113,9 @@ void hw_interface_plugin_roboteq::roboteq_serial::rosMsgCallback(const messages:
             std::string unExStop = "!MG\r";
             //postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(unExStop));
         }
-        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
-        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
+//        motorSpeedCmds += "!G 1 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
+//        motorSpeedCmds += "!G 2 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
+        motorSpeedCmds += "!VAR 1 " + boost::lexical_cast<std::string>(msgIn->wrist_pos_cmd) + "\r";
         postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(motorSpeedCmds));
     }
     else
