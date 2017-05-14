@@ -4,6 +4,9 @@ NavigationFilter::NavigationFilter()
 {
     sub_mission_planning = nh.subscribe("/control/missionplanning/info", 1, &NavigationFilter::getMissionPlanningInfoCallback, this);
     sub_exec = nh.subscribe("/control/exec/info", 1, &NavigationFilter::getExecInfoCallback, this);
+    
+    nav_pub = nh.advertise<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout",1);
+    
     pause_switch = false;
     stopFlag = true;
     turnFlag = false;
@@ -90,13 +93,17 @@ void NavigationFilter::run()
 
         //if no motion detected
         if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/
-                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0175) && encoders.delta_distance == 0) //if no motion detected
+                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0375) && encoders.delta_distance == 0) //if no motion detected
         {
             if(perform_rr_heading_update && !rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
             {
                 td_navigation::Localize rr_srv;
                 rr_srv.request.average_length = 10; // value to be changed
-
+                
+                rr_pose_update_in_progress = true;
+                packInfoMsgAndPub();
+                ros::spinOnce();
+                
                 if(ranging_radio_client.call(rr_srv))
                 {
                     double rr_heading; //radians
@@ -104,7 +111,7 @@ void NavigationFilter::run()
                     double rr_y;
                     if(!rr_initial_pose_found || fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
                     {
-                        if(!rr_initial_pose_found || ((sqrt(pow(filter.x+rr_srv.response.x,2)+pow(filter.y+rr_srv.response.y,2))) < rr_stopped_position_update_tolerence))
+                        if(!rr_initial_pose_found || ((hypot(filter.x-rr_srv.response.x, filter.y-rr_srv.response.y)) < rr_stopped_position_update_tolerence))
                         {
                             rr_initial_pose_found=true;
                             rr_x = rr_srv.response.x;
@@ -115,20 +122,33 @@ void NavigationFilter::run()
                             rr_found_full_pose = true;
                             rr_full_pose_failed_counter = 0;
                         }
+                        else
+                        {
+                            ROS_ERROR("Rejecting RR update while stopped. Outside tolerence, Not updating pose.");
+                        }
                     }
                     else // RR heading update too far off from current heading. Do not trust
                     {
                         rr_found_full_pose = false;
                         rr_full_pose_failed_counter++;
-                        ROS_WARN("RR heading too far from current heading. Not updating pose.");
+                        ROS_ERROR("RR heading too far from current heading. Not updating pose.");
                     }
                 }
                 else // RR service request failed
                 {
                     rr_found_full_pose = false;
                     rr_full_pose_failed_counter++;
-                    ROS_WARN("RR service request failed. Not updating pose.");
+                    ROS_ERROR("RR service request failed. Not updating pose.");
                 }
+                
+                rr_pose_update_in_progress = false;
+                packInfoMsgAndPub();
+                ros::spinOnce();
+            }
+            
+            if(rr_full_pose_failed_counter >= rr_full_pose_failed_max_count)
+            {
+                rr_full_pose_failed=true;
             }
 
             if (collecting_accelerometer_data) //if accel data is set to be started
@@ -189,6 +209,7 @@ void NavigationFilter::run()
                                     sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r)),
                                     encoders.delta_distance);
             rr_found_full_pose=false;
+            rr_full_pose_failed=false;
             rr_full_pose_failed_counter = 0;
             if (imu.new_nb1!=0)
             {
@@ -207,16 +228,23 @@ void NavigationFilter::run()
         collecting_accelerometer_data = false;
         collected_gyro_data = false;
         rr_found_full_pose=false;
+        rr_full_pose_failed=false;
         rr_full_pose_failed_counter = 0;
         filter.clear_accelerometer_values();
         imu.clear_gyro_values();
 
-        if((fabs((sqrt(pow(filter.x+rr_new_pose.x,2)+pow(filter.y+rr_new_pose.y,2))-sqrt(pow(filter.x,2)+pow(filter.y,2)))) < rr_position_update_moving_tolerence)) //half pose update
+        if((hypot(filter.x-rr_new_pose.x,filter.y-rr_new_pose.y)) < rr_position_update_moving_tolerence) //half pose update
         {
             //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
             filter.initialize_states(filter.phi, filter.theta, filter.psi, rr_new_pose.x, rr_new_pose.y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
             rr_new_half_pose=false;
         }
+        else
+        {
+            rr_new_half_pose=false;
+            ROS_ERROR("Ignoring Moving RR Update due to outside moving tolerence");
+        }
+        
         if (imu.new_nb1!=0)
         {
             filter.dead_reckoning(imu.nb1_p,imu.nb1_q,imu.nb1_r,encoders.delta_distance,imu.dt);
@@ -284,6 +312,45 @@ void NavigationFilter::getRRHalfPose(const td_navigation::Running_Half_Pose::Con
 {
     rr_new_half_pose=rr_initial_pose_found;
     rr_new_pose=*msg;
+}
+
+void NavigationFilter::packInfoMsgAndPub()
+{
+    msg_NavFilterOut.p1 = this->imu.p1;
+	msg_NavFilterOut.q1 = this->imu.q1;
+	msg_NavFilterOut.r1 = this->imu.r1;
+	msg_NavFilterOut.p1_offset = this->imu.p1_offset;
+	msg_NavFilterOut.q1_offset = this->imu.q1_offset;
+	msg_NavFilterOut.r1_offset = this->imu.r1_offset;
+	msg_NavFilterOut.roll_rate = this->imu.p;
+	msg_NavFilterOut.pitch_rate = this->imu.q;
+	msg_NavFilterOut.yaw_rate = this->imu.r;
+	msg_NavFilterOut.ax = this->imu.ax1;
+	msg_NavFilterOut.ay = this->imu.ay1;
+	msg_NavFilterOut.az = this->imu.az1;
+	msg_NavFilterOut.dt = this->dt;
+	msg_NavFilterOut.x_position = this->filter.x;
+	msg_NavFilterOut.y_position = this->filter.y;
+	msg_NavFilterOut.roll = this->filter.phi*180/3.1415927; 
+	msg_NavFilterOut.pitch = this->filter.theta*180/3.1415927;
+	msg_NavFilterOut.heading = this->filter.psi*180/3.1415927;
+	msg_NavFilterOut.human_heading = fmod(this->filter.psi*180/3.1415927,360);
+	msg_NavFilterOut.bearing = atan2(this->filter.y,this->filter.x)*180/3.1415927;
+	msg_NavFilterOut.velocity = this->encoders.delta_distance/this->dt;
+	msg_NavFilterOut.delta_distance = this->encoders.delta_distance;
+	msg_NavFilterOut.roll_init = this->init_filter.phi*180.0/this->PI;
+	msg_NavFilterOut.pitch_init = this->init_filter.theta*180.0/this->PI;
+	msg_NavFilterOut.heading_init = this->init_filter.psi*180.0/this->PI;
+	msg_NavFilterOut.counter=this->filter.counter;
+	msg_NavFilterOut.nav_status = this->nav_status_output;
+	msg_NavFilterOut.imu_call_counter = this->imu.call_counter1;
+	
+	msg_NavFilterOut.full_pose_failed = this->rr_full_pose_failed;
+    msg_NavFilterOut.initial_pose_found = this->rr_initial_pose_found;
+    msg_NavFilterOut.full_pose_found = this->rr_found_full_pose;
+    msg_NavFilterOut.pose_update_in_progress = this->rr_pose_update_in_progress;
+    
+    nav_pub.publish(msg_NavFilterOut);
 }
 
 ////added for new User Interface -Matt G.

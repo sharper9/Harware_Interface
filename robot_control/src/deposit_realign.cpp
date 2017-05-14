@@ -18,7 +18,6 @@ bool DepositRealign::runProc()
         waypointsToTravel.at(0).x = depositWaypointRecoverX;
         waypointsToTravel.at(0).y = depositWaypointRecoverY;
         sendDriveGlobal(false, true, 0.0, false);
-        performFullPoseUpdate = true;
         //sendWait(5.0, false); // TODO: remove, this is temporary for testing
         state = _exec_;
         resetQueueEmptyCondition();
@@ -28,7 +27,8 @@ bool DepositRealign::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut) state = _finish_;
+        if(execLastProcType == procType && execLastSerialNum == serialNum) performFullPoseUpdate = true;
+        if((execLastProcType == procType && execLastSerialNum == serialNum && robotStatus.fullPoseFound) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;
         serviceQueueEmptyCondition();
         break;

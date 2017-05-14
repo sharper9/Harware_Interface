@@ -14,7 +14,6 @@ bool DriveToDeposit::runProc()
         waypointsToTravel.at(0).x = depositWaypointX;
         waypointsToTravel.at(0).y = depositWaypointY;
         sendDriveGlobal(false, true, 0.0, true);
-        performFullPoseUpdate = false;
         //sendWait(5.0, false); // TODO: remove, this is temporary for testing
         state = _exec_;
         resetQueueEmptyCondition();
@@ -24,6 +23,7 @@ bool DriveToDeposit::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
+        if(execLastProcType == procType && execLastSerialNum == serialNum) performFullPoseUpdate = true;
         if((execLastProcType == procType && execLastSerialNum == serialNum && robotStatus.fullPoseFound) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;
         serviceQueueEmptyCondition();
@@ -36,7 +36,7 @@ bool DriveToDeposit::runProc()
     case _finish_:
         atDepositLocation = true;
         if((hypot(robotStatus.xPos - depositWaypointX, robotStatus.yPos - depositWaypointY) < depositWaypointDistanceTolerance) &&
-                (fabs(fmod(robotStatus.heading + 180.0, 360.0) - 180.0) < depositWaypointDistanceTolerance))
+                (fabs(fmod(robotStatus.heading + 180.0, 360.0) - 180.0) < depositWaypointAngleTolerance))
             confirmedAtDepositLocation = true;
         else confirmedAtDepositLocation = false;
         procsBeingExecuted[procType] = false;

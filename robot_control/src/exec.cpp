@@ -73,8 +73,8 @@ void Exec::run()
         actionPoolIndex_[nextActionType_]++; // Increment the action pool index of the action type just pushed
         if(actionPoolIndex_[nextActionType_]>=ACTION_POOL_SIZE) actionPoolIndex_[nextActionType_] = 0; // If pool index has wrapped around, restart at 0
     }
-    if(pause_==true && pausePrev_==false) pauseIdle_.driveHalt.init(); // Call init on driveHalt to begin possible drive hold
-	if(pause_)
+    if((pause_==true || poseUpdateInProgress) && pausePrev_==false) pauseIdle_.driveHalt.init(); // Call init on driveHalt to begin possible drive hold
+	if(pause_ || poseUpdateInProgress)
 	{
         ROS_INFO_THROTTLE(3,"exec pause");
 		pauseIdle_.run(); // If pause switch is true, run pause action
@@ -173,6 +173,7 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.heading = msg->heading;
     robotStatus.xPos = msg->x_position;
     robotStatus.yPos = msg->y_position;
+    poseUpdateInProgress = msg->pose_update_in_progress;
 }
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)

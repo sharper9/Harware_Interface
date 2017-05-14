@@ -84,8 +84,10 @@ class NavigationFilter
         ros::Subscriber sub_rr_half_pose;
         bool rr_new_half_pose=false;
         td_navigation::Running_Half_Pose rr_new_pose;
-        float rr_position_update_moving_tolerence = 0.5; //meters
-
+        float rr_position_update_moving_tolerence = 2.0; //meters
+        
+        bool rr_pose_update_in_progress = false;
+        bool rr_full_pose_failed=false;
 
         bool rr_initial_pose_found = false;
         bool perform_rr_heading_update = false;
@@ -95,6 +97,10 @@ class NavigationFilter
         int rr_full_pose_failed_counter = 0;
         const int rr_full_pose_failed_max_count = 3;
 
+        ros::Publisher nav_pub;
+	    messages::NavFilterOut msg_NavFilterOut;
+	    
+	    void packInfoMsgAndPub();
 
 
 	private:
