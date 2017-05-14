@@ -18,7 +18,8 @@ bool DepositRealign::runProc()
         waypointsToTravel.at(0).x = depositWaypointRecoverX;
         waypointsToTravel.at(0).y = depositWaypointRecoverY;
         sendDriveGlobal(false, true, 0.0, false);
-        sendWait(5.0, false); // TODO: remove, this is temporary for testing
+        performFullPoseUpdate = true;
+        //sendWait(5.0, false); // TODO: remove, this is temporary for testing
         state = _exec_;
         resetQueueEmptyCondition();
         break;

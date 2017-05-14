@@ -54,6 +54,7 @@ MissionPlanning::MissionPlanning()
     }
     depositWaypointDistanceTolerance = depositWaypointDistanceToleranceInit;
     depositWaypointAngleTolerance = depositWaypointAngleToleranceInit;
+    performFullPoseUpdate = true;
     initializeDigPlanningMap_();
 }
 
@@ -232,6 +233,7 @@ void MissionPlanning::packAndPubInfoMsg_()
         }
     }
     infoMsg.missionTime = missionTime;
+    infoMsg.performFullPose = performFullPoseUpdate;
     infoPub.publish(infoMsg);
 }
 
@@ -270,6 +272,8 @@ void MissionPlanning::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.yPos = msg->y_position;
     robotStatus.heading = msg->heading;
     robotStatus.fullPoseFound = msg->full_pose_found;
+    if(robotStatus.fullPoseFound) performFullPoseUpdate = false;
+    robotStatus.initialFullPoseFound = msg->initial_pose_found;
 }
 
 void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)

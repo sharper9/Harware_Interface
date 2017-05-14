@@ -59,6 +59,7 @@ public:
 	static IRLGridMap<PlanningMapData> digPlanningMap;
     static float depositWaypointDistanceTolerance;
     static float depositWaypointAngleTolerance;
+    static bool performFullPoseUpdate;
     const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
     const float depositWaypointDistanceToleranceInit = 0.3; // m
@@ -116,5 +117,6 @@ bool MissionPlanningProcedureShare::missionStarted;
 IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(DIG_MAP_RES, DIG_MAP_X_LEN, DIG_MAP_Y_LEN);
 float MissionPlanningProcedureShare::depositWaypointDistanceTolerance;
 float MissionPlanningProcedureShare::depositWaypointAngleTolerance;
+bool MissionPlanningProcedureShare::performFullPoseUpdate;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

@@ -28,3 +28,5 @@ uint8 nav_status
 int8 imu_call_counter
 
 bool full_pose_found
+bool initial_pose_found
+bool full_pose_failed

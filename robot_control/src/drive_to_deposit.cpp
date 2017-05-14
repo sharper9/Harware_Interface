@@ -14,6 +14,7 @@ bool DriveToDeposit::runProc()
         waypointsToTravel.at(0).x = depositWaypointX;
         waypointsToTravel.at(0).y = depositWaypointY;
         sendDriveGlobal(false, true, 0.0, true);
+        performFullPoseUpdate = false;
         //sendWait(5.0, false); // TODO: remove, this is temporary for testing
         state = _exec_;
         resetQueueEmptyCondition();

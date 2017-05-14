@@ -7,6 +7,7 @@
 #include <messages/ExecInfo.h>
 #include <messages/MissionPlanningInfo.h>
 #include <messages/NavFilterOut.h>
+#include <td_navigation/Running_Half_Pose.h>
 #include <td_navigation/Localize.h>
 
 //#include <messages/NavFilterControl.h> //added for new User Interface -Matt G.
@@ -50,6 +51,7 @@ class NavigationFilter
 //	    messages::NavFilterControl::Request latest_nav_control_request;
 
 		ros::Subscriber sub_exec;
+                ros::Subscriber sub_mission_planning;
 		bool pause_switch;
 		bool stopFlag;
 		bool turnFlag;
@@ -77,13 +79,28 @@ class NavigationFilter
         const float initX = 1.0; // m
         const float initY = 0.0; // m
         const float initHeading = 0.0; // rad
+
+
+        ros::Subscriber sub_rr_half_pose;
+        bool rr_new_half_pose=false;
+        td_navigation::Running_Half_Pose rr_new_pose;
+        float rr_position_update_moving_tolerence = 0.5; //meters
+
+
+        bool rr_initial_pose_found = false;
+        bool perform_rr_heading_update = false;
         const float rr_heading_update_tolerance = 15.0*DEG_2_RAD;
+        const float rr_stopped_position_update_tolerence = 2.0; //meters
         bool rr_found_full_pose = false;
         int rr_full_pose_failed_counter = 0;
         const int rr_full_pose_failed_max_count = 3;
 
+
+
 	private:
 		void getExecInfoCallback(const messages::ExecInfo::ConstPtr &msg);
+                void getMissionPlanningInfoCallback(const messages::MissionPlanningInfo::ConstPtr &msg);
+                void getRRHalfPose(const td_navigation::Running_Half_Pose::ConstPtr &msg);
 
 	    //added for new User Interface -Matt G.
 //	    bool navFilterControlServiceCallback(messages::NavFilterControl::Request &request, messages::NavFilterControl::Response &response);

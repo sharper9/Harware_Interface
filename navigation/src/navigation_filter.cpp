@@ -2,12 +2,14 @@
 
 NavigationFilter::NavigationFilter()
 {
+    sub_mission_planning = nh.subscribe("/control/missionplanning/info", 1, &NavigationFilter::getMissionPlanningInfoCallback, this);
     sub_exec = nh.subscribe("/control/exec/info", 1, &NavigationFilter::getExecInfoCallback, this);
     pause_switch = false;
     stopFlag = true;
     turnFlag = false;
 
     ranging_radio_client = nh.serviceClient<td_navigation::Localize>("localize");
+    sub_rr_half_pose = nh.subscribe("/Half_Pose", 1, &NavigationFilter::getRRHalfPose, this);
 
     //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
     filter.initialize_states(0,0,initHeading,initX,initY,filter.P_phi,filter.P_theta,filter.P_psi,filter.P_x,filter.P_y);
@@ -87,9 +89,10 @@ void NavigationFilter::run()
         }
 
         //if no motion detected
-        if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/ (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0175) && encoders.delta_distance == 0) //if no motion detected
+        if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/
+                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0175) && encoders.delta_distance == 0) //if no motion detected
         {
-            if(!rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
+            if(perform_rr_heading_update && !rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
             {
                 td_navigation::Localize rr_srv;
                 rr_srv.request.average_length = 10; // value to be changed
@@ -99,15 +102,19 @@ void NavigationFilter::run()
                     double rr_heading; //radians
                     double rr_x;
                     double rr_y;
-                    if(fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
+                    if(!rr_initial_pose_found || fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
                     {
-                        rr_x = rr_srv.response.x;
-                        rr_y = rr_srv.response.y;
-                        rr_heading = rr_srv.response.heading;
-                        //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
-                        filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
-                        rr_found_full_pose = true;
-                        rr_full_pose_failed_counter = 0;
+                        if(!rr_initial_pose_found || ((sqrt(pow(filter.x+rr_srv.response.x,2)+pow(filter.y+rr_srv.response.y,2))) < rr_stopped_position_update_tolerence))
+                        {
+                            rr_initial_pose_found=true;
+                            rr_x = rr_srv.response.x;
+                            rr_y = rr_srv.response.y;
+                            rr_heading = rr_srv.response.heading;
+                            //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
+                            filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+                            rr_found_full_pose = true;
+                            rr_full_pose_failed_counter = 0;
+                        }
                     }
                     else // RR heading update too far off from current heading. Do not trust
                     {
@@ -203,6 +210,13 @@ void NavigationFilter::run()
         rr_full_pose_failed_counter = 0;
         filter.clear_accelerometer_values();
         imu.clear_gyro_values();
+
+        if((fabs((sqrt(pow(filter.x+rr_new_pose.x,2)+pow(filter.y+rr_new_pose.y,2))-sqrt(pow(filter.x,2)+pow(filter.y,2)))) < rr_position_update_moving_tolerence)) //half pose update
+        {
+            //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
+            filter.initialize_states(filter.phi, filter.theta, filter.psi, rr_new_pose.x, rr_new_pose.y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+            rr_new_half_pose=false;
+        }
         if (imu.new_nb1!=0)
         {
             filter.dead_reckoning(imu.nb1_p,imu.nb1_q,imu.nb1_r,encoders.delta_distance,imu.dt);
@@ -259,6 +273,17 @@ void NavigationFilter::getExecInfoCallback(const messages::ExecInfo::ConstPtr &m
     this->pause_switch = msg->pause;
     this->turnFlag = msg->turnFlag;
     this->stopFlag = msg->stopFlag;
+}
+
+void NavigationFilter::getMissionPlanningInfoCallback(const messages::MissionPlanningInfo::ConstPtr &msg)
+{
+    perform_rr_heading_update = msg->performFullPose;
+}
+
+void NavigationFilter::getRRHalfPose(const td_navigation::Running_Half_Pose::ConstPtr &msg)
+{
+    rr_new_half_pose=rr_initial_pose_found;
+    rr_new_pose=*msg;
 }
 
 ////added for new User Interface -Matt G.

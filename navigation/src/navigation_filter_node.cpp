@@ -64,6 +64,7 @@ int main(int argc, char **argv)
 		msg_NavFilterOut.nav_status = navigationfilter.nav_status_output;
 		msg_NavFilterOut.imu_call_counter = navigationfilter.imu.call_counter1;
 
+        msg_NavFilterOut.initial_pose_found = navigationfilter.rr_initial_pose_found;
         msg_NavFilterOut.full_pose_found = navigationfilter.rr_found_full_pose;
 
 		//publish navigation message

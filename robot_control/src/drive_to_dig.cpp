@@ -17,6 +17,7 @@ bool DriveToDig::runProc()
         distanceToDrive = (miningRegionTargetXDistance - robotStatus.xPos)/cos(DEG2RAD*chosenHeading);
         angleToTurn = chosenHeading - robotStatus.heading;
         sendDriveRel(distanceToDrive, angleToTurn, false, 0.0, false, false);
+        performFullPoseUpdate = true;
         //sendWait(5.0, false); // TODO: remove, this is temporary for testing
         state = _exec_;
         resetQueueEmptyCondition();
