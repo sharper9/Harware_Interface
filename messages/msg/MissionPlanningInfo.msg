@@ -11,3 +11,5 @@ bool[] procsBeingExecuted
 bool[] procsToResume
 int32[] procStates
 float64 missionTime
+
+bool performFullPose

@@ -6,7 +6,7 @@ Exec::Exec()
     actionServ = nh.advertiseService("control/exec/actionin", &Exec::actionCallback_, this);
     manualOverrideServ = nh.advertiseService("/control/exec/manualoverride", &Exec::manualOverrideCallback_, this);
     navSub = nh.subscribe<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout", 1, &Exec::navCallback_, this);
-    scoopSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/scoop", 1, &Exec::scoopCallback_, this);
+    scoopSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/wrist", 1, &Exec::scoopCallback_, this);
     armSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/arm", 1, &Exec::armCallback_, this);
     bucketSub = nh.subscribe<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/brushed/bucket", 1, &Exec::bucketCallback_, this);
     driveSpeedsSub = nh.subscribe<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1, &Exec::driveSpeedsCallback_, this);
@@ -73,8 +73,8 @@ void Exec::run()
         actionPoolIndex_[nextActionType_]++; // Increment the action pool index of the action type just pushed
         if(actionPoolIndex_[nextActionType_]>=ACTION_POOL_SIZE) actionPoolIndex_[nextActionType_] = 0; // If pool index has wrapped around, restart at 0
     }
-    if(pause_==true && pausePrev_==false) pauseIdle_.driveHalt.init(); // Call init on driveHalt to begin possible drive hold
-	if(pause_)
+    if((pause_==true || poseUpdateInProgress) && pausePrev_==false) pauseIdle_.driveHalt.init(); // Call init on driveHalt to begin possible drive hold
+	if(pause_ || poseUpdateInProgress)
 	{
         ROS_INFO_THROTTLE(3,"exec pause");
 		pauseIdle_.run(); // If pause switch is true, run pause action
@@ -173,6 +173,7 @@ void Exec::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.heading = msg->heading;
     robotStatus.xPos = msg->x_position;
     robotStatus.yPos = msg->y_position;
+    poseUpdateInProgress = msg->pose_update_in_progress;
 }
 
 void Exec::scoopCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
@@ -190,7 +191,7 @@ void Exec::armCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPt
 void Exec::bucketCallback_(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr& msg)
 {
     //robotStatus.bucketStatus = msg->destination_reached[0] && msg->destination_reached[1];
-    robotStatus.bucketPos = (msg->feedback.at(0) + msg->feedback.at(1))/2.0;
+    robotStatus.bucketPos = msg->user_integer_variable.at(1);
 }
 
 void Exec::driveSpeedsCallback_(const robot_control::DriveSpeeds::ConstPtr &msg)

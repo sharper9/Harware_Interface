@@ -69,6 +69,7 @@ private:
 	messages::ExecActionEnded execActionEndedMsgOut_;
 	double execStartTime_;
 	double execElapsedTime_;
+	bool poseUpdateInProgress = false;
 	// Methods
 	bool actionCallback_(messages::ExecAction::Request &req, messages::ExecAction::Response &res);
 	bool manualOverrideCallback_(messages::ExecManualOverride::Request &req, messages::ExecManualOverride::Response &res);

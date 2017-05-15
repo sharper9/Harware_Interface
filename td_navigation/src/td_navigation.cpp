@@ -5,12 +5,15 @@
 
 td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
                               int rad_L_val, int rad_R_val, int z_estimate_val,
-                              int robot_length_offset_val)
+                              int robot_length_offset_val, int mob_rad_dist_value)
 {
 
   confirmed = 0;
   count = 0;
   selector = 0 ;
+
+  heading = 0;
+  bearing = 0;
 
   average_length = average_length_val;
   base_station_distance = base_station_distance_val;
@@ -18,6 +21,7 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   rad_R = rad_R_val;
   z_estimate = z_estimate_val;
   robot_length_offset = robot_length_offset_val;
+  mob_rad_dist = mob_rad_dist_value;
 
   dist0_l.reserve(average_length);
   dist0_r.reserve(average_length);
@@ -39,17 +43,21 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::mob_rad_0_CallBack, this);
   mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::mob_rad_1_CallBack, this);
 
+  nav_filter_sub = nh.subscribe("/navigation/navigationfilterout/navigationfilterout", 1, &td_navigation::worker::nav_filter_callback, this);
+
 
   //publisher for sending a message to timedomain serial to get a range request
   mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
   mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
+
+  rhp_pub = nh.advertise<td_navigation::Running_Half_Pose>("/Half_Pose", 1);
 
   //publisher for getting average angle measurements
   aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
 
   while(nh.ok())
   {
-    run();
+    run_half_pose();
   }
 }
 
@@ -57,9 +65,10 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
 bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
   int wait = 0;
   int timeout = 0;
-  //TODO: change back to about 200
 
-  ros::Rate loop_rate(500);
+  //TODO: change back to about 5000
+  ros::Rate loop_rate(5000);
+
 
   while(!confirmed){
     rr.radio_id_to_target = to;
@@ -189,6 +198,11 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
 
 }
 
+void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::ConstPtr &msg){
+  heading = msg->heading*PI/180.0;
+  bearing = msg->bearing*PI/180.0;
+}
+
 
 
 
@@ -206,7 +220,10 @@ if(req.average_length <= average_length){
 }
 
 for(int i = 0; i < max; i++){
-  run();
+  if (run() != 0){
+    res.fail = true;
+    return false;
+  }
 }
 
 //service response
@@ -217,6 +234,16 @@ res.bearing = bearing;
 res.avg_error = get_avg_error(req.average_length);
 res.max_error = get_max_error(req.average_length);
 res.min_error = get_min_error(req.average_length);
+res.left_interference = false;
+res.right_interference = false;
+if(get_avg_error_left(req.average_length) > 13){
+  res.left_interference = true;
+}
+
+if(get_avg_error_right(req.average_length) > 13){
+  res.right_interference = true;
+}
+
 res.fail = false;
 
 return true;
@@ -280,6 +307,32 @@ double td_navigation::worker::get_avg_error(int amount_to_avg){
   }
   for(int i = 0; i < max; i++){
     sum += dist0_l[i][1] + dist0_r[i][1] + dist1_l[i][1] + dist1_r[i][1];
+  }
+
+  return sum/(max * 4);
+}
+
+double td_navigation::worker::get_avg_error_left(int amount_to_avg){
+  double sum = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    sum += dist0_l[i][1] + dist0_r[i][1];
+  }
+
+  return sum/(max * 4);
+}
+
+double td_navigation::worker::get_avg_error_right(int amount_to_avg){
+  double sum = 0;
+  int max = dist1_r.size();
+  if(amount_to_avg < dist1_r.size()){
+    max = amount_to_avg;
+  }
+  for(int i = 0; i < max; i++){
+    sum += dist1_l[i][1] + dist1_r[i][1];
   }
 
   return sum/(max * 4);
@@ -458,6 +511,7 @@ int td_navigation::worker::run(){
 
   }else {
     ROS_DEBUG("Problem encountered with triangulation!");
+    return -1;
 
   }
 
@@ -467,9 +521,87 @@ int td_navigation::worker::run(){
     count = 0;
 }
 
+return 0;
+
 }
 
+int td_navigation::worker::run_half_pose(){
 
+  ROS_INFO("Count: %d", count);
+
+  hw_interface_plugin_timedomain::Range_Request rr;
+  rr.send_range_request = true;
+
+
+  confirmed = false;
+  selector = 0;
+  rr.msgID = count + selector;
+  //range request and response from 104 to 101
+  if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  selector = 1;
+  rr.msgID = count + selector;
+  //range request and response from 104 to 106
+  if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("We didn't get a response in time!");
+  }
+
+  std::vector<double> distance_to_base_rads;
+
+
+  distance_to_base_rads.push_back(get_avg_dist0_l(1));
+  distance_to_base_rads.push_back(get_avg_dist0_r(1));
+  rad_nav.update_mobile_radio(0 ,distance_to_base_rads);
+
+  if (rad_nav.triangulate_2Base(z_estimate) == 0){
+
+    double angle_2 = heading + PI/2.0;
+    double back_x, back_y;
+
+    back_x = rad_nav.get_mobile_radio_coordinate(0,0) + cos(angle_2) * mob_rad_dist / 2.0;
+
+    back_y = rad_nav.get_mobile_radio_coordinate(0,1) + sin(angle_2) * mob_rad_dist / 2.0;
+
+    x = back_x + (cos(heading) * robot_length_offset);
+
+    y = back_y + (sin(heading) * robot_length_offset);
+
+
+    ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
+
+
+    td_navigation::Running_Half_Pose rhp;
+
+    rhp.x = x/1000.0;
+    rhp.y = y/1000.0;
+
+    rhp_pub.publish(rhp);
+
+
+  }else {
+    ROS_DEBUG("Problem encountered with triangulation!");
+    return -1;
+  }
+
+  //update count
+  update_count();
+  if(count >= 32000){
+    count = 0;
+}
+
+return 0;
+
+}
+
+/*
+td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
+                              int rad_L_val, int rad_R_val, int z_estimate_val,
+                              int robot_length_offset_val, int mob_rad_dist_value)
+*/
 
 int main(int argc, char **argv)
 {
@@ -482,7 +614,8 @@ int main(int argc, char **argv)
   ros::init(argc, argv, node_type);
   ROS_INFO(" - ros::init complete");
 
-  td_navigation::worker worker(30, 733.425, 101, 106, 0, 0);
+  //TODO: these values should be launch params
+  td_navigation::worker worker(10, 725.4875, 101, 106, 0, 673, 558);
 
   ROS_DEBUG("td_navigation closing");
   return 0;

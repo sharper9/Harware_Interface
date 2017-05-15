@@ -7,4 +7,6 @@ float64 bearing
 float64 avg_error
 float64 max_error
 float64 min_error
+bool left_interference
+bool right_interference
 bool fail

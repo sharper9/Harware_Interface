@@ -17,11 +17,11 @@
 
 #define WRIST_RAISED 1000
 #define WRIST_LOWERED -1000
-#define WRIST_OFFSET 10
+#define WRIST_OFFSET 15
 
 #define ARM_RAISED 1000
 #define ARM_LOWERED -1000
-#define ARM_OFFSET 10
+#define ARM_OFFSET 15
 
 #define BUCKET_RAISED 1000
 #define BUCKET_LOWERED -1000
@@ -63,6 +63,7 @@ public:
 private:
   ros::Publisher actuator_pub_;
   ros::Subscriber joystick_sub_;
+  ros::Publisher exec_info_pub_;
 
   ros::ServiceClient exec_manual_override_client_;
   ros::Publisher pause_robot_control_pub_;

@@ -57,11 +57,18 @@ public:
     static bool confirmedAtDepositLocation;
     static bool stuck;
 	static IRLGridMap<PlanningMapData> digPlanningMap;
-    const float depositWaypointX = 1.0; // m
+    static float depositWaypointDistanceTolerance;
+    static float depositWaypointAngleTolerance;
+    static bool performFullPoseUpdate;
+    const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
-    const float depositWaypointDistanceTolerance = 0.3; // m
-    const float depositWaypointAngleTolerance = 5.0; // deg
-    const float depositWaypointRecoverX = 2.5; // m
+    const float depositWaypointDistanceToleranceInit = 0.3; // m
+    const float depositWaypointAngleToleranceInit = 5.0; // deg
+    const float depositWaypointDistanceToleranceMax = 0.6; // m
+    const float depositWaypointAngleToleranceMax = 20.0; // deg
+    const float depositWaypointDistanceToleranceIncrement = 0.1; // m
+    const float depositWaypointAngleToleranceIncrement = 5.0; // deg
+    const float depositWaypointRecoverX = 2.0; // m
     const float depositWaypointRecoverY = 0.0; // m
     const float queueEmptyTimerPeriod = 30.0; // sec
     const float defaultVMax = 1.0; // m/s
@@ -108,5 +115,8 @@ double MissionPlanningProcedureShare::missionTime;
 double MissionPlanningProcedureShare::prevTime;
 bool MissionPlanningProcedureShare::missionStarted;
 IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(DIG_MAP_RES, DIG_MAP_X_LEN, DIG_MAP_Y_LEN);
+float MissionPlanningProcedureShare::depositWaypointDistanceTolerance;
+float MissionPlanningProcedureShare::depositWaypointAngleTolerance;
+bool MissionPlanningProcedureShare::performFullPoseUpdate;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

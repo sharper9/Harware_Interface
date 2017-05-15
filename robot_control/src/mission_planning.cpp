@@ -52,6 +52,9 @@ MissionPlanning::MissionPlanning()
         procsBeingExecuted[i] = false;
         procsToResume[i] = false;
     }
+    depositWaypointDistanceTolerance = depositWaypointDistanceToleranceInit;
+    depositWaypointAngleTolerance = depositWaypointAngleToleranceInit;
+    performFullPoseUpdate = true;
     initializeDigPlanningMap_();
 }
 
@@ -230,6 +233,7 @@ void MissionPlanning::packAndPubInfoMsg_()
         }
     }
     infoMsg.missionTime = missionTime;
+    infoMsg.performFullPose = performFullPoseUpdate;
     infoPub.publish(infoMsg);
 }
 
@@ -246,7 +250,7 @@ void MissionPlanning::initializeDigPlanningMap_()
         for(int j=0; j<ySize; j++)
         {
             cellXPos = i*DIG_MAP_RES + DIG_MAP_RES/2.0;
-            cellXPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0;
+            cellYPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0;
             digPlanningMap.atIndex(i,j).headingLowerLimit = RAD2DEG*atan2(cornerPointY[0] - cellYPos, cornerPointX[0] - cellXPos);
             digPlanningMap.atIndex(i,j).headingUpperLimit = RAD2DEG*atan2(cornerPointY[1] - cellYPos, cornerPointX[1] - cellXPos);
         }
@@ -267,6 +271,9 @@ void MissionPlanning::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
     robotStatus.xPos = msg->x_position;
     robotStatus.yPos = msg->y_position;
     robotStatus.heading = msg->heading;
+    robotStatus.fullPoseFound = msg->full_pose_found;
+    if(robotStatus.fullPoseFound) performFullPoseUpdate = false;
+    robotStatus.initialFullPoseFound = msg->initial_pose_found;
 }
 
 void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)

@@ -13,8 +13,8 @@ private:
     double shakePrevTime_;
     bool bucketAtOffsetPosition_;
     const int numShakesToPerform_ = 5;
-    const int shakePosOffset_ = 100;
-    const double shakePeriod_ = 1.0; // sec
+    const int shakePosOffset_ = 150;
+    const double shakePeriod_ = 0.75; // sec
 };
 
 #endif // BUCKET_SHAKE_H

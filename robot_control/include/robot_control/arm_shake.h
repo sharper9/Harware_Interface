@@ -12,9 +12,9 @@ private:
     double currentTime_;
     double shakePrevTime_;
     bool armAtOffsetPosition_;
-    const int numShakesToPerform_ = 10;
-    const int shakePosOffset_ = 100;
-    const double shakePeriod_ = 0.5; // sec
+    const int numShakesToPerform_ = 15;
+    const int shakePosOffset_ = 200;
+    const double shakePeriod_ = 0.25; // sec
 };
 
 #endif // ARM_SHAKE_H

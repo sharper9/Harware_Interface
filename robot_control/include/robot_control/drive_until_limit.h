@@ -30,7 +30,7 @@ private:
 	unsigned int timeoutValue_;
 	unsigned int timeoutCounter_;
 	int taskEnded_;
-    const float constantBackupSpeed_ = -0.6; // m/s
+    const float constantBackupSpeed_ = -0.3; // m/s
     const float maxPossibleDistance_ = 5.0; // m
 	const float vMin_ = 0.03; // m/s
 	const float kpV_ = 2.2; // m/(s*m)
