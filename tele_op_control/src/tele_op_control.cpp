@@ -7,7 +7,7 @@ TeleOp::TeleOp()
 
   exec_manual_override_client_ = nh.serviceClient<messages::ExecManualOverride>("/control/exec/manualoverride");
   pause_robot_control_pub_ = nh.advertise<hw_interface_plugin_agent::pause>("/agent/pause", 1);
-  
+
   exec_info_pub_ = nh.advertise<messages::ExecInfo>("/control/exec/info", 1);
 
   pause_msg_.pause = true;
@@ -17,7 +17,7 @@ TeleOp::TeleOp()
   pause_toggle_.toggle(0); // Set pause toggle to true to start
   manual_override_toggle_.toggle(0);
   manual_override_latch_.LE_Latch(0);
-  
+
   bucket_pos_ = -1000;
   arm_pos_ = 0;
   wrist_pos_ = 0;
@@ -56,11 +56,6 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
       }
     }
 
-    messages::ActuatorOut actuator;
-    messages::ExecInfo exec_info_msg;
-    float joystickMagnitude = hypot(msg->axes[0], msg->axes[1]);
-    if (joystickMagnitude > 1.0) joystickMagnitude = 1.0;
-
     if (msg->buttons[Y_INDEX]) //bucket up
     {
       bucket_pos_ = BUCKET_RAISED;
@@ -88,7 +83,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     if (msg->buttons[RB_INDEX]) //wrist forward (RB)
     {
       wrist_pos_ += WRIST_OFFSET;
-      wrist_pos_ = (wrist_pos_ > WRIST_RAISED) ? WRIST_RAISED : wrist_pos_; 
+      wrist_pos_ = (wrist_pos_ > WRIST_RAISED) ? WRIST_RAISED : wrist_pos_;
     }
     else if (msg->buttons[LB_INDEX]) //wrist backward (LB)
     {
@@ -101,38 +96,31 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
       wrist_pos_ = 0;
     }
 
+    messages::ActuatorOut actuator;
+    messages::ExecInfo exec_info_msg;
+
+    // left joystick
+    float joystickMagnitude = hypot(msg->axes[0], msg->axes[1]);
+    if (joystickMagnitude > 1.0) joystickMagnitude = 1.0;
+
     if(joystickMagnitude < JOYSTICK_DEADBAND)
     {
       actuator.fl_speed_cmd = 0.0;
       actuator.fr_speed_cmd = 0.0;
       actuator.bl_speed_cmd = 0.0;
       actuator.br_speed_cmd = 0.0;
-      exec_info_msg.stopFlag=true;
+      exec_info_msg.stopFlag = true;
     }
-    else
+    else // left joystick
     {
       float speed = ROBOT_RANGE*pow(joystickMagnitude, 3.0);
-      exec_info_msg.stopFlag=false;
+      exec_info_msg.stopFlag = false;
       if (msg->axes[L_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND) //forward
       {
         actuator.fl_speed_cmd = speed;
         actuator.fr_speed_cmd = speed;
         actuator.bl_speed_cmd = speed;
         actuator.br_speed_cmd = speed;
-
-        if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND) //left
-        {
-          actuator.fl_speed_cmd = -speed;
-          actuator.bl_speed_cmd = -speed;
-          exec_info_msg.turnFlag=true;
-        }
-        else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND) //right
-        {
-          actuator.fr_speed_cmd = -speed;
-          actuator.br_speed_cmd = -speed;
-          exec_info_msg.turnFlag=true;
-        }
-
       }
 
       else if (msg->axes[L_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND) //reverse
@@ -141,22 +129,50 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
         actuator.fr_speed_cmd = -speed;
         actuator.bl_speed_cmd = -speed;
         actuator.br_speed_cmd = -speed;
+      }
+    }
 
-        if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND) //left
-        {
-          actuator.fl_speed_cmd = speed;
-          actuator.bl_speed_cmd = speed;
-        }
-        else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND) //right
-        {
-          actuator.fr_speed_cmd = speed;
-          actuator.br_speed_cmd = speed;
-        }
+    // right joystick
+    float rightJoyMagnitude = hypot(msg->axes[R_LEFT_RIGHT_INDEX], msg->axes[R_UP_DOWN_INDEX]);
+    if (rightJoyMagnitude > 1.0) rightJoyMagnitude = 1.0;
 
+    if (!(rightJoyMagnitude < JOYSTICK_DEADBAND))
+    {
+      float speed = ROBOT_RANGE*pow(rightJoyMagnitude, 3.0);
+      exec_info_msg.stopFlag = false;
+      exec_info_msg.turnFlag = true;
+
+      if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND ) //up left
+      {
+        actuator.fl_speed_cmd = -speed;
+        actuator.fr_speed_cmd = speed;
+        actuator.bl_speed_cmd = -speed;
+        actuator.br_speed_cmd = speed;
+      }
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND ) //down left
+      {
+        actuator.fl_speed_cmd = speed;
+        actuator.fr_speed_cmd = -speed;
+        actuator.bl_speed_cmd = speed;
+        actuator.br_speed_cmd = -speed;
+      }
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND) //up right
+      {
+        actuator.fl_speed_cmd = speed;
+        actuator.fr_speed_cmd = -speed;
+        actuator.fl_speed_cmd = speed;
+        actuator.br_speed_cmd = -speed;
+      }
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND) //down right
+      {
+        actuator.fl_speed_cmd = -speed;
+        actuator.fr_speed_cmd = speed;
+        actuator.fl_speed_cmd = -speed;
+        actuator.br_speed_cmd = speed;
       }
 
     }
-    
+
     if(exec_manual_override_srv_.request.manualOverride)
     {
       actuator.bucket_pos_cmd = bucket_pos_;
