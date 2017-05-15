@@ -13,6 +13,8 @@ bool Mine::runProc()
         {
             sendDig();
         }
+        finalSerialNum = serialNum;
+        tooCloseToWallLatch.LE_Latch(0);
         state = _exec_;
         resetQueueEmptyCondition();
         break;
@@ -21,7 +23,12 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut) state = _finish_;
+        tooCloseToWall = (robotStatus.xPos + robotCenterToScoopLength) >= (DIG_MAP_X_LEN - miningWallBufferDistance);
+        if(tooCloseToWallLatch.LE_Latch(tooCloseToWall))
+        {
+            sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
+        }
+        if((execLastProcType == procType && execLastSerialNum == finalSerialNum) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;
         serviceQueueEmptyCondition();
         break;

@@ -110,6 +110,7 @@ include_directories(
  add_library(dig src/dig.cpp)
  add_library(dump src/dump.cpp)
  add_library(wait src/wait.cpp)
+ add_library(raise_arm src/raise_arm.cpp)
  add_library(drive_halt src/drive_halt.cpp)
  add_library(drive_straight src/drive_straight.cpp)
  add_library(drive_until_limit src/drive_until_limit.cpp)
@@ -155,6 +156,7 @@ include_directories(
    dig
    dump
    wait
+   raise_arm
    drive_halt
    drive_straight
    drive_until_limit

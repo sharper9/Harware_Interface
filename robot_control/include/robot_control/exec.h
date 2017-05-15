@@ -12,6 +12,7 @@
 #include "dig.h"
 #include "dump.h"
 #include "wait.h"
+#include "raise_arm.h"
 #include <messages/ExecAction.h>
 #include <messages/ActuatorOut.h>
 #include <messages/ExecInfo.h>
