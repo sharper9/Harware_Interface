@@ -219,11 +219,16 @@ if(req.average_length <= average_length){
   max = req.average_length;
 }
 
+int error_count = 0;
 for(int i = 0; i < max; i++){
   if (run() != 0){
+    error_count++;
+  }
+}
+
+if (error_count >= req.average_length){
     res.fail = true;
     return false;
-  }
 }
 
 //service response
@@ -615,7 +620,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(10, 725.4875, 101, 106, 0, 673, 558);
+  td_navigation::worker worker(10, 736.6, 101, 106, 0, 635, 546);
 
   ROS_DEBUG("td_navigation closing");
   return 0;

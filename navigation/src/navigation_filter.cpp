@@ -93,7 +93,7 @@ void NavigationFilter::run()
 
         //if no motion detected
         if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/
-                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0375) && encoders.delta_distance == 0) //if no motion detected
+                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0575) && encoders.delta_distance == 0) //if no motion detected
         {
             if(perform_rr_heading_update && !rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
             {

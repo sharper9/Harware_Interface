@@ -136,39 +136,54 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     float rightJoyMagnitude = hypot(msg->axes[R_LEFT_RIGHT_INDEX], msg->axes[R_UP_DOWN_INDEX]);
     if (rightJoyMagnitude > 1.0) rightJoyMagnitude = 1.0;
 
+    //turn right add deg to right and subtract from left
     if (!(rightJoyMagnitude < JOYSTICK_DEADBAND))
     {
       float speed = ROBOT_RANGE*pow(rightJoyMagnitude, 3.0);
       exec_info_msg.stopFlag = false;
       exec_info_msg.turnFlag = true;
 
-      if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND ) //up left
+      if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND ) //forward left
       {
-        actuator.fl_speed_cmd = -speed;
-        actuator.fr_speed_cmd = speed;
-        actuator.bl_speed_cmd = -speed;
-        actuator.br_speed_cmd = speed;
+        actuator.fl_speed_cmd -= speed;
+        actuator.fr_speed_cmd += speed;
+        actuator.bl_speed_cmd -= speed;
+        actuator.br_speed_cmd += speed;
       }
-      else if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND ) //down left
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND ) //reverse left
       {
-        actuator.fl_speed_cmd = speed;
-        actuator.fr_speed_cmd = -speed;
-        actuator.bl_speed_cmd = speed;
-        actuator.br_speed_cmd = -speed;
+        actuator.fl_speed_cmd += speed;
+        actuator.fr_speed_cmd -= speed;
+        actuator.bl_speed_cmd += speed;
+        actuator.br_speed_cmd -= speed;
       }
-      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND) //up right
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] >= JOYSTICK_DEADBAND) //left
       {
-        actuator.fl_speed_cmd = speed;
-        actuator.fr_speed_cmd = -speed;
-        actuator.fl_speed_cmd = speed;
-        actuator.br_speed_cmd = -speed;
+        actuator.fl_speed_cmd -= speed;
+        actuator.fr_speed_cmd += speed;
+        actuator.bl_speed_cmd -= speed;
+        actuator.br_speed_cmd += speed;
       }
-      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND) //down right
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] >= JOYSTICK_DEADBAND) //forward right
       {
-        actuator.fl_speed_cmd = -speed;
-        actuator.fr_speed_cmd = speed;
-        actuator.fl_speed_cmd = -speed;
-        actuator.br_speed_cmd = speed;
+        actuator.fl_speed_cmd += speed;
+        actuator.fr_speed_cmd -= speed;
+        actuator.bl_speed_cmd += speed;
+        actuator.br_speed_cmd -= speed;
+      }
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND && msg->axes[R_UP_DOWN_INDEX] <= -JOYSTICK_DEADBAND) //reverse right
+      {
+        actuator.fl_speed_cmd -= speed;
+        actuator.fr_speed_cmd += speed;
+        actuator.bl_speed_cmd -= speed;
+        actuator.br_speed_cmd += speed;
+      }
+      else if (msg->axes[R_LEFT_RIGHT_INDEX] <= -JOYSTICK_DEADBAND) //right
+      {
+        actuator.fl_speed_cmd += speed;
+        actuator.fr_speed_cmd -= speed;
+        actuator.bl_speed_cmd += speed;
+        actuator.br_speed_cmd -= speed;
       }
 
     }

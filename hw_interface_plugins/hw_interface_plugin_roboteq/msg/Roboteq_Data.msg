@@ -42,3 +42,9 @@ int16[] feedback
 
 # VAR
 int32[] user_integer_variable
+
+# V where
+# volts[0] - internal volts
+# volts[1] - battery volts
+# volts[2] - 5V output
+uint16[] volts

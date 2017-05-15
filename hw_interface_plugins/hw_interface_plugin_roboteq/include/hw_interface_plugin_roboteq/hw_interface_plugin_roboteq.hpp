@@ -78,7 +78,8 @@ namespace hw_interface_plugin_roboteq {
           {"brushless_count_relative", "BCR"},
           {"battery_amps", "BA"},
           {"feedback", "F"},
-          {"var_2", "VAR"}
+          {"var_2", "VAR"},
+          {"volts", "V"}
         };
 
         std::pair<matcherIterator, bool> matchFooter(matcherIterator begin, matcherIterator end, const char *sequence);

@@ -15,7 +15,7 @@ Right_Roboteq:
         subscribeToTopic   : "/control/actuatorout/all",
         publishToTopic     : "/roboteq/drivemotorin/right",
         controllerType     : "Right_Drive",
-        initializationCmd  : "absolute_brushless_counter individual_digital_inputs",
+        initializationCmd  : "absolute_brushless_counter individual_digital_inputs volts analog_inputs",
         initCmdCycle       : 20,
         wheelType          : "Comp_Right",
     }
