@@ -25,7 +25,7 @@ public:
 	int16_t scoopPosCmd = SCOOP_RAISED;
 	uint8_t scoopStopCmd = 0;
     // Arm output
-    int16_t armPosCmd = ARM_RAISED;
+    int16_t armPosCmd = ARM_LOWERED;
     uint8_t armStopCmd = 0;
 	// Bucket output
 	int16_t bucketPosCmd = BUCKET_LOWERED;

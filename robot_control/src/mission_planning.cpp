@@ -12,7 +12,7 @@ MissionPlanning::MissionPlanning()
     driveSpeedsPub = nh.advertise<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1);
     multiProcLockout = false;
     lockoutSum = 0;
-    initialized = true; // TODO: TEMPORARY FOR TESTING!!! Should be false
+    initialized = false;
     atMineLocation = false;
     bucketFull = false;
     atDepositLocation = false;
@@ -117,7 +117,7 @@ void MissionPlanning::evalConditions_()
             ROS_INFO("to execute deposit");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && stuck)
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && stuck) // Recover
         {
             procsToExecute[__recover__] = true;
             ROS_INFO("to execute recover");

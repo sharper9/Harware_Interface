@@ -13,6 +13,7 @@ bool Mine::runProc()
         {
             sendDig();
         }
+        finalSerialNum = serialNum;
         tooCloseToWallLatch.LE_Latch(0);
         state = _exec_;
         resetQueueEmptyCondition();
@@ -27,7 +28,7 @@ bool Mine::runProc()
         {
             sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
         }
-        if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut) state = _finish_;
+        if((execLastProcType == procType && execLastSerialNum == finalSerialNum) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;
         serviceQueueEmptyCondition();
         break;

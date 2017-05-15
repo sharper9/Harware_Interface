@@ -11,6 +11,7 @@ public:
     Leading_Edge_Latch tooCloseToWallLatch;
     bool tooCloseToWall;
     float backUpDistance = 1.5; // m
+    unsigned int finalSerialNum;
 };
 
 #endif // MINE_H
