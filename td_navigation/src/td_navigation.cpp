@@ -208,6 +208,10 @@ void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::Co
 
 bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
                                         td_navigation::Localize::Response &res){
+
+double mob_rad_0_error = 0;
+double mob_rad_1_error = 1;
+
 dist0_l.clear();
 dist0_r.clear();
 dist1_l.clear();
@@ -236,18 +240,16 @@ res.x = x/1000.0;
 res.y = y/1000.0;
 res.heading = heading;
 res.bearing = bearing;
-res.avg_error = get_avg_error(req.average_length);
-res.max_error = get_max_error(req.average_length);
-res.min_error = get_min_error(req.average_length);
-res.left_interference = false;
-res.right_interference = false;
-if(get_avg_error_left(req.average_length) > 13){
-  res.left_interference = true;
-}
 
-if(get_avg_error_right(req.average_length) > 13){
-  res.right_interference = true;
-}
+res.mob_rad_0_l_error = get_avg_err0_l(req.average_length);
+res.mob_rad_0_r_error = get_avg_err0_r(req.average_length);
+res.mob_rad_1_l_error = get_avg_err1_l(req.average_length);
+res.mob_rad_1_r_error = get_avg_err1_r(req.average_length);
+
+mob_rad_0_error = sqrt( pow(get_avg_err0_l(req.average_length), 2.0) + pow(get_avg_err0_r(req.average_length), 2.0));
+mob_rad_1_error = sqrt( pow(get_avg_err1_l(req.average_length), 2.0) + pow(get_avg_err1_r(req.average_length), 2.0));
+
+res.max_angle_error = atan(mob_rad_0_error/mob_rad_dist) + atan(mob_rad_1_error/mob_rad_dist);
 
 res.fail = false;
 
@@ -278,6 +280,43 @@ double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& 
 
 }
 
+double td_navigation::worker::get_avg_error(std::vector< std::vector< double > >& error, int& amount_to_avg){
+  double sum = 0;
+  int max = 0;
+
+  if(amount_to_avg <= error.size()){
+    max = amount_to_avg;
+  }else{
+    max = error.size();
+  }
+  for(int i = 0; i < max; i++){
+    sum += error[i][1];
+  }
+
+  if(max == 0){
+    return -1;
+  }
+  return sum/max;
+}
+
+double td_navigation::worker::get_avg_err0_l(int amount_to_avg){
+  return get_avg_error(dist0_l, amount_to_avg);
+}
+
+double td_navigation::worker::get_avg_err0_r(int amount_to_avg){
+  return get_avg_error(dist0_r, amount_to_avg);
+}
+
+double td_navigation::worker::get_avg_err1_l(int amount_to_avg){
+  return get_avg_error(dist1_l, amount_to_avg);
+}
+
+double td_navigation::worker::get_avg_err1_r(int amount_to_avg){
+  return get_avg_error(dist1_r, amount_to_avg);
+}
+
+
+
 double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
   return get_avg_dist(dist0_l, amount_to_avg);
 }
@@ -302,77 +341,6 @@ int td_navigation::worker::set_current_pos(double x_val, double y_val,
   bearing = bearing_val;
   heading = heading_val;
   return 0;
-}
-
-double td_navigation::worker::get_avg_error(int amount_to_avg){
-  double sum = 0;
-  int max = dist1_r.size();
-  if(amount_to_avg < dist1_r.size()){
-    max = amount_to_avg;
-  }
-  for(int i = 0; i < max; i++){
-    sum += dist0_l[i][1] + dist0_r[i][1] + dist1_l[i][1] + dist1_r[i][1];
-  }
-
-  return sum/(max * 4);
-}
-
-double td_navigation::worker::get_avg_error_left(int amount_to_avg){
-  double sum = 0;
-  int max = dist1_r.size();
-  if(amount_to_avg < dist1_r.size()){
-    max = amount_to_avg;
-  }
-  for(int i = 0; i < max; i++){
-    sum += dist0_l[i][1] + dist0_r[i][1];
-  }
-
-  return sum/(max * 4);
-}
-
-double td_navigation::worker::get_avg_error_right(int amount_to_avg){
-  double sum = 0;
-  int max = dist1_r.size();
-  if(amount_to_avg < dist1_r.size()){
-    max = amount_to_avg;
-  }
-  for(int i = 0; i < max; i++){
-    sum += dist1_l[i][1] + dist1_r[i][1];
-  }
-
-  return sum/(max * 4);
-}
-
-double td_navigation::worker::get_max_error(int amount_to_avg){
-  double max_err = 0;
-  int max = dist1_r.size();
-  if(amount_to_avg < dist1_r.size()){
-    max = amount_to_avg;
-  }
-  for(int i = 0; i < max; i++){
-    max_err = std::max(dist0_l[i][1], max_err);
-    max_err = std::max(dist0_r[i][1], max_err);
-    max_err = std::max(dist1_l[i][1], max_err);
-    max_err = std::max(dist1_r[i][1], max_err);
-  }
-
-  return max_err;
-}
-
-double td_navigation::worker::get_min_error(int amount_to_avg){
-  double min_err = 0;
-  int max = dist1_r.size();
-  if(amount_to_avg < dist1_r.size()){
-    max = amount_to_avg;
-  }
-  for(int i = 0; i < max; i++){
-    min_err = std::min(dist0_l[i][1], min_err);
-    min_err = std::min(dist0_r[i][1], min_err);
-    min_err = std::min(dist1_l[i][1], min_err);
-    min_err = std::min(dist1_r[i][1], min_err);
-  }
-
-  return min_err;
 }
 
 
