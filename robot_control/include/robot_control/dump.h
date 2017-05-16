@@ -8,7 +8,7 @@ public:
     void init();
     int run();
 private:
-    enum DUMP_STEP_T {_moveArm, _raiseBucket, _waitForSand, _shake, _lowerBucket, _returnArm} step_;
+    enum DUMP_STEP_T {_moveArm, _raiseBucket, _waitForSand, _forward1, _back1, _forward2, _back2, _lowerBucket, _returnArm} step_;
     bool dumpCompleted_;
     bool taskPushed_;
     bool taskFinished_;
@@ -17,6 +17,7 @@ private:
     float valueToPush_;
     double waitStartTime_;
     const double waitTime_ = 4.0; // sec
+    const float driveForwardDistance_ = 0.3; // m
 };
 
 #endif // DUMP_H

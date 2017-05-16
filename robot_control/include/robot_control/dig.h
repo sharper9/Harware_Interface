@@ -15,8 +15,8 @@ private:
     TASK_TYPE_T taskToPush_;
     enum TYPE_OF_TASK_PUSHED_T {__drive, __scoop, __arm, __bucket} typeOfTaskPushed_;
     float valueToPush_;
-    const float digDriveDistance = 0.3; // m
-    const float backUpDistance = 0.4; // m
+    const float digDriveDistance_ = 0.3; // m
+    const float forwardAndBackUpDistance_ = 0.4; // m
 };
 
 #endif // DIG_H

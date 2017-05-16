@@ -28,6 +28,7 @@ bool Mine::runProc()
                               || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance));
         if(tooCloseToWallLatch.LE_Latch(tooCloseToWall))
         {
+            ROS_WARN("Scoop too close to wall. Must back up.");
             sendRaiseArm();
             sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
         }

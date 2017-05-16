@@ -41,7 +41,7 @@ int Dig::run()
         case _drive1:
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
-            valueToPush_ = digDriveDistance;
+            valueToPush_ = digDriveDistance_;
             step_ = _raiseScoop;
             break;
         case _raiseScoop:
@@ -53,7 +53,7 @@ int Dig::run()
         case _drive2:
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
-            valueToPush_ = digDriveDistance;
+            valueToPush_ = digDriveDistance_;
             step_ = _raiseArm;
             break;
         case _raiseArm:
@@ -63,15 +63,20 @@ int Dig::run()
             step_ = _driveForward;
             break;
         case _driveForward:
-            
+            taskToPush_ = _driveStraight_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = forwardAndBackUpDistance_;
+            pushTask(_armShake_);
+            step_ = _backUp;
             break;
         case _backUp:
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
-            valueToPush_ = -backUpDistance;
-            step_ = _shake;
+            valueToPush_ = -forwardAndBackUpDistance_;
+            pushTask(_armShake_);
+            digCompleted_ = true;
             break;
-        case _shake:
+        case _shake: // currently not used
             taskToPush_ = _armShake_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = 0;

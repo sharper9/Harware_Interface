@@ -46,14 +46,31 @@ int Dump::run()
         case _waitForSand:
             waitStartTime_ = ros::Time::now().toSec();
             typeOfTaskPushed_ = __none;
-            step_ = _shake;
+            step_ = _forward1;
             break;
-        case _shake:
-            taskToPush_ = _bucketShake_;
-            typeOfTaskPushed_ = __bucket;
-            valueToPush_ = 0;
+        case _forward1:
+            taskToPush_ = _driveStraight_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = driveForwardDistance_;
+            step_ = _back1;
+            break;
+        case _back1:
+            taskToPush_ = _driveUntilLimit_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = 0.0;
+            step_ = _forward2;
+            break;
+        case _forward2:
+            taskToPush_ = _driveStraight_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = driveForwardDistance_;
+            step_ = _back2;
+            break;
+        case _back2:
+            taskToPush_ = _driveUntilLimit_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = 0.0;
             step_ = _lowerBucket;
-            break;
         case _lowerBucket:
             taskToPush_ = _bucketSetPos_;
             typeOfTaskPushed_ = __bucket;
