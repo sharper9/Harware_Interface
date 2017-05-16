@@ -63,15 +63,15 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     
     if (!manual_override_) return;
 
-    if (msg->buttons[Y_INDEX]) //bucket up
+    if (msg->buttons[Y_INDEX] && !(arm_pos_ >= ARM_MAX_BUCKET_RAISED) ) //bucket up
     {
       bucket_pos_ = BUCKET_RAISED;
     }
-    else if (msg->buttons[X_INDEX]) //bucket stow
+    else if (msg->buttons[X_INDEX]&& !(arm_pos_ >= ARM_MAX_BUCKET_RAISED)) //bucket stow
     {
       bucket_pos_ = BUCKET_LOWERED;
     }
-    else if (msg->buttons[B_INDEX]) //bucket bump
+    else if (msg->buttons[B_INDEX] && !(arm_pos_ >= ARM_MAX_BUCKET_RAISED)) //bucket bump
     {
       bucket_pos_ = BUCKET_BUMP;
     }

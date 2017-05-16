@@ -60,7 +60,10 @@ int Dig::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = ARM_RAISED;
-            step_ = _backUp;
+            step_ = _driveForward;
+            break;
+        case _driveForward:
+            
             break;
         case _backUp:
             taskToPush_ = _driveStraight_;
