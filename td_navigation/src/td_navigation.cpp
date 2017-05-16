@@ -620,7 +620,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(10, 736.6, 101, 106, 0, 635, 546);
+  td_navigation::worker worker(10, 1638.3, 101, 106, 0, 635, 546); // base = 736.6, robot width = 546, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;

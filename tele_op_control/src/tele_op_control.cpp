@@ -2,9 +2,9 @@
 
 TeleOp::TeleOp()
 {
+  actuator_sub_ = nh.subscribe<messages::ActuatorOut>("/control/actuatorout/all", 1, &TeleOp::manualOverrideCallback, this);
   actuator_pub_  = nh.advertise<messages::ActuatorOut>("/control/actuatorout/all", 1);
   joystick_sub_ = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &TeleOp::joystickCallback, this);
-
   exec_manual_override_client_ = nh.serviceClient<messages::ExecManualOverride>("/control/exec/manualoverride");
   pause_robot_control_pub_ = nh.advertise<hw_interface_plugin_agent::pause>("/agent/pause", 1);
 
@@ -21,6 +21,8 @@ TeleOp::TeleOp()
   bucket_pos_ = -1000;
   arm_pos_ = 0;
   wrist_pos_ = 0;
+  init_manual_override_ = false;
+  manual_override_ = false;
 }
 
 void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
@@ -47,14 +49,19 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
         ROS_WARN_THROTTLE(2, "DISENAGAE MANUAL OVERRIDE");
         exec_manual_override_srv_.request.manualOverride = false;
         exec_manual_override_client_.call(exec_manual_override_srv_);
+        manual_override_ = false;
       }
       else
       {
         ROS_WARN_THROTTLE(2, "ENGAGE MANUAL OVERRIDE");
         exec_manual_override_srv_.request.manualOverride = true;
         exec_manual_override_client_.call(exec_manual_override_srv_);
+        init_manual_override_ = true;
+        manual_override_ = true;
       }
     }
+    
+    if (!manual_override_) return;
 
     if (msg->buttons[Y_INDEX]) //bucket up
     {
@@ -71,8 +78,11 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
 
     if (msg->axes[RT_INDEX] == -1) //arm up (RT)
     {
-      arm_pos_ += ARM_OFFSET;
-      arm_pos_ = (arm_pos_ > ARM_RAISED) ? ARM_RAISED : arm_pos_;
+        if (bucket_pos_ == BUCKET_LOWERED || (bucket_pos_ != BUCKET_LOWERED && !((arm_pos_ + ARM_OFFSET) > ARM_MAX_BUCKET_RAISED)))
+        {
+            arm_pos_ += ARM_OFFSET;
+            arm_pos_ = (arm_pos_ > ARM_RAISED) ? ARM_RAISED : arm_pos_;
+        }
     }
     else if (msg->axes[LT_INDEX] == -1) //arm down (LT)
     {
@@ -197,4 +207,17 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
       exec_info_pub_.publish(exec_info_msg);
     }
   }
+}
+
+void TeleOp::manualOverrideCallback(const messages::ActuatorOut::ConstPtr &msg)
+{
+    messages::ActuatorOut actuator;
+    if (init_manual_override_)
+    {
+      actuator.bucket_pos_cmd = msg->bucket_pos_cmd;
+      actuator.arm_pos_cmd = msg->arm_pos_cmd;
+      actuator.wrist_pos_cmd = msg->wrist_pos_cmd;
+      actuator_pub_.publish(actuator);
+      init_manual_override_ = false;
+    }
 }

@@ -17,8 +17,8 @@
 #include "bit_utils.h"
 
 #define DIG_MAP_RES 1.0
-#define DIG_MAP_X_LEN 7.38
-#define DIG_MAP_Y_LEN 3.88
+#define DIG_MAP_X_LEN 7.163 // 7.38
+#define DIG_MAP_Y_LEN 3.78
 
 class MissionPlanningProcedureShare
 {
@@ -75,8 +75,8 @@ public:
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 	const float mapYOffset = 1.94; // m
-	const float miningRegionMinXDistance = 4.55; // m
-	const float miningRegionTargetXDistance = 4.65; // m
+	const float miningRegionMinXDistance = 4.35; // m (4.55)
+	const float miningRegionTargetXDistance = 4.45; // m (4.65)
 	const float miningWallBufferDistance = 1.0; // m
     const float robotCenterToScoopLength = 0.75; // m
     const int numDigsPerMine = 3;

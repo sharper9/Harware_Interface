@@ -10,7 +10,7 @@ public:
     // Members
     Leading_Edge_Latch tooCloseToWallLatch;
     bool tooCloseToWall;
-    float backUpDistance = 1.5; // m
+    float backUpDistance = 0.5; // m
     unsigned int finalSerialNum;
 };
 

@@ -61,6 +61,12 @@ int Dig::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = ARM_RAISED;
+            step_ = _backUp;
+            break;
+        case _backUp:
+            taskToPush_ = _driveStraight_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = -backUpDistance;
             step_ = _shake;
             break;
         case _shake:

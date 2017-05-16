@@ -24,7 +24,7 @@ bool Mine::runProc()
         procsToResume[procType] = false;
         computeDriveSpeeds();
         tooCloseToWall = (robotStatus.xPos + robotCenterToScoopLength) >= (DIG_MAP_X_LEN - miningWallBufferDistance);
-        if(tooCloseToWallLatch.LE_Latch(tooCloseToWall))
+        if(0 && tooCloseToWallLatch.LE_Latch(tooCloseToWall)) // TODO: remove "0 &&"
         {
             sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
         }

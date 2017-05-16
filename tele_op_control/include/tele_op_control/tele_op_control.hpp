@@ -22,6 +22,7 @@
 #define ARM_RAISED 1000
 #define ARM_LOWERED -1000
 #define ARM_OFFSET 15
+#define ARM_MAX_BUCKET_RAISED 535
 
 #define BUCKET_RAISED 1000
 #define BUCKET_LOWERED -1000
@@ -62,6 +63,10 @@ public:
 
 private:
   ros::Publisher actuator_pub_;
+  ros::Subscriber actuator_sub_;
+  bool init_manual_override_;
+  bool manual_override_;
+  
   ros::Subscriber joystick_sub_;
   ros::Publisher exec_info_pub_;
 
@@ -76,6 +81,7 @@ private:
   int bucket_pos_, wrist_pos_, arm_pos_;
 
   void joystickCallback(const sensor_msgs::JoyConstPtr &msg);
+  void manualOverrideCallback(const messages::ActuatorOut::ConstPtr &msg);
 };
 
 #endif // TELE_OP_CONTROL_HPP
