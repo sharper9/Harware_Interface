@@ -23,9 +23,12 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        tooCloseToWall = (robotStatus.xPos + robotCenterToScoopLength) >= (DIG_MAP_X_LEN - miningWallBufferDistance);
-        if(0 && tooCloseToWallLatch.LE_Latch(tooCloseToWall)) // TODO: remove "0 &&"
+        tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistance))
+                          || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - miningWallBufferDistance))
+                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance));
+        if(tooCloseToWallLatch.LE_Latch(tooCloseToWall))
         {
+            sendRaiseArm();
             sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
         }
         if((execLastProcType == procType && execLastSerialNum == finalSerialNum) || queueEmptyTimedOut) state = _finish_;

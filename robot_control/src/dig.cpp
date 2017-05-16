@@ -24,7 +24,6 @@ int Dig::run()
     }
     else
     {
-        ROS_INFO("step = %i",step_);
         switch(step_)
         {
         case _lowerArm:

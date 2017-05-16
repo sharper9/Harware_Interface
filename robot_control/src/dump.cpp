@@ -16,7 +16,12 @@ int Dump::run()
 {
     if(taskPushed_)
     {
-        taskFinished_ = runDeques();
+        if(typeOfTaskPushed_ == __none)
+        {
+            if((ros::Time::now().toSec() - waitStartTime_) > waitTime_) taskFinished_ = true;
+            else taskFinished_ = false;
+        }
+        else taskFinished_ = runDeques();
         if(taskFinished_ && !dumpCompleted_)
         {
             taskPushed_ = false;
@@ -36,6 +41,11 @@ int Dump::run()
             taskToPush_ = _bucketSetPos_;
             typeOfTaskPushed_ = __bucket;
             valueToPush_ = BUCKET_RAISED;
+            step_ = _waitForSand;
+            break;
+        case _waitForSand:
+            waitStartTime_ = ros::Time::now().toSec();
+            typeOfTaskPushed_ = __none;
             step_ = _shake;
             break;
         case _shake:
@@ -57,21 +67,24 @@ int Dump::run()
             dumpCompleted_ = true;
             break;
         }
-        pushTask(taskToPush_);
-        switch(typeOfTaskPushed_)
+        if(typeOfTaskPushed_ != __none)
         {
-        case __drive:
-            driveDeque.back()->params.float1 = valueToPush_;
-            break;
-        case __scoop:
-            scoopDeque.back()->params.int1 = (int)valueToPush_;
-            break;
-        case __arm:
-            armDeque.back()->params.int1 = (int)valueToPush_;
-            break;
-        case __bucket:
-            bucketDeque.back()->params.int1 = (int)valueToPush_;
-            break;
+            pushTask(taskToPush_);
+            switch(typeOfTaskPushed_)
+            {
+            case __drive:
+                driveDeque.back()->params.float1 = valueToPush_;
+                break;
+            case __scoop:
+                scoopDeque.back()->params.int1 = (int)valueToPush_;
+                break;
+            case __arm:
+                armDeque.back()->params.int1 = (int)valueToPush_;
+                break;
+            case __bucket:
+                bucketDeque.back()->params.int1 = (int)valueToPush_;
+                break;
+            }
         }
         taskFinished_ = false;
         taskPushed_ = true;

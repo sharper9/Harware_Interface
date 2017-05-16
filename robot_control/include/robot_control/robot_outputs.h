@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #define SCOOP_RAISED -1000
-#define SCOOP_LOWERED 0
+#define SCOOP_LOWERED 500
 #define ARM_RAISED 1000
 #define ARM_LOWERED -1000
 #define ARM_INIT -900

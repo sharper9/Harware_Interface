@@ -5,12 +5,20 @@ void DriveRelative::init()
     scoopFailed = false;
     armFailed = false;
     bucketFailed = false;
-    desiredX_ = params.float1*cos(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.xPos;
-    desiredY_ = params.float1*sin(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.yPos;
+    driveBackwards_ = params.bool3;
+    if(driveBackwards_)
+    {
+        desiredX_ = -params.float1*cos(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.xPos;
+        desiredY_ = -params.float1*sin(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.yPos;
+    }
+    else
+    {
+        desiredX_ = params.float1*cos(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.xPos;
+        desiredY_ = params.float1*sin(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.yPos;
+    }
     desiredEndHeading_ = params.float3;
     endHeading_ = params.bool1;
     pushedToFront_ = params.bool2;
-    driveBackwards_ = params.bool3;
     nextGlobalX = desiredX_;
     nextGlobalY = desiredY_;
     clearDeques();

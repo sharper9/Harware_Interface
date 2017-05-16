@@ -14,7 +14,7 @@ private:
     bool armAtOffsetPosition_;
     const int numShakesToPerform_ = 15;
     const int shakePosOffset_ = 200;
-    const double shakePeriod_ = 0.25; // sec
+    const double shakePeriod_ = 0.5; // sec
 };
 
 #endif // ARM_SHAKE_H
