@@ -4,9 +4,9 @@ float64 x
 float64 y
 float64 heading
 float64 bearing
-float64 avg_error
-float64 max_error
-float64 min_error
-bool left_interference
-bool right_interference
+float64 mob_rad_0_l_error
+float64 mob_rad_0_r_error
+float64 mob_rad_1_l_error
+float64 mob_rad_1_r_error
+float64 max_angle_error
 bool fail
