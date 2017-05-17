@@ -178,6 +178,8 @@ bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(con
         rosRangeMsg.busy = false;
         rosRangeMsg.failed = (rangeData.msg.rangeStatus != 0);
         rosRangeMsg.msgID = rangeData.msg.msgID;
+        rosRangeMsg.reqFlags = rangeData.msg.reqFlags;
+        rosRangeMsg.resFlags = rangeData.msg.resFlags;
 
         rosDataPub.publish(rosRangeMsg);
     }

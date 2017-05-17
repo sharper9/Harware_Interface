@@ -61,8 +61,8 @@ bool hw_interface_plugin_agent::agent_UDP::pluginStart()
     ROS_INFO("Agent Starting");
 
     LOSUpdateTimer.reset(new boost::asio::deadline_timer(interfaceSocket->get_io_service(),
-                                                                boost::posix_time::milliseconds(1000)));
-    LOSUpdateTimer->expires_from_now(boost::posix_time::milliseconds(1000));
+                                                                boost::posix_time::milliseconds(250)));
+    LOSUpdateTimer->expires_from_now(boost::posix_time::milliseconds(250));
     LOSUpdateTimer->async_wait(boost::bind(&hw_interface_plugin_agent::agent_UDP::LOSTimeoutHandler, this, boost::asio::placeholders::error()));
     return true;
 }

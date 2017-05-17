@@ -51,13 +51,17 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
 
   rhp_pub = nh.advertise<td_navigation::Running_Half_Pose>("/Half_Pose", 1);
+  
+  status_pub = nh.advertise<td_navigation::Td_navigation_Status>("/Td_Status", 1);
 
   //publisher for getting average angle measurements
   aa_p = nh.advertise<td_navigation::Average_angle>("/average_angles", 1);
 
   while(nh.ok())
   {
-    run_half_pose();
+    if(position_init == true){
+        run_half_pose();
+    }
   }
 }
 
@@ -201,6 +205,7 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
 void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::ConstPtr &msg){
   heading = msg->heading*PI/180.0;
   bearing = msg->bearing*PI/180.0;
+  position_init = msg->initial_pose_found;
 }
 
 
@@ -209,8 +214,17 @@ void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::Co
 bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
                                         td_navigation::Localize::Response &res){
 
+double mob_rad_0_l_error = 0;
+double mob_rad_0_r_error = 0;
+double mob_rad_1_l_error = 0;
+double mob_rad_1_r_error = 0;
+
 double mob_rad_0_error = 0;
-double mob_rad_1_error = 1;
+double mob_rad_1_error = 0;
+
+double max_angle_error = 0;
+
+td_navigation::Td_navigation_Status stat;
 
 dist0_l.clear();
 dist0_r.clear();
@@ -232,6 +246,9 @@ for(int i = 0; i < max; i++){
 
 if (error_count >= req.average_length){
     res.fail = true;
+    stat.success = false;
+    stat.success = 15;
+    status_pub.publish(stat);
     return false;
 }
 
@@ -241,17 +258,39 @@ res.y = y/1000.0;
 res.heading = heading;
 res.bearing = bearing;
 
-res.mob_rad_0_l_error = get_avg_err0_l(req.average_length);
-res.mob_rad_0_r_error = get_avg_err0_r(req.average_length);
-res.mob_rad_1_l_error = get_avg_err1_l(req.average_length);
-res.mob_rad_1_r_error = get_avg_err1_r(req.average_length);
+mob_rad_0_l_error = get_avg_err0_l(req.average_length);
+mob_rad_0_r_error = get_avg_err0_r(req.average_length);
+mob_rad_1_l_error = get_avg_err1_l(req.average_length);
+mob_rad_1_r_error = get_avg_err1_r(req.average_length);
+
+res.mob_rad_0_l_error = mob_rad_0_l_error;
+res.mob_rad_0_r_error = mob_rad_0_r_error;
+res.mob_rad_1_l_error = mob_rad_1_l_error;
+res.mob_rad_1_r_error = mob_rad_1_r_error;
 
 mob_rad_0_error = sqrt( pow(get_avg_err0_l(req.average_length), 2.0) + pow(get_avg_err0_r(req.average_length), 2.0));
 mob_rad_1_error = sqrt( pow(get_avg_err1_l(req.average_length), 2.0) + pow(get_avg_err1_r(req.average_length), 2.0));
 
-res.max_angle_error = atan(mob_rad_0_error/mob_rad_dist) + atan(mob_rad_1_error/mob_rad_dist);
+max_angle_error = atan(mob_rad_0_error/mob_rad_dist) + atan(mob_rad_1_error/mob_rad_dist);
+res.max_angle_error = max_angle_error;
 
 res.fail = false;
+
+//TODO: This is very simple, should use radio errors make better decisions
+if (max_angle_error >= 15/180*PI){
+    if(y < 0){
+        stat.success = false;
+        stat.angle_to_turn = -45;
+    }else if (y >= 0){
+        stat.success = false;
+        stat.angle_to_turn = 45;
+    }
+    status_pub.publish(stat);
+}else{
+    stat.success = true;
+    stat.success = 0;
+    status_pub.publish(stat);
+}
 
 return true;
 }

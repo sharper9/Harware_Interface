@@ -9,6 +9,10 @@ uint32 CREError
 uint32 FREError
 uint8  rangeType
 
+uint16 reqFlags
+uint16 resFlags
+
+
 bool busy
 bool failed
 

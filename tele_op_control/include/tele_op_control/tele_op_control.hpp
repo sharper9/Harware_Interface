@@ -65,7 +65,6 @@ private:
   ros::Publisher actuator_pub_;
   ros::Subscriber actuator_sub_;
   bool init_manual_override_;
-  bool manual_override_;
   
   ros::Subscriber joystick_sub_;
   ros::Publisher exec_info_pub_;

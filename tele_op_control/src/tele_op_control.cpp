@@ -22,7 +22,6 @@ TeleOp::TeleOp()
   arm_pos_ = 0;
   wrist_pos_ = 0;
   init_manual_override_ = false;
-  manual_override_ = false;
 }
 
 void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
@@ -49,7 +48,6 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
         ROS_WARN_THROTTLE(2, "DISENAGAE MANUAL OVERRIDE");
         exec_manual_override_srv_.request.manualOverride = false;
         exec_manual_override_client_.call(exec_manual_override_srv_);
-        manual_override_ = false;
       }
       else
       {
@@ -57,11 +55,10 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
         exec_manual_override_srv_.request.manualOverride = true;
         exec_manual_override_client_.call(exec_manual_override_srv_);
         init_manual_override_ = true;
-        manual_override_ = true;
       }
     }
     
-    if (!manual_override_) return;
+    if (!exec_manual_override_srv_.request.manualOverride) return;
 
     if (msg->buttons[Y_INDEX] && !(arm_pos_ >= ARM_MAX_BUCKET_RAISED) ) //bucket up
     {
@@ -121,7 +118,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
       actuator.br_speed_cmd = 0.0;
       exec_info_msg.stopFlag = true;
     }
-    else // left joystick
+    else if (msg->axes[R_LEFT_RIGHT_INDEX] != -1.0 || msg->axes[R_LEFT_RIGHT_INDEX] != 1.0)// left joystick
     {
       float speed = ROBOT_RANGE*pow(joystickMagnitude, 3.0);
       exec_info_msg.stopFlag = false;
@@ -146,7 +143,6 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     float rightJoyMagnitude = hypot(msg->axes[R_LEFT_RIGHT_INDEX], msg->axes[R_UP_DOWN_INDEX]);
     if (rightJoyMagnitude > 1.0) rightJoyMagnitude = 1.0;
 
-    //turn right add deg to right and subtract from left
     if (!(rightJoyMagnitude < JOYSTICK_DEADBAND))
     {
       float speed = ROBOT_RANGE*pow(rightJoyMagnitude, 3.0);

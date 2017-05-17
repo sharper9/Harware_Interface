@@ -14,6 +14,7 @@
 #include <hw_interface_plugin_timedomain/RCM_Range_Info.h>
 #include <messages/NavFilterOut.h>
 #include <td_navigation/Average_angle.h>
+#include <td_navigation/Td_navigation_Status.h>
 #include <td_navigation/Running_Half_Pose.h>
 #include <td_navigation/Localize.h>
 
@@ -29,6 +30,7 @@ namespace td_navigation
            int rad_L_val, int rad_R_val, int z_estimate_val,
            int robot_length_offset_val, int mob_rad_dist_value);
 
+    bool position_init = false;
     bool confirmed;
     int count;
     int selector;
@@ -52,6 +54,8 @@ namespace td_navigation
     ros::Publisher mob_rad_r_pub;
 
     ros::Publisher rhp_pub;
+    
+    ros::Publisher status_pub;
 
     ros::Publisher aa_p;
 
