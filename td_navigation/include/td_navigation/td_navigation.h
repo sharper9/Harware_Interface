@@ -30,7 +30,7 @@ namespace td_navigation
            int rad_L_val, int rad_R_val, int z_estimate_val,
            int robot_length_offset_val, int mob_rad_dist_value);
 
-    bool position_init = false;
+    bool position_init;
     bool confirmed;
     int count;
     int selector;

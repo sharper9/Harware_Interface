@@ -7,7 +7,7 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
                               int rad_L_val, int rad_R_val, int z_estimate_val,
                               int robot_length_offset_val, int mob_rad_dist_value)
 {
-
+  position_init = false;
   confirmed = 0;
   count = 0;
   selector = 0 ;
@@ -62,6 +62,7 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
     if(position_init == true){
         run_half_pose();
     }
+    ros::spinOnce();
   }
 }
 
@@ -214,28 +215,30 @@ void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::Co
 bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
                                         td_navigation::Localize::Response &res){
 
+ROS_INFO("Test 1");
 double mob_rad_0_l_error = 0;
 double mob_rad_0_r_error = 0;
 double mob_rad_1_l_error = 0;
 double mob_rad_1_r_error = 0;
-
+ROS_INFO("Test 2");
 double mob_rad_0_error = 0;
 double mob_rad_1_error = 0;
 
 double max_angle_error = 0;
 
 td_navigation::Td_navigation_Status stat;
-
+ROS_INFO("Test 3");
 dist0_l.clear();
 dist0_r.clear();
 dist1_l.clear();
 dist1_r.clear();
-
+ROS_INFO("Test 4");
 int max = average_length;
 
 if(req.average_length <= average_length){
   max = req.average_length;
 }
+ROS_INFO("Test 5");
 
 int error_count = 0;
 for(int i = 0; i < max; i++){
@@ -244,6 +247,8 @@ for(int i = 0; i < max; i++){
   }
 }
 
+ROS_INFO("Test 6");
+
 if (error_count >= req.average_length){
     res.fail = true;
     stat.success = false;
@@ -251,6 +256,8 @@ if (error_count >= req.average_length){
     status_pub.publish(stat);
     return false;
 }
+
+ROS_INFO("Test 7");
 
 //service response
 res.x = x/1000.0;
