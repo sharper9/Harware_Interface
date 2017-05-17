@@ -13,6 +13,7 @@ bool Initialize::runProc()
         stage = _initialRaiseArm;
         sendRaiseArm();
         initComplete = false;
+        rotateDeltaAngle = 25.0; // deg
         resetQueueEmptyCondition();
         break;
     case _exec_:
@@ -22,21 +23,16 @@ bool Initialize::runProc()
         computeDriveSpeeds();
         switch(stage)
         {
-        case _initialRaiseArm:
-            if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut)
-            {
-                if(robotStatus.initialFullPoseFound) initComplete = true;
-                stage = _startTimer;
-            }
-            else stage = _initialRaiseArm;
-            break;
         case _startTimer:
             startupTime = ros::Time::now().toSec();
             performFullPoseUpdate = true;
             stage = _checkFullPose;
             break;
         case _checkFullPose:
-            if(robotStatus.initialFullPoseFound) initComplete = true;
+            if(robotStatus.initialFullPoseFound)
+            {
+
+            }
             else if((ros::Time::now().toSec() - startupTime) > waitForFullPoseTime)
             {
                 sendDriveRel(0.0, rotateDeltaAngle, false, 0.0, false, false);
@@ -47,6 +43,16 @@ bool Initialize::runProc()
         case _rotate:
             if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut) stage = _startTimer;
             else stage = _rotate;
+            break;
+        case _backUp:
+
+            break;
+        case _initialRaiseArm:
+            if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut)
+            {
+                initComplete = true;
+            }
+            else stage = _initialRaiseArm;
             break;
         }
         if(initComplete) state = _finish_;
