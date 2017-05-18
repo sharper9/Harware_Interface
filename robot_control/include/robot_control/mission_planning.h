@@ -6,6 +6,7 @@
 #include <messages/MissionPlanningInfo.h>
 #include <messages/MissionPlanningControl.h>
 #include <messages/NavFilterOut.h>
+#include <td_navigation/Td_navigation_Status.h>
 #include <hw_interface_plugin_agent/pause.h>
 #include "initialize.h"
 #include "drive_to_dig.h"
@@ -29,6 +30,7 @@ public:
 	ros::Subscriber ExecActionEndedSub;
 	ros::Subscriber navSub;
     ros::Subscriber pauseSub;
+    ros::Subscriber tdNavStatusSub;
 	ros::ServiceServer controlServ;
 	messages::MissionPlanningInfo infoMsg;
 	const int loopRate = 20; // Hz
@@ -56,6 +58,7 @@ private:
 	void navCallback_(const messages::NavFilterOut::ConstPtr& msg);
 	void execInfoCallback_(const messages::ExecInfo::ConstPtr& msg);
     void pauseCallback_(const hw_interface_plugin_agent::pause::ConstPtr& msg);
+    void tdNavStatusCallback_(const td_navigation::Td_navigation_Status::ConstPtr& msg);
 	bool controlCallback_(messages::MissionPlanningControl::Request &req, messages::MissionPlanningControl::Response &res);
 	void queueEmptyTimerCallback_(const ros::TimerEvent &event);
 };

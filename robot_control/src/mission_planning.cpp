@@ -7,6 +7,7 @@ MissionPlanning::MissionPlanning()
     execInfoSub = nh.subscribe<messages::ExecInfo>("control/exec/info", 1, &MissionPlanning::execInfoCallback_, this);
     navSub = nh.subscribe<messages::NavFilterOut>("navigation/navigationfilterout/navigationfilterout", 1, &MissionPlanning::navCallback_, this);
     pauseSub = nh.subscribe<hw_interface_plugin_agent::pause>("/agent/pause", 1, &MissionPlanning::pauseCallback_, this);
+    tdNavStatusSub = nh.subscribe<td_navigation::Td_navigation_Status>("/Td_Status", 1, &MissionPlanning::tdNavStatusCallback_, this);
     controlServ = nh.advertiseService("/control/missionplanning/control", &MissionPlanning::controlCallback_, this);
     infoPub = nh.advertise<messages::MissionPlanningInfo>("/control/missionplanning/info", 1);
     driveSpeedsPub = nh.advertise<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1);
@@ -289,6 +290,11 @@ void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)
 void MissionPlanning::pauseCallback_(const hw_interface_plugin_agent::pause::ConstPtr &msg)
 {
     robotStatus.pauseSwitch = msg->pause;
+}
+
+void MissionPlanning::tdNavStatusCallback_(const td_navigation::Td_navigation_Status::ConstPtr &msg)
+{
+    badInitPoseManeuverToPerform = msg->backup_left_right;
 }
 
 bool MissionPlanning::controlCallback_(messages::MissionPlanningControl::Request &req, messages::MissionPlanningControl::Response &res)

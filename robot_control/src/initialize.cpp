@@ -17,6 +17,13 @@ bool Initialize::runProc()
         driveDeltaDistance = 0.2; // m
         rotateDeltaAngle = 15.0; // deg
         bucketRaised = false;
+        unknownPoseManeuvers.resize(3);
+        unknownPoseManeuvers.at(0).driveDistance = -0.3;
+        unknownPoseManeuvers.at(0).turnAngle = 0.0;
+        unknownPoseManeuvers.at(1).driveDistance = 0.0;
+        unknownPoseManeuvers.at(1).turnAngle = 10.0;
+        unknownPoseManeuvers.at(2).driveDistance = 0.0;
+        unknownPoseManeuvers.at(2).turnAngle = -10.0;
         resetQueueEmptyCondition();
         break;
     case _exec_:

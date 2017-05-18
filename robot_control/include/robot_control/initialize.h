@@ -18,7 +18,6 @@ public:
     float rotateDeltaAngle; // deg
     bool bucketRaised;
     struct INITIALIZE_MANEUVER_T {float driveDistance; float turnAngle;};
-    std::vector<INITIALIZE_MANEUVER_T> knownPoseManeuvers;
     std::vector<INITIALIZE_MANEUVER_T> unknownPoseManeuvers;
     float xPosToUse;
     float yPosToUse;
