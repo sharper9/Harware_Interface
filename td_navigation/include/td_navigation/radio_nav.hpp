@@ -4,7 +4,7 @@
 #include <math.h>
 #include <vector>
 
-#define PI 3.14159265
+#define PI 3.14159265358
 
 class radio_nav
 {

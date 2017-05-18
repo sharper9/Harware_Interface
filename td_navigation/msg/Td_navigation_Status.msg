@@ -1,2 +1,2 @@
 bool success
-float64 angle_to_turn
+int16 backup_left_right

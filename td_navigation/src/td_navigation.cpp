@@ -1,7 +1,9 @@
 #include <td_navigation/td_navigation.h>
 
-#define PI 3.14159265
-//#define ERRNUM -200000000.1
+#define PI 3.14159265358
+
+#define DEG_to_RAD 0.0174532925
+
 
 td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
                               int rad_L_val, int rad_R_val, int z_estimate_val,
@@ -51,7 +53,7 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
 
   rhp_pub = nh.advertise<td_navigation::Running_Half_Pose>("/Half_Pose", 1);
-  
+
   status_pub = nh.advertise<td_navigation::Td_navigation_Status>("/Td_Status", 1);
 
   //publisher for getting average angle measurements
@@ -215,30 +217,30 @@ void td_navigation::worker::nav_filter_callback(const messages::NavFilterOut::Co
 bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
                                         td_navigation::Localize::Response &res){
 
-ROS_INFO("Test 1");
+
 double mob_rad_0_l_error = 0;
 double mob_rad_0_r_error = 0;
 double mob_rad_1_l_error = 0;
 double mob_rad_1_r_error = 0;
-ROS_INFO("Test 2");
+
 double mob_rad_0_error = 0;
 double mob_rad_1_error = 0;
 
 double max_angle_error = 0;
 
 td_navigation::Td_navigation_Status stat;
-ROS_INFO("Test 3");
+
 dist0_l.clear();
 dist0_r.clear();
 dist1_l.clear();
 dist1_r.clear();
-ROS_INFO("Test 4");
+
 int max = average_length;
 
 if(req.average_length <= average_length){
   max = req.average_length;
 }
-ROS_INFO("Test 5");
+
 
 int error_count = 0;
 for(int i = 0; i < max; i++){
@@ -247,17 +249,17 @@ for(int i = 0; i < max; i++){
   }
 }
 
-ROS_INFO("Test 6");
+
 
 if (error_count >= req.average_length){
     res.fail = true;
     stat.success = false;
-    stat.success = 15;
+    stat.backup_left_right = 1;
     status_pub.publish(stat);
     return false;
 }
 
-ROS_INFO("Test 7");
+
 
 //service response
 res.x = x/1000.0;
@@ -278,26 +280,59 @@ res.mob_rad_1_r_error = mob_rad_1_r_error;
 mob_rad_0_error = sqrt( pow(get_avg_err0_l(req.average_length), 2.0) + pow(get_avg_err0_r(req.average_length), 2.0));
 mob_rad_1_error = sqrt( pow(get_avg_err1_l(req.average_length), 2.0) + pow(get_avg_err1_r(req.average_length), 2.0));
 
-max_angle_error = atan(mob_rad_0_error/mob_rad_dist) + atan(mob_rad_1_error/mob_rad_dist);
-res.max_angle_error = max_angle_error;
+if(mob_rad_0_error > mob_rad_dist || mob_rad_1_error > mob_rad_dist){
+  max_angle_error = PI;
+}else{
+  max_angle_error = atan(mob_rad_0_error/ (mob_rad_dist/ ( (mob_rad_0_error/mob_rad_1_error)+1) ) );
+}
 
+res.max_angle_error = max_angle_error;
 res.fail = false;
 
 //TODO: This is very simple, should use radio errors make better decisions
-if (max_angle_error >= 15/180*PI){
-    if(y < 0){
-        stat.success = false;
-        stat.angle_to_turn = -45;
-    }else if (y >= 0){
-        stat.success = false;
-        stat.angle_to_turn = 45;
+if (max_angle_error >= 15 * DEG_to_RAD && max_angle_error <= 30 * DEG_to_RAD){
+  stat.success = false;
+  if(y <= -1.0 * base_station_distance / 2.0){  //left of the left radio
+    if(heading < -110 * DEG_to_RAD && heading > -150 * DEG_to_RAD){
+      stat.backup_left_right = 0;
+    }else if(heading > 110 * DEG_to_RAD && heading < 150 * DEG_to_RAD){
+      stat.backup_left_right = 1;
+    }else{
+      stat.backup_left_right = 1;
     }
-    status_pub.publish(stat);
+  }else if (y >= base_station_distance / 2.0){  //right of the right radio
+    if(heading < -110 * DEG_to_RAD && heading > -150 * DEG_to_RAD){
+      stat.backup_left_right = 2;
+    }else if(heading > 110 * DEG_to_RAD && heading < 150 * DEG_to_RAD){
+      stat.backup_left_right = 0;
+    }else{
+      stat.backup_left_right = 2;
+    }
+  }else{                                       //between the radios
+    if (heading <= -160 * DEG_to_RAD || heading >= 160 * DEG_to_RAD){
+      stat.backup_left_right = 0;
+    }else if (heading > -160 * DEG_to_RAD && heading <= -60 * DEG_to_RAD){
+      stat.backup_left_right = 2;
+    }else if (heading < 160 * DEG_to_RAD && heading >= 60 * DEG_to_RAD){
+      stat.backup_left_right = 1;
+    }
+  }
+}else if (max_angle_error > 30 * DEG_to_RAD){
+  stat.success = false;
+  if(y <= -1.0 * base_station_distance / 2.0){  //left of the left radio
+    stat.backup_left_right = 1;
+  }else if (y >= base_station_distance / 2.0){  //right of the right radio
+    stat.backup_left_right = 2;
+  }else{                                        //between the radios
+    stat.backup_left_right = 0;
+  }
 }else{
-    stat.success = true;
-    stat.success = 0;
-    status_pub.publish(stat);
+  stat.success = true;
+  stat.backup_left_right = -1;
 }
+
+status_pub.publish(stat);
+
 
 return true;
 }
@@ -634,7 +669,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(10, 1638.3, 101, 106, 0, 635, 546); // base = 736.6, robot width = 546, robot length = 635
+  td_navigation::worker worker(50, 1638.3, 101, 106, 0, 635, 546); // base = 736.6, robot width = 546, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;
