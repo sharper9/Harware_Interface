@@ -111,6 +111,9 @@ include_directories(
  add_library(dump src/dump.cpp)
  add_library(wait src/wait.cpp)
  add_library(raise_arm src/raise_arm.cpp)
+ add_library(partially_raise_arm src/partially_raise_arm.cpp)
+ add_library(raise_bucket src/raise_bucket.cpp)
+ add_library(lower_bucket src/lower_bucket.cpp)
  add_library(drive_halt src/drive_halt.cpp)
  add_library(drive_straight src/drive_straight.cpp)
  add_library(drive_until_limit src/drive_until_limit.cpp)
@@ -157,6 +160,9 @@ include_directories(
    dump
    wait
    raise_arm
+   partially_raise_arm
+   raise_bucket
+   lower_bucket
    drive_halt
    drive_straight
    drive_until_limit

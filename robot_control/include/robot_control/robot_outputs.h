@@ -5,6 +5,7 @@
 #define SCOOP_RAISED -1000
 #define SCOOP_LOWERED 200
 #define ARM_RAISED 1000
+#define ARM_PARTIALLY_RAISED -700
 #define ARM_LOWERED -1000
 #define ARM_INIT -900
 //#define ARM_LOWERED -100 // TODO: This is temporary for testing indoors

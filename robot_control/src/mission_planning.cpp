@@ -55,6 +55,11 @@ MissionPlanning::MissionPlanning()
     depositWaypointDistanceTolerance = depositWaypointDistanceToleranceInit;
     depositWaypointAngleTolerance = depositWaypointAngleToleranceInit;
     performFullPoseUpdate = true;
+    moderateQualityInitPoseFound = false;
+    moderateQualityInitX = 1.0;
+    moderateQualityInitY = 0.0;
+    moderateQualityInitHeading = 0.0;
+    badInitPoseManeuverToPerform = 0;
     initializeDigPlanningMap_();
 }
 

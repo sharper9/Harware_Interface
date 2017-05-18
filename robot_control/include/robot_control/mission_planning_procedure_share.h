@@ -61,6 +61,11 @@ public:
     static float depositWaypointDistanceTolerance;
     static float depositWaypointAngleTolerance;
     static bool performFullPoseUpdate;
+    static bool moderateQualityInitPoseFound;
+    static float moderateQualityInitX;
+    static float moderateQualityInitY;
+    static float moderateQualityInitHeading;
+    static int badInitPoseManeuverToPerform;
     const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
     const float depositWaypointDistanceToleranceInit = 0.3; // m
@@ -79,6 +84,7 @@ public:
 	const float miningRegionTargetXDistance = 4.50; // m (4.65)
 	const float miningWallBufferDistance = 0.5; // m
     const float robotCenterToScoopLength = 1.0; // m
+    const float baseStationDistance = 1.638; // m
     const int numDigsPerMine = 3;
 };
 
@@ -120,5 +126,10 @@ IRLGridMap<PlanningMapData> MissionPlanningProcedureShare::digPlanningMap(DIG_MA
 float MissionPlanningProcedureShare::depositWaypointDistanceTolerance;
 float MissionPlanningProcedureShare::depositWaypointAngleTolerance;
 bool MissionPlanningProcedureShare::performFullPoseUpdate;
+bool MissionPlanningProcedureShare::moderateQualityInitPoseFound;
+float MissionPlanningProcedureShare::moderateQualityInitX;
+float MissionPlanningProcedureShare::moderateQualityInitY;
+float MissionPlanningProcedureShare::moderateQualityInitHeading;
+int MissionPlanningProcedureShare::badInitPoseManeuverToPerform;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H
