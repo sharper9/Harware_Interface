@@ -30,6 +30,9 @@ Exec::Exec()
         actionPool_[_dump][j] = new Dump;
         actionPool_[_wait][j] = new Wait;
         actionPool_[_raiseArm][j] = new RaiseArm;
+        actionPool_[_partiallyRaiseArm][j] = new PartiallyRaiseArm;
+        actionPool_[_raiseBucket][j] = new RaiseBucket;
+        actionPool_[_lowerBucket][j] = new LowerBucket;
 	}
 	for(int k=0; k<NUM_TASKS; k++)
 	{

@@ -13,6 +13,9 @@
 #include "dump.h"
 #include "wait.h"
 #include "raise_arm.h"
+#include "partially_raise_arm.h"
+#include "raise_bucket.h"
+#include "lower_bucket.h"
 #include <messages/ExecAction.h>
 #include <messages/ActuatorOut.h>
 #include <messages/ExecInfo.h>
