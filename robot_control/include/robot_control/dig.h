@@ -8,7 +8,7 @@ public:
     void init();
     int run();
 private:
-    enum DIG_STEP_T {_lowerArm, _lowerScoop, _drive1, _raiseScoop, _drive2, _raiseArm, _driveForward, _backUp, _shake} step_;
+    enum DIG_STEP_T {_lowerScoop, _lowerArm, _drive1, _raiseScoop, _drive2, _raiseArm, _driveForward, _backUp, _shake} step_;
     bool digCompleted_;
     bool taskPushed_;
     bool taskFinished_;

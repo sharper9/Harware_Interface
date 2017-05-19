@@ -3,6 +3,7 @@
 #define PI 3.14159265358
 
 #define DEG_to_RAD 0.0174532925
+#define WT_VALUE 500
 
 
 td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
@@ -42,15 +43,15 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   ROS_INFO("td_navigation node ready to Localize");
 
   //subscriber for recieving messages
-  mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::mob_rad_0_CallBack, this);
-  mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::mob_rad_1_CallBack, this);
+  mob_rad_l_sub = nh.subscribe("/radio_left/data", 5, &td_navigation::worker::mob_rad_0_CallBack, this);
+  mob_rad_r_sub = nh.subscribe("/radio_right/data", 5, &td_navigation::worker::mob_rad_1_CallBack, this);
 
   nav_filter_sub = nh.subscribe("/navigation/navigationfilterout/navigationfilterout", 1, &td_navigation::worker::nav_filter_callback, this);
 
 
   //publisher for sending a message to timedomain serial to get a range request
-  mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
-  mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
+  mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio_left/cmd", 5);
+  mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio_right/cmd", 5);
 
   rhp_pub = nh.advertise<td_navigation::Running_Half_Pose>("/Half_Pose", 1);
 
@@ -178,7 +179,7 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
 
       //reading 0 to r
       if(msg-> msgID == count + selector && selector == 2){
-            ROS_INFO("Reading from Mob_0 to Base_1");
+            ROS_INFO("Reading from Mob_1 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             add_distance(dist1_l, msg->PRM, msg->PRMError);
             confirmed = true;
@@ -267,31 +268,34 @@ res.y = y/1000.0;
 res.heading = heading;
 res.bearing = bearing;
 
-mob_rad_0_l_error = get_avg_err0_l(req.average_length);
-mob_rad_0_r_error = get_avg_err0_r(req.average_length);
-mob_rad_1_l_error = get_avg_err1_l(req.average_length);
-mob_rad_1_r_error = get_avg_err1_r(req.average_length);
+mob_rad_0_l_error = get_med_err0_l();
+mob_rad_0_r_error = get_med_err0_r();
+mob_rad_1_l_error = get_med_err1_l();
+mob_rad_1_r_error = get_med_err1_r();
 
 res.mob_rad_0_l_error = mob_rad_0_l_error;
 res.mob_rad_0_r_error = mob_rad_0_r_error;
 res.mob_rad_1_l_error = mob_rad_1_l_error;
 res.mob_rad_1_r_error = mob_rad_1_r_error;
 
-mob_rad_0_error = sqrt( pow(get_avg_err0_l(req.average_length), 2.0) + pow(get_avg_err0_r(req.average_length), 2.0));
-mob_rad_1_error = sqrt( pow(get_avg_err1_l(req.average_length), 2.0) + pow(get_avg_err1_r(req.average_length), 2.0));
+
+mob_rad_0_error = sqrt( pow(mob_rad_0_l_error, 2.0) + pow(mob_rad_0_r_error, 2.0));
+mob_rad_1_error = sqrt( pow(mob_rad_1_l_error, 2.0) + pow(mob_rad_1_r_error, 2.0));
+ROS_DEBUG("mob_rad_0_error: %lf", mob_rad_0_error);
+ROS_DEBUG("mob_rad_1_error: %lf", mob_rad_1_error);
 
 if(mob_rad_0_error > mob_rad_dist || mob_rad_1_error > mob_rad_dist){
   max_angle_error = PI;
 }else{
   max_angle_error = atan(mob_rad_0_error/ (mob_rad_dist/ ( (mob_rad_0_error/mob_rad_1_error)+1) ) );
 }
-
+ROS_DEBUG("max_angle_error: %lf", max_angle_error);
 res.max_angle_error = max_angle_error;
-res.fail = false;
+res.fail = false;//this has been changed to always true
 
 //TODO: This is very simple, should use radio errors make better decisions
 if (max_angle_error >= 15 * DEG_to_RAD && max_angle_error <= 30 * DEG_to_RAD){
-  stat.success = false;
+  stat.success = false;//has been changed to always be true
   if(y <= -1.0 * base_station_distance / 2.0){  //left of the left radio
     if(heading < -110 * DEG_to_RAD && heading > -150 * DEG_to_RAD){
       stat.backup_left_right = 0;
@@ -318,7 +322,7 @@ if (max_angle_error >= 15 * DEG_to_RAD && max_angle_error <= 30 * DEG_to_RAD){
     }
   }
 }else if (max_angle_error > 30 * DEG_to_RAD){
-  stat.success = false;
+  stat.success = true;// always true
   if(y <= -1.0 * base_station_distance / 2.0){  //left of the left radio
     stat.backup_left_right = 1;
   }else if (y >= base_station_distance / 2.0){  //right of the right radio
@@ -340,17 +344,19 @@ return true;
 double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg){
   double top = 0;
   double bottom = 0;
+  double weight = 0;
   int max = 0;
-
+    
   if(amount_to_avg <= dist.size()){
     max = amount_to_avg;
   }else{
     max = dist.size();
   }
   for(int i = 0; i < max; i++){
-
-    top += dist[i][0] * (65535 - dist[i][1]);
-    bottom += (65535 - dist[i][1]);
+    weight = (-1.0 * WT_VALUE / (PI/2.0) * atan(0.05 * (dist[i][1] - (base_station_distance / 5))) + WT_VALUE + 1);
+    ROS_INFO("dist:%lf ,err:%lf, wt:%lf", dist[i][0], dist[i][1], weight);
+    top += dist[i][0] * weight;
+    bottom += weight;
   }
 
   if(bottom == 0){
@@ -363,6 +369,9 @@ double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& 
 
 double td_navigation::worker::get_avg_error(std::vector< std::vector< double > >& error, int& amount_to_avg){
   double sum = 0;
+  double bottom = 0;
+  double weight = 0;
+  
   int max = 0;
 
   if(amount_to_avg <= error.size()){
@@ -372,12 +381,40 @@ double td_navigation::worker::get_avg_error(std::vector< std::vector< double > >
   }
   for(int i = 0; i < max; i++){
     sum += error[i][1];
+    bottom += 1;
   }
 
   if(max == 0){
     return -1;
   }
   return sum/max;
+}
+
+double td_navigation::worker::get_med_error(std::vector< std::vector< double > >& error){
+    std::vector<double> err;
+    err.resize(error.size());
+    for(int i = 0; i < error.size(); i++){
+        err[i] = error[i][1];
+    }
+    sort(err.begin(), err.end());
+    return err[(int)(err.size()/2)];
+    
+}
+
+double td_navigation::worker::get_med_err0_l(){
+    return get_med_error(dist0_l);
+}
+
+double td_navigation::worker::get_med_err0_r(){
+    return get_med_error(dist0_r);
+}
+
+double td_navigation::worker::get_med_err1_l(){
+    return get_med_error(dist1_l);
+}
+
+double td_navigation::worker::get_med_err1_r(){
+    return get_med_error(dist1_r);
 }
 
 double td_navigation::worker::get_avg_err0_l(int amount_to_avg){
@@ -399,19 +436,23 @@ double td_navigation::worker::get_avg_err1_r(int amount_to_avg){
 
 
 double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
+  ROS_INFO("Radio mob_l to base_l");
   return get_avg_dist(dist0_l, amount_to_avg);
 }
 
 double td_navigation::worker::get_avg_dist0_r(int amount_to_avg){
+    ROS_INFO("Radio mob_l to base_r");
   return get_avg_dist(dist0_r, amount_to_avg);
 
 }
 
 double td_navigation::worker::get_avg_dist1_l(int amount_to_avg){
+    ROS_INFO("Radio mob_r to base_l");
   return get_avg_dist(dist1_l, amount_to_avg);
 }
 
 double td_navigation::worker::get_avg_dist1_r(int amount_to_avg){
+    ROS_INFO("Radio mob_r to base_r");
   return get_avg_dist(dist1_r, amount_to_avg);
 }
 

@@ -9,7 +9,7 @@ void DriveStraight::init()
 	desiredDistance_ = params.float1;
 	if(desiredDistance_<0.0) driveSign_ = -1.0;
 	else driveSign_ = 1.0;
-	timeoutValue_ = (unsigned int)round((10.0 + 1.0*fabs(desiredDistance_))*robotStatus.loopRate);
+	timeoutValue_ = (unsigned int)round((4.0 + 2.0*fabs(desiredDistance_))*robotStatus.loopRate);
 	timeoutCounter_ = 0;
 	headingErrorSpeedI_ = 0.0;
     robotOutputs.stopFlag = false;

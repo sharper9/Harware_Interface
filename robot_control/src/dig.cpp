@@ -5,7 +5,7 @@ void Dig::init()
     scoopFailed = false;
     armFailed = false;
     bucketFailed = false;
-    step_ = _lowerArm;
+    step_ = _lowerScoop;
     digCompleted_ = false;
     taskPushed_ = false;
     taskFinished_ = false;
@@ -26,16 +26,18 @@ int Dig::run()
     {
         switch(step_)
         {
-        case _lowerArm:
-            taskToPush_ = _armSetPos_;
-            typeOfTaskPushed_ = __arm;
-            valueToPush_ = ARM_LOWERED;
-            step_ = _lowerScoop;
-            break;
         case _lowerScoop:
             taskToPush_ = _scoopSetPos_;
             typeOfTaskPushed_ = __scoop;
             valueToPush_ = SCOOP_LOWERED;
+            pushTask(_armSetPos_);
+            armDeque.back()->params.int1 = ARM_LOWERED;
+            step_ = _lowerArm;
+            break;
+        case _lowerArm:
+            taskToPush_ = _armLowerToPitch_;
+            typeOfTaskPushed_ = __arm;
+            valueToPush_ = 0;
             step_ = _drive1;
             break;
         case _drive1:

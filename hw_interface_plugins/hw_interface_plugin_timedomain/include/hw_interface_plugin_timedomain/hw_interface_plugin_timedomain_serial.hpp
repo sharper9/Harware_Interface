@@ -37,6 +37,13 @@ namespace hw_interface_plugin_timedomain {
 
         bool isRequestInProgress(){ return requestInProgress; }
 
+        bool pluginStart();
+
+        bool pluginStop()
+        {
+            return true;
+        }
+
     private:
 
         bool requestInProgress;
@@ -50,3 +57,4 @@ PLUGINLIB_EXPORT_CLASS(hw_interface_plugin_timedomain::timedomain_serial, base_c
 
 
 #endif //HW_INTERFACE_PLUGIN_TIMEDOMAIN_HPP__
+

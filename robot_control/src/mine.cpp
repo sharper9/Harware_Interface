@@ -24,13 +24,20 @@ bool Mine::runProc()
         procsToResume[procType] = false;
         computeDriveSpeeds();
         tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistance))
-                          || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - miningWallBufferDistance))
-                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance));
-        if(tooCloseToWallLatch.LE_Latch(tooCloseToWall))
+                          || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - mapYOffset - miningWallBufferDistance))
+                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance - mapYOffset));
+        if(tooCloseToWallLatch.LE_Latch(tooCloseToWall) && !sentTooCloseToWall)
         {
             ROS_WARN("Scoop too close to wall. Must back up.");
-            sendRaiseArm();
+            sendDequeClearFront();
+            sendRaiseArm(true);
             sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
+            sentTooCloseToWall = true;
+            backUpFromWallSerialNum = serialNum;
+        }
+        if(sentTooCloseToWall && (execLastProcType == procType && execLastSerialNum == backUpFromWallSerialNum))
+        {
+            sentTooCloseToWall = false;
         }
         if((execLastProcType == procType && execLastSerialNum == finalSerialNum) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;

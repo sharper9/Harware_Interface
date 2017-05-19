@@ -77,6 +77,11 @@ namespace td_navigation
     double get_avg_err0_r(int amount_to_avg);
     double get_avg_err1_l(int amount_to_avg);
     double get_avg_err1_r(int amount_to_avg);
+    double get_med_error(std::vector< std::vector< double > >& error);
+    double get_med_err0_l();
+    double get_med_err0_r();
+    double get_med_err1_l();
+    double get_med_err1_r();
     double get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg);
     double get_avg_dist0_l(int amount_to_avg);
     double get_avg_dist0_r(int amount_to_avg);

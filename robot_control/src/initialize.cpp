@@ -21,9 +21,9 @@ bool Initialize::runProc()
         unknownPoseManeuvers.at(0).driveDistance = -0.3;
         unknownPoseManeuvers.at(0).turnAngle = 0.0;
         unknownPoseManeuvers.at(1).driveDistance = 0.0;
-        unknownPoseManeuvers.at(1).turnAngle = 10.0;
+        unknownPoseManeuvers.at(1).turnAngle = -10.0;
         unknownPoseManeuvers.at(2).driveDistance = 0.0;
-        unknownPoseManeuvers.at(2).turnAngle = -10.0;
+        unknownPoseManeuvers.at(2).turnAngle = 10.0;
         resetQueueEmptyCondition();
         break;
     case _exec_:
@@ -34,6 +34,7 @@ bool Initialize::runProc()
         switch(stage)
         {
         case _startTimer:
+            ROS_INFO("_startTimer");
             startupTime = ros::Time::now().toSec();
             performFullPoseUpdate = true;
             stage = _checkFullPose;
@@ -41,6 +42,7 @@ bool Initialize::runProc()
         case _checkFullPose:
             if(robotStatus.initialFullPoseFound)
             {
+                ROS_INFO("initial full pose found");
                 if(moderateQualityInitPoseFound)
                 {
                     xPosToUse = moderateQualityInitX;
@@ -56,12 +58,12 @@ bool Initialize::runProc()
                     if(headingToUse>180.0) headingToUse -= 360.0;
                 }
                 performAManeuver = knownPositionCheckManeuver();
-                if(raiseScoopFullyBeforeManeuver) sendRaiseArm();
+                if(raiseScoopFullyBeforeManeuver) sendRaiseArm(false);
                 if(performAManeuver)
                 {
                     if(driveDeltaDistance>0.0) sendDriveRel(driveDeltaDistance, rotateDeltaAngle, false, 0.0, false, false);
                     else sendDriveRel(fabs(driveDeltaDistance), rotateDeltaAngle, false, 0.0, false, true);
-                    if(!raiseScoopFullyBeforeManeuver) sendRaiseArm();
+                    if(!raiseScoopFullyBeforeManeuver) sendRaiseArm(false);
                 }
                 stage = _moveActuator;
                 if(robotStatus.fullPoseFound) nextStage = _completeInit;
@@ -69,8 +71,10 @@ bool Initialize::runProc()
             }
             else if((ros::Time::now().toSec() - startupTime) > waitForFullPoseTime)
             {
+                ROS_INFO("check full pose timeout");
                 if(bucketRaised)
                 {
+                    ROS_INFO("lower bucket and perform maneuver");
                     sendLowerBucket();
                     bucketRaised = false;
                     driveDeltaDistance = unknownPoseManeuvers.at(badInitPoseManeuverToPerform).driveDistance;
@@ -80,6 +84,7 @@ bool Initialize::runProc()
                 }
                 else
                 {
+                    ROS_INFO("raise bucket");
                     sendRaiseBucket();
                     bucketRaised = true;
                 }
@@ -89,6 +94,7 @@ bool Initialize::runProc()
             else stage = _checkFullPose;
             break;
         case _moveActuator:
+            ROS_INFO("move actuator");
             if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut) stage = nextStage;
             else stage = _moveActuator;
             break;

@@ -110,7 +110,7 @@ void NavigationFilter::run()
                     double rr_heading; //radians
                     double rr_x;
                     double rr_y;
-                    if(rr_heading_error < rr_heading_update_tolerance)
+                    if(rr_heading_error < rr_error_heading_update_tolerance) //todo, put check back
                     {
                         if(!rr_initial_pose_found || fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
                         {
