@@ -34,6 +34,15 @@ namespace td_navigation
     bool confirmed;
     int count;
     int selector;
+    bool successful_range;
+    int bad_ranges;
+
+    bool base_rad_0_malfunction;
+    bool base_rad_1_malfunction;
+    bool mob_rad_0_malfunction;
+    bool mob_rad_1_malfunction;
+
+    bool half_angle_left;
 
     int average_length;
     double base_station_distance;
@@ -54,7 +63,7 @@ namespace td_navigation
     ros::Publisher mob_rad_r_pub;
 
     ros::Publisher rhp_pub;
-    
+
     ros::Publisher status_pub;
 
     ros::Publisher aa_p;
@@ -82,6 +91,7 @@ namespace td_navigation
     double get_med_err0_r();
     double get_med_err1_l();
     double get_med_err1_r();
+    double get_std_dev(std::vector< std::vector< double> >& distances);
     double get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg);
     double get_avg_dist0_l(int amount_to_avg);
     double get_avg_dist0_r(int amount_to_avg);
@@ -93,7 +103,7 @@ namespace td_navigation
     double get_current_pos_y();
     void update_count();
     double smart_atan(double adj, double opp);
-    int run();
+    int run_full_pose();
     int run_half_pose();
 
 
