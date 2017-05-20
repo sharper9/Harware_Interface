@@ -31,7 +31,8 @@ namespace td_navigation
            int robot_length_offset_val, int mob_rad_dist_value);
 
     bool position_init;
-    bool confirmed;
+    bool request_confirmed;
+    bool request_failed;
     int count;
     int selector;
     bool successful_range;

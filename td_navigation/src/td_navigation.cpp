@@ -11,7 +11,8 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
                               int robot_length_offset_val, int mob_rad_dist_value)
 {
   position_init = false;
-  confirmed = 0;
+  request_confirmed = 0;
+  request_failed = false;
   count = 0;
   selector = 0 ;
   successful_range = false;
@@ -36,10 +37,11 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   robot_length_offset = robot_length_offset_val;
   mob_rad_dist = mob_rad_dist_value;
 
-  dist0_l.reserve(average_length);
-  dist0_r.reserve(average_length);
-  dist1_l.reserve(average_length);
-  dist1_r.reserve(average_length);
+  dist0_l.resize(2);
+  dist0_r.resize(2);
+  dist1_l.resize(2);
+  dist1_r.resize(2);
+  
 
   rad_nav.create_base_radio(0, -1.0 * base_station_distance/2.0, 0);
   rad_nav.create_base_radio(0, base_station_distance/2.0, 0);
@@ -85,39 +87,43 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
   int timeout = 0;
 
   //TODO: change back to about 5000
-  ros::Rate loop_rate(5000);
-
-
-  while(!confirmed){
+  //ros::Rate loop_rate(5000);
     rr.radio_id_to_target = to;
     rad_pub.publish(rr);
-    while(!confirmed && wait < 100){
-      ros::spinOnce();
-      loop_rate.sleep();
-      wait ++;
+
+  while(!request_confirmed){
+    
+    ros::spinOnce();
+    if(request_failed == true){
+      rad_pub.publish(rr);
+      wait++;
     }
-    wait = 0;
-    if (timeout >= 10){
+    if(wait >= 20){
       return false;
     }
-    timeout++;
+   
   }
-  confirmed = false;
+  request_confirmed = false;
   return true;
 }
 
 int td_navigation::worker::add_distance(std::vector < std::vector<double> >& distances,
                                         double range, double error){
 
+    ROS_DEBUG("TEST 1");
   if(distances[0].size() < average_length){
+    ROS_DEBUG("TEST 2");
     distances[0].push_back(range);
     distances[1].push_back(error);
+    ROS_DEBUG("TEST 3");
     if(error >= base_station_distance/2){
       bad_ranges++;
     }
   }else{
     if(bad_ranges > 0 && error < base_station_distance/2){
+        ROS_DEBUG("TEST 4");
       for(int i = 0; i < distances[0].size(); i++){
+        ROS_DEBUG("TEST 4.%d", i);
         if(distances[1][i] >= base_station_distance/2){
           distances[0][i] = range;
           distances[1][i] = error;
@@ -135,11 +141,13 @@ void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedom
     //check if the radio was busy
     if (msg->busy == true){
         ROS_WARN("TDRR was busy");
+        request_failed = true;
         return;
     }
     //check if the radio range has failed
     if (msg->failed == true){
         ROS_WARN("TDRR request has failed!");
+        request_failed = true;
         return;
 
     }
@@ -152,7 +160,7 @@ void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedom
             ROS_INFO("Reading from Mob_0 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             add_distance(dist0_l, (double)msg->PRM, (double)msg->PRMError);
-            confirmed = true;
+            request_confirmed = true;
             return;
 
         //reading 1 to l
@@ -160,7 +168,7 @@ void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedom
           ROS_INFO("Reading from Mob_0 to Base_1");
           ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
           add_distance(dist0_r, msg->PRM, msg->PRMError);
-          confirmed = true;
+          request_confirmed = true;
           return;
 
         //no match
@@ -200,7 +208,7 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
             ROS_INFO("Reading from Mob_1 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             add_distance(dist1_l, msg->PRM, msg->PRMError);
-            confirmed = true;
+            request_confirmed = true;
             return;
 
       //reading 1 to r
@@ -208,7 +216,7 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
           ROS_INFO("Reading from Mob_1 to Base_1");
           ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
           add_distance(dist1_r, msg->PRM, msg->PRMError);
-          confirmed = true;
+          request_confirmed = true;
           return;
 
         //no match
@@ -249,10 +257,14 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
 
   td_navigation::Td_navigation_Status stat;
 
-  dist0_l.clear();
-  dist0_r.clear();
-  dist1_l.clear();
-  dist1_r.clear();
+  dist0_l[0].clear();
+  dist0_l[1].clear();
+  dist0_r[0].clear();
+  dist0_r[1].clear();
+  dist1_l[0].clear();
+  dist1_l[1].clear();
+  dist1_r[0].clear();
+  dist1_r[1].clear();
 
   average_length = req.average_length;
 
@@ -260,6 +272,8 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
 
   res.base_L_failure = base_rad_0_malfunction;
   res.base_R_failure = base_rad_1_malfunction;
+  res.mob_L_failure = mob_rad_0_malfunction;
+  res.mob_R_failure = mob_rad_1_malfunction;
 
   if(error_type == -1){
     res.triangulation_failure = true;
@@ -386,7 +400,7 @@ double td_navigation::worker::get_std_dev(std::vector< std::vector< double> >& d
   if(distances[0].size() == 0){
     return 0;
   }
-  return sum/distances[0].size();
+  return sqrt(sum/distances[0].size());
 }
 
 double td_navigation::worker::get_avg_error(std::vector< std::vector< double > >& error, int& amount_to_avg){
@@ -551,11 +565,11 @@ int td_navigation::worker::run_full_pose(){
   bool rad1_r_mal = false;
 
 
-  confirmed = false;
+  request_confirmed = false;
   selector = 0;
   int num = 0;
   count = 0;
-  while(num <= average_length + 20 || !(dist0_l[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) ){
     rr.msgID = count + selector;
     //range request and response from 104 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
@@ -572,7 +586,7 @@ int td_navigation::worker::run_full_pose(){
   bad_ranges = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 || !(dist0_r[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) ){
     rr.msgID = count + selector;
     //range request and response from 104 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
@@ -588,7 +602,7 @@ int td_navigation::worker::run_full_pose(){
   bad_ranges = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 || !(dist1_l[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) ){
     rr.msgID = count + selector;
     //range request and response from 105 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
@@ -604,7 +618,7 @@ int td_navigation::worker::run_full_pose(){
   bad_ranges = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 || !(dist1_r[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist1_r[0].size() == average_length && bad_ranges == 0) ){
     rr.msgID = count + selector;
     //range request and response from 105 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
@@ -689,7 +703,7 @@ int td_navigation::worker::run_half_pose(){
   rr.send_range_request = true;
 
 
-  confirmed = false;
+  request_confirmed = false;
   selector = 0;
   rr.msgID = count + selector;
   //range request and response from 104 to 101
@@ -739,7 +753,7 @@ int td_navigation::worker::run_half_pose(){
 
 
   }else {
-    ROS_DEBUG("Problem encountered with triangulation!");
+    ROS_ERROR("Problem encountered with triangulation!");
     return -1;
   }
 
@@ -771,7 +785,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1638.3, 101, 106, 0, 635, 546); // base = 736.6, robot width = 546, robot length = 635
+  td_navigation::worker worker(50, 1308.1, 101, 106, 0, 635, 550); // base = 736.6, robot width = 546, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;

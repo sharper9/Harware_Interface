@@ -14,6 +14,7 @@ hw_interface_plugin_timedomain::timedomain_serial::timedomain_serial()
 
     //enable automatic class metric collection.
     enableMetrics();
+    requestSentTime=ros::Time::now();
 }
 
 //this is called each time the plugin is enabled, before anything else of the plugin is called
@@ -89,9 +90,10 @@ bool hw_interface_plugin_timedomain::timedomain_serial::pluginStart()
 void hw_interface_plugin_timedomain::timedomain_serial::rosMsgCallback(const hw_interface_plugin_timedomain::Range_Request::ConstPtr &msg)
 {
     ROS_DEBUG_THROTTLE(2,"Timedomain callback");
-    if(!isRequestInProgress() && msg->send_range_request && (msg->radio_id_to_target >= 0))
+    if((!isRequestInProgress() || ((ros::Time::now().toSec() - requestSentTime.toSec()) > REQUEST_TIMEOUT)) && msg->send_range_request && (msg->radio_id_to_target >= 0))
     {
         ROS_DEBUG("Sending Range Request");
+        requestSentTime=ros::Time::now();
         requestInProgress = true;
         ranging_radio_types::Range_Request_t rangeRequest;
         rangeRequest.msg.sync = 0xA5A5;
