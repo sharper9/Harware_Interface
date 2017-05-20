@@ -14,7 +14,7 @@
 #include <hw_interface_plugin_timedomain/Range_Request.h>
 #include <hw_interface_plugin_timedomain/RCM_Range_Info.h>
 
-
+#define REQUEST_TIMEOUT 0.5 //seconds
 
 namespace hw_interface_plugin_timedomain {
 
@@ -46,6 +46,7 @@ namespace hw_interface_plugin_timedomain {
 
     private:
 
+        ros::Time requestSentTime;
         bool requestInProgress;
     };
 
