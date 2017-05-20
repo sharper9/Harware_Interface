@@ -1,0 +1,80 @@
+wait(500)
+
+maxEncCount=15500
+minEncCount=0
+minR1=-1000
+maxR1=1000
+minR2=minEncCount
+maxR2=maxEncCount
+positionTol=15
+coopTol=100
+kp=5	 'kp*10
+coopKp=7
+setcommand(_VAR,1,0)
+setcommand(_VAR,3,1)
+
+while 1
+	valToMap=getvalue(_VAR,1)
+	mappedVal=valToMap
+	
+	'print("\n\nmapped Value", mappedVal, "\n")
+	'print("left enc ",getvalue(_FEEDBK,1),"\n")
+	'print("right enc ",getvalue(_FEEDBK,2),"\n")
+	avgCount=(getvalue(_FEEDBK,1)+getvalue(_FEEDBK,2))/2
+	if(avgCount < minEncCount) then
+		setcommand(_VAR,2,-1000) 
+	elseif(avgCount > maxEncCount) then
+		setcommand(_VAR,2,1000)
+	else
+		setcommand(_VAR,2,avgCount)
+	end if
+	
+	'print("avg cunt ", avgCount, "\n")
+	if(abs((mappedVal-avgCount)) > positionTol) then
+		output=((mappedVal-avgCount)*10*kp)/10	
+	else
+		output=0
+	end if
+	'print("output ", output, "\n")
+	if(abs((getvalue(_FEEDBK,2)-getvalue(_FEEDBK,1))) > coopTol) then
+		coopOutput=((getvalue(_FEEDBK,2)-getvalue(_FEEDBK,1))*10*coopKp)/10
+	else
+		coopOutput=0
+	end if
+	
+	'print("coopOutput ", coopOutput, " ", abs(getvalue(_FEEDBK,2)-getvalue(_FEEDBK,1)), "\n")
+	if(coopOutput>600) then
+		coopOutput=600
+	elseif(coopOutput<-600) then
+		coopOutput=-600
+	end if
+	if(output>1000) then
+		output=1000
+	elseif(output<-1000) then
+		output=-1000
+	end if
+	
+	dirSign=getvalue(_VAR,1)/abs(getvalue(_VAR,1))
+	rightOut=output-(dirSign*(getvalue(_VAR,1)/abs(getvalue(_VAR,1))*coopOutput))
+	leftOut=output+(dirSign*(getvalue(_VAR,1)/abs(getvalue(_VAR,1))*coopOutput))
+	if(rightOut>1000) then
+		rightOut=1000
+	elseif(rightOut<-1000) then
+		rightOut=-1000
+	end if
+	if(leftOut>1000) then
+		leftOut=1000
+	elseif(leftOut<-1000) then
+		leftOut=-1000
+	end if
+	
+	if(getvalue(_VAR,3)) then
+		setcommand(_GO,1,leftOut)
+		setcommand(_GO,2,rightOut)
+	end if
+	
+	'print("coop Out ", coopOutput, "\n")
+	'print("Right Output ", rightOut, "\n")
+	'print("Left Output ", leftOut, "\n")
+	wait(20)
+end while
