@@ -115,6 +115,7 @@ include_directories(
  add_library(raise_bucket src/raise_bucket.cpp)
  add_library(lower_bucket src/lower_bucket.cpp)
  add_library(prepare_arm_bucket src/prepare_arm_bucket.cpp)
+ add_library(shake src/shake.cpp)
  add_library(drive_halt src/drive_halt.cpp)
  add_library(drive_straight src/drive_straight.cpp)
  add_library(drive_until_limit src/drive_until_limit.cpp)
@@ -137,6 +138,7 @@ include_directories(
  add_library(deposit_realign src/deposit_realign.cpp)
  add_library(deposit src/deposit.cpp)
  add_library(recover src/recover.cpp)
+ add_library(flip_back src/flip_back.cpp)
  add_library(pause src/pause.cpp)
 
 ## Declare a cpp executable
@@ -166,6 +168,7 @@ include_directories(
    raise_bucket
    lower_bucket
    prepare_arm_bucket
+   shake
    drive_halt
    drive_straight
    drive_until_limit
@@ -192,6 +195,7 @@ include_directories(
    deposit_realign
    deposit
    recover
+   flip_back
    pause
  )
 

@@ -1,6 +1,6 @@
-#include <robot_control/recover.h>
+#include <robot_control/flip_back.h>
 
-bool Recover::runProc()
+bool FlipBack::runProc()
 {
     switch(state)
     {
@@ -9,7 +9,9 @@ bool Recover::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        sendDriveRel(0.0, 360.0, false, 0.0, true, false);
+        sendRaiseArm(true);
+        sendDriveRel(flipBackDistanceToDrive, 0.0, false, 0.0, true, false);
+        sendPartiallyRaiseArm(true);
         state = _exec_;
         resetQueueEmptyCondition();
         break;
@@ -29,11 +31,7 @@ bool Recover::runProc()
         state = _init_;
         break;
     case _finish_:
-        recoverLockout = false;
-        stuck = false;
-        prevXPos = robotStatus.xPos;
-        prevYPos = robotStatus.yPos;
-        prevPosUnchangedTime = ros::Time::now().toSec();
+        flipBackLockout = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;

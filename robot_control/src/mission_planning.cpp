@@ -13,12 +13,15 @@ MissionPlanning::MissionPlanning()
     driveSpeedsPub = nh.advertise<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1);
     multiProcLockout = false;
     lockoutSum = 0;
+    recoverLockout = false;
+    flipBackLockout = false;
     initialized = false;
     atMineLocation = false;
     bucketFull = false;
     atDepositLocation = false;
     confirmedAtDepositLocation = false;
     stuck = false;
+    tippedOver = false;
     pauseStarted = false;
     robotStatus.pauseSwitch = true;
     execDequeEmpty = true;
@@ -30,6 +33,7 @@ MissionPlanning::MissionPlanning()
     depositRealign.reg(__depositRealign__);
     deposit.reg(__deposit__);
     recover.reg(__recover__);
+    flipBack.reg(__flipBack__);
     missionTime = 0.0;
     prevTime = ros::Time::now().toSec();
     timers[_queueEmptyTimer_] = new CataglyphisTimer<MissionPlanning>(&MissionPlanning::queueEmptyTimerCallback_, this);
@@ -61,12 +65,16 @@ MissionPlanning::MissionPlanning()
     moderateQualityInitY = 0.0;
     moderateQualityInitHeading = 0.0;
     badInitPoseManeuverToPerform = 0;
+    prevXPos = robotStatus.xPos;
+    prevYPos = robotStatus.yPos;
+    prevPosUnchangedTime = ros::Time::now().toSec();
     initializeDigPlanningMap_();
 }
 
 void MissionPlanning::run()
 {
     ROS_INFO_THROTTLE(3,"Mission Planning running...");
+    checkStuckCondition_();
     evalConditions_();
     ROS_DEBUG("robotStatus.pauseSwitch = %i",robotStatus.pauseSwitch);
     if(robotStatus.pauseSwitch) runPause_();
@@ -87,46 +95,58 @@ void MissionPlanning::evalConditions_()
     else
     {
         calcnumProcsBeingOrToBeExecOrRes_();
+        if(initialized && tippedOver && !flipBackLockout) // Flip Back
+        {
+            for(int i=0; i<NUM_PROC_TYPES; i++) procsToInterrupt[i] = procsBeingExecuted[i];
+            procsToInterrupt[__flipBack__] = false;
+            procsToExecute[__flipBack__] = true;
+            flipBackLockout = true;
+            ROS_INFO("to execute flipBack");
+        }
+        calcnumProcsBeingOrToBeExecOrRes_();
+        if(initialized && stuck && !recoverLockout && !tippedOver && !execInfoMsg.stopFlag && !execInfoMsg.turnFlag) // Recover
+        {
+            for(int i=0; i<NUM_PROC_TYPES; i++) procsToInterrupt[i] = procsBeingExecuted[i];
+            procsToInterrupt[__recover__] = false;
+            procsToExecute[__recover__] = true;
+            recoverLockout = true;
+            ROS_INFO("to execute recover");
+        }
+        calcnumProcsBeingOrToBeExecOrRes_();
         if(numProcsBeingOrToBeExecOrRes==0 && !initialized && !robotStatus.pauseSwitch) // Initialize
         {
             procsToExecute[__initialize__] = true;
             ROS_INFO("to execute initialize");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && !atMineLocation && !bucketFull && !atDepositLocation && !stuck) // DriveToDig
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && !atMineLocation && !bucketFull && !atDepositLocation && !stuck && !tippedOver) // DriveToDig
         {
             procsToExecute[__driveToDig__] = true;
             ROS_INFO("to execute driveToDig");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && atMineLocation && !bucketFull && !atDepositLocation && !stuck) // Mine
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && atMineLocation && !bucketFull && !atDepositLocation && !stuck && !tippedOver) // Mine
         {
             procsToExecute[__mine__] = true;
             ROS_INFO("to execute mine");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && !atDepositLocation && !stuck) // DriveToDeposit
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && !atDepositLocation && !stuck && !tippedOver) // DriveToDeposit
         {
             procsToExecute[__driveToDeposit__] = true;
             ROS_INFO("to execute driveToDeposit");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !confirmedAtDepositLocation && !stuck) // DepositRealign
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !confirmedAtDepositLocation && !stuck && !tippedOver) // DepositRealign
         {
             procsToExecute[__depositRealign__] = true;
             ROS_INFO("to execute depositRealign");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck) // Deposit
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck && !tippedOver) // Deposit
         {
             procsToExecute[__deposit__] = true;
             ROS_INFO("to execute deposit");
-        }
-        calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && stuck) // Recover
-        {
-            procsToExecute[__recover__] = true;
-            ROS_INFO("to execute recover");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
         if((numProcsBeingOrToBeExecOrRes==0 || numProcsToBeExecAndNotInterrupt>1) && initialized) // "Fallthrough" condition
@@ -169,6 +189,7 @@ void MissionPlanning::runProcedures_()
     depositRealign.run();
     deposit.run();
     recover.run();
+    flipBack.run();
 }
 
 void MissionPlanning::runPause_()
@@ -261,6 +282,41 @@ void MissionPlanning::initializeDigPlanningMap_()
             digPlanningMap.atIndex(i,j).headingUpperLimit = RAD2DEG*atan2(cornerPointY[1] - cellYPos, cornerPointX[1] - cellXPos);
         }
     }
+}
+
+void MissionPlanning::checkStuckCondition_()
+{
+    if(execInfoMsg.stopFlag)
+    {
+        stuck = false;
+        prevXPos = robotStatus.xPos;
+        prevYPos = robotStatus.yPos;
+        prevPosUnchangedTime = ros::Time::now().toSec();
+    }
+    else
+    {
+        if(hypot(robotStatus.xPos - prevXPos, robotStatus.yPos - prevYPos) > maxStuckDistance)
+        {
+            stuck = false;
+            prevXPos = robotStatus.xPos;
+            prevYPos = robotStatus.yPos;
+            prevPosUnchangedTime = ros::Time::now().toSec();
+        }
+        else if((ros::Time::now().toSec() - prevPosUnchangedTime) > maxStuckTime)
+        {
+            stuck = true;
+        }
+        else
+        {
+            stuck = false;
+        }
+    }
+}
+
+void MissionPlanning::checkTippedOverCondition_()
+{
+    if(fabs(robotStatus.pitchAngle) > tippedOverMaxPitchAngle) tippedOver = true;
+    else tippedOver = false;
 }
 
 void MissionPlanning::ExecActionEndedCallback_(const messages::ExecActionEnded::ConstPtr &msg)
