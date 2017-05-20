@@ -7,7 +7,7 @@ maxR1=1000
 minR2=minEncCount
 maxR2=maxEncCount
 kp=10	 'kp*10
-coopKp=1
+coopKp=50
 setcommand(_VAR,1,-1000)
 setcommand(_VAR,3,1)
 
