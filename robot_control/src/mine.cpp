@@ -12,6 +12,7 @@ bool Mine::runProc()
         for(int i=0; i<numDigsPerMine; i++)
         {
             sendDig();
+            sendShake();
         }
         finalSerialNum = serialNum;
         tooCloseToWallLatch.LE_Latch(0);

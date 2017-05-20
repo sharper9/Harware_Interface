@@ -17,7 +17,7 @@
 #include "bit_utils.h"
 
 #define DIG_MAP_RES 1.0
-#define DIG_MAP_X_LEN 7.163 // 7.38
+#define DIG_MAP_X_LEN 7.163 // 7.38 // TODO: set these numbers back for real arena size
 #define DIG_MAP_Y_LEN 3.78
 
 class MissionPlanningProcedureShare
@@ -45,6 +45,7 @@ public:
     static PROC_TYPES_T execLastProcType;
     static unsigned int execLastSerialNum;
     static bool recoverLockout;
+    static bool flipBackLockout;
     static bool queueEmptyTimedOut;
     static float distanceToDrive; // m
     static float angleToTurn; // deg
@@ -67,6 +68,9 @@ public:
     static float moderateQualityInitY;
     static float moderateQualityInitHeading;
     static int badInitPoseManeuverToPerform;
+    static float prevXPos;
+    static float prevYPos;
+    static double prevPosUnchangedTime;
     const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
     const float depositWaypointDistanceToleranceInit = 0.3; // m
@@ -81,11 +85,15 @@ public:
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 	const float mapYOffset = 1.94; // m
-	const float miningRegionMinXDistance = 4.35; // m (4.55)
+    const float miningRegionMinXDistance = 4.35; // m (4.55) // TODO: set these numbers back for real arena size
 	const float miningRegionTargetXDistance = 4.50; // m (4.65)
 	const float miningWallBufferDistance = 0.5; // m
     const float robotCenterToScoopLength = 1.0; // m
     const float baseStationDistance = 1.638; // m
+    const float maxStuckDistance = 0.5; // m
+    const double maxStuckTime = 4.0; // sec
+    const float flipBackDistanceToDrive = 0.3; // m
+    const float tippedOverMaxPitchAngle = 20.0; // deg
     const int numDigsPerMine = 3;
 };
 
@@ -118,6 +126,7 @@ bool MissionPlanningProcedureShare::confirmedAtDepositLocation;
 bool MissionPlanningProcedureShare::stuck;
 bool MissionPlanningProcedureShare::tippedOver;
 bool MissionPlanningProcedureShare::recoverLockout;
+bool MissionPlanningProcedureShare::flipBackLockout;
 bool MissionPlanningProcedureShare::queueEmptyTimedOut;
 float MissionPlanningProcedureShare::distanceToDrive; // m
 float MissionPlanningProcedureShare::angleToTurn; // deg
@@ -133,5 +142,8 @@ float MissionPlanningProcedureShare::moderateQualityInitX;
 float MissionPlanningProcedureShare::moderateQualityInitY;
 float MissionPlanningProcedureShare::moderateQualityInitHeading;
 int MissionPlanningProcedureShare::badInitPoseManeuverToPerform;
+float MissionPlanningProcedureShare::prevXPos;
+float MissionPlanningProcedureShare::prevYPos;
+double MissionPlanningProcedureShare::prevPosUnchangedTime;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

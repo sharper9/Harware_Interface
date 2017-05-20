@@ -31,6 +31,9 @@ bool Recover::runProc()
     case _finish_:
         recoverLockout = false;
         stuck = false;
+        prevXPos = robotStatus.xPos;
+        prevYPos = robotStatus.yPos;
+        prevPosUnchangedTime = ros::Time::now().toSec();
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;

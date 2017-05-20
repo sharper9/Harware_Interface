@@ -62,26 +62,6 @@ int Dig::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = ARM_RAISED;
-            step_ = _driveForward;
-            break;
-        case _driveForward:
-            taskToPush_ = _driveStraight_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = forwardAndBackUpDistance_;
-            pushTask(_armShake_);
-            step_ = _backUp;
-            break;
-        case _backUp:
-            taskToPush_ = _driveStraight_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = -forwardAndBackUpDistance_;
-            pushTask(_armShake_);
-            digCompleted_ = true;
-            break;
-        case _shake: // currently not used
-            taskToPush_ = _armShake_;
-            typeOfTaskPushed_ = __arm;
-            valueToPush_ = 0;
             digCompleted_ = true;
             break;
         }

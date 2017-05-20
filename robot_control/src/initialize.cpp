@@ -12,7 +12,7 @@ bool Initialize::runProc()
         state = _exec_;
         stage = _moveActuator;
         nextStage = _startTimer;
-        sendPartiallyRaiseArm();
+        sendPartiallyRaiseArm(false);
         initComplete = false;
         driveDeltaDistance = 0.2; // m
         rotateDeltaAngle = 15.0; // deg
