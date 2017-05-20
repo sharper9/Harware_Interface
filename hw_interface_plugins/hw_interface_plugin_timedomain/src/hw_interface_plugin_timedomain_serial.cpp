@@ -77,6 +77,9 @@ void hw_interface_plugin_timedomain::timedomain_serial::setInterfaceOptions()
 
 bool hw_interface_plugin_timedomain::timedomain_serial::pluginStart()
 {
+if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
+           ros::console::notifyLoggerLevelsChanged();
+        }
     ROS_INFO("Sending Config request");
     ranging_radio_types::GET_CONFIG_REQUEST_t configRequest;
     configRequest.msgType=GET_CONFIG_REQUEST_MSGTYPE;
@@ -93,6 +96,10 @@ void hw_interface_plugin_timedomain::timedomain_serial::rosMsgCallback(const hw_
     if((!isRequestInProgress() || ((ros::Time::now().toSec() - requestSentTime.toSec()) > REQUEST_TIMEOUT)) && msg->send_range_request && (msg->radio_id_to_target >= 0))
     {
         ROS_DEBUG("Sending Range Request");
+        if(isRequestInProgress() && ((ros::Time::now().toSec() - requestSentTime.toSec()) > REQUEST_TIMEOUT))
+        {
+            ROS_ERROR("Radio Exceeded Timeout, resetting in progress flag");
+        }
         requestSentTime=ros::Time::now();
         requestInProgress = true;
         ranging_radio_types::Range_Request_t rangeRequest;

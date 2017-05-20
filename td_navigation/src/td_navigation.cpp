@@ -4,8 +4,7 @@
 
 #define DEG_to_RAD 0.0174532925
 #define WT_VALUE 500
-
-
+#define REQUEST_TIMEOUT 0.5
 td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
                               int rad_L_val, int rad_R_val, int z_estimate_val,
                               int robot_length_offset_val, int mob_rad_dist_value)
@@ -83,22 +82,19 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
 
 
 bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
-  int wait = 0;
-  int timeout = 0;
+  
 
   //TODO: change back to about 5000
   //ros::Rate loop_rate(5000);
     rr.radio_id_to_target = to;
     rad_pub.publish(rr);
+    double time_sent = ros::Time::now().toSec();
+    
 
   while(!request_confirmed){
     
     ros::spinOnce();
-    if(request_failed == true){
-      rad_pub.publish(rr);
-      wait++;
-    }
-    if(wait >= 20){
+    if(ros::Time::now().toSec() - time_sent > REQUEST_TIMEOUT){
       return false;
     }
    
@@ -110,20 +106,20 @@ bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedom
 int td_navigation::worker::add_distance(std::vector < std::vector<double> >& distances,
                                         double range, double error){
 
-    ROS_DEBUG("TEST 1");
+    
   if(distances[0].size() < average_length){
-    ROS_DEBUG("TEST 2");
+    
     distances[0].push_back(range);
     distances[1].push_back(error);
-    ROS_DEBUG("TEST 3");
+    
     if(error >= base_station_distance/2){
       bad_ranges++;
     }
   }else{
     if(bad_ranges > 0 && error < base_station_distance/2){
-        ROS_DEBUG("TEST 4");
+      
       for(int i = 0; i < distances[0].size(); i++){
-        ROS_DEBUG("TEST 4.%d", i);
+        
         if(distances[1][i] >= base_station_distance/2){
           distances[0][i] = range;
           distances[1][i] = error;
@@ -563,20 +559,26 @@ int td_navigation::worker::run_full_pose(){
   bool rad0_r_mal = false;
   bool rad1_l_mal = false;
   bool rad1_r_mal = false;
+  
+  int doom_count = 0;
 
 
   request_confirmed = false;
   selector = 0;
   int num = 0;
   count = 0;
-  while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
     rr.msgID = count + selector;
     //range request and response from 104 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
       //call a function to tell about the malfunction
       ROS_DEBUG("Mob_L Base_L didn't respond in time!");
       rad0_l_mal = true;
+      doom_count++;
+      continue;
     }
+    rad0_l_mal = false;
+    doom_count = 0;
     num++;
     update_count();
   }
@@ -586,14 +588,17 @@ int td_navigation::worker::run_full_pose(){
   bad_ranges = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
     rr.msgID = count + selector;
     //range request and response from 104 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
       //call a function to tell about the malfunction
       ROS_DEBUG("Mob_L Base_R didn't responsd in time!");
       rad0_r_mal = true;
+      doom_count++;
+      continue;
     }
+    rad0_r_mal = false;
     num++;
     update_count();
   }
@@ -602,14 +607,17 @@ int td_navigation::worker::run_full_pose(){
   bad_ranges = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
     rr.msgID = count + selector;
     //range request and response from 105 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
       //call a function to tell about the malfunction
       ROS_DEBUG("Mob_R Base_L didn't responsd in time!");
       rad1_l_mal = true;
+      doom_count++;
+      continue;
     }
+    rad1_l_mal = false;
     num++;
     update_count();
   }
@@ -618,14 +626,17 @@ int td_navigation::worker::run_full_pose(){
   bad_ranges = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 && !(dist1_r[0].size() == average_length && bad_ranges == 0) ){
+  while(num <= average_length + 20 && !(dist1_r[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
     rr.msgID = count + selector;
     //range request and response from 105 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
       //call a function to tell about the malfunction
       ROS_DEBUG("Mob_R Base_R didn't responsd in time!");
       rad1_r_mal = true;
+      doom_count++;
+      continue;
     }
+    rad1_l_mal = false;
     num++;
     update_count();
   }
