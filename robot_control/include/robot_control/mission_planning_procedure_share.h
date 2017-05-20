@@ -44,7 +44,7 @@ public:
     static bool execDequeEmpty;
     static PROC_TYPES_T execLastProcType;
     static unsigned int execLastSerialNum;
-    static bool recoverCondition;
+    static bool recoverLockout;
     static bool queueEmptyTimedOut;
     static float distanceToDrive; // m
     static float angleToTurn; // deg
@@ -57,6 +57,7 @@ public:
     static bool atDepositLocation;
     static bool confirmedAtDepositLocation;
     static bool stuck;
+    static bool tippedOver;
 	static IRLGridMap<PlanningMapData> digPlanningMap;
     static float depositWaypointDistanceTolerance;
     static float depositWaypointAngleTolerance;
@@ -115,7 +116,8 @@ bool MissionPlanningProcedureShare::bucketFull;
 bool MissionPlanningProcedureShare::atDepositLocation;
 bool MissionPlanningProcedureShare::confirmedAtDepositLocation;
 bool MissionPlanningProcedureShare::stuck;
-bool MissionPlanningProcedureShare::recoverCondition;
+bool MissionPlanningProcedureShare::tippedOver;
+bool MissionPlanningProcedureShare::recoverLockout;
 bool MissionPlanningProcedureShare::queueEmptyTimedOut;
 float MissionPlanningProcedureShare::distanceToDrive; // m
 float MissionPlanningProcedureShare::angleToTurn; // deg

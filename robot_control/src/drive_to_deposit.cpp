@@ -31,7 +31,8 @@ bool DriveToDeposit::runProc()
     case _interrupt_:
         procsBeingExecuted[procType] = false;
         procsToInterrupt[procType] = false;
-        state = _exec_;
+        sendDequeClearAll();
+        state = _init_;
         break;
     case _finish_:
         atDepositLocation = true;

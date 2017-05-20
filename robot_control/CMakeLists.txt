@@ -137,6 +137,7 @@ include_directories(
  add_library(deposit_realign src/deposit_realign.cpp)
  add_library(deposit src/deposit.cpp)
  add_library(recover src/recover.cpp)
+ add_library(flip_back src/flip_back.cpp)
  add_library(pause src/pause.cpp)
 
 ## Declare a cpp executable
@@ -192,6 +193,7 @@ include_directories(
    deposit_realign
    deposit
    recover
+   flip_back
    pause
  )
 

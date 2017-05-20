@@ -13,12 +13,14 @@ MissionPlanning::MissionPlanning()
     driveSpeedsPub = nh.advertise<robot_control::DriveSpeeds>("/control/missionplanning/drivespeeds", 1);
     multiProcLockout = false;
     lockoutSum = 0;
+    recoverLockout = false;
     initialized = false;
     atMineLocation = false;
     bucketFull = false;
     atDepositLocation = false;
     confirmedAtDepositLocation = false;
     stuck = false;
+    tippedOver = false;
     pauseStarted = false;
     robotStatus.pauseSwitch = true;
     execDequeEmpty = true;
@@ -87,46 +89,48 @@ void MissionPlanning::evalConditions_()
     else
     {
         calcnumProcsBeingOrToBeExecOrRes_();
+        if(initialized && stuck && !recoverLockout && !tippedOver && !execInfoMsg.stopFlag && !execInfoMsg.turnFlag) // Recover
+        {
+            for(int i=0; i<NUM_PROC_TYPES; i++) procsToInterrupt[i] = procsBeingExecuted[i];
+            procsToExecute[__recover__] = true;
+            recoverLockout = true;
+            ROS_INFO("to execute recover");
+        }
+        calcnumProcsBeingOrToBeExecOrRes_();
         if(numProcsBeingOrToBeExecOrRes==0 && !initialized && !robotStatus.pauseSwitch) // Initialize
         {
             procsToExecute[__initialize__] = true;
             ROS_INFO("to execute initialize");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && !atMineLocation && !bucketFull && !atDepositLocation && !stuck) // DriveToDig
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && !atMineLocation && !bucketFull && !atDepositLocation && !stuck && !tippedOver) // DriveToDig
         {
             procsToExecute[__driveToDig__] = true;
             ROS_INFO("to execute driveToDig");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && atMineLocation && !bucketFull && !atDepositLocation && !stuck) // Mine
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && atMineLocation && !bucketFull && !atDepositLocation && !stuck && !tippedOver) // Mine
         {
             procsToExecute[__mine__] = true;
             ROS_INFO("to execute mine");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && !atDepositLocation && !stuck) // DriveToDeposit
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && !atDepositLocation && !stuck && !tippedOver) // DriveToDeposit
         {
             procsToExecute[__driveToDeposit__] = true;
             ROS_INFO("to execute driveToDeposit");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !confirmedAtDepositLocation && !stuck) // DepositRealign
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && !confirmedAtDepositLocation && !stuck && !tippedOver) // DepositRealign
         {
             procsToExecute[__depositRealign__] = true;
             ROS_INFO("to execute depositRealign");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck) // Deposit
+        if(numProcsBeingOrToBeExecOrRes==0 && initialized && bucketFull && atDepositLocation && confirmedAtDepositLocation && !stuck && !tippedOver) // Deposit
         {
             procsToExecute[__deposit__] = true;
             ROS_INFO("to execute deposit");
-        }
-        calcnumProcsBeingOrToBeExecOrRes_();
-        if(numProcsBeingOrToBeExecOrRes==0 && initialized && stuck) // Recover
-        {
-            procsToExecute[__recover__] = true;
-            ROS_INFO("to execute recover");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
         if((numProcsBeingOrToBeExecOrRes==0 || numProcsToBeExecAndNotInterrupt>1) && initialized) // "Fallthrough" condition
