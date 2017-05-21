@@ -37,6 +37,9 @@ namespace td_navigation
     int selector;
     bool successful_range;
     int bad_ranges;
+    
+    double half_dist_0;
+    double half_dist_1;
 
     bool base_rad_0_malfunction;
     bool base_rad_1_malfunction;

@@ -104,7 +104,7 @@ void NavigationFilter::run()
                 packInfoMsgAndPub();
                 ros::spinOnce();
                 ROS_INFO("Calling TD Nav Service");
-                if(ranging_radio_client.call(rr_srv))
+                if(ranging_radio_client.call(rr_srv) && !rr_srv.response.fail)
                 {
                     double rr_heading_error = rr_srv.response.max_angle_error; //radians
                     double rr_heading; //radians

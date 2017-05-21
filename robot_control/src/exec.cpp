@@ -34,6 +34,7 @@ Exec::Exec()
         actionPool_[_raiseBucket][j] = new RaiseBucket;
         actionPool_[_lowerBucket][j] = new LowerBucket;
         actionPool_[_prepareArmBucket][j] = new PrepareArmBucket;
+        actionPool_[_shake][j] = new Shake;
 	}
 	for(int k=0; k<NUM_TASKS; k++)
 	{

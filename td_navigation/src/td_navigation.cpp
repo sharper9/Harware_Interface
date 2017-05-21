@@ -16,6 +16,9 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   selector = 0 ;
   successful_range = false;
   bad_ranges = 0;
+  
+  half_dist_0 = 0;
+  half_dist_1 = 0;
 
   base_rad_0_malfunction = false;
   base_rad_1_malfunction = false;
@@ -185,13 +188,11 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
     //check if the radio was busy
     if (msg->busy == true){
         ROS_WARN("TDRR was busy");
-        return;
     }
     //check if the radio range has failed
     if (msg->failed == true){
         ROS_WARN("TDRR request has failed!");
         return;
-
     }
 
 
@@ -310,6 +311,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   }
   ROS_DEBUG("max_angle_error: %lf", max_angle_error);
   res.max_angle_error = max_angle_error;
+    ROS_INFO("x:%lf, y:%lf\nhead:%lf, bear:%lf\nmob_rad_0_l_dev:%lf, mob_rad_0_r_dev:%lf\nmob_rad_1_l_dev:%lf, mob_rad_1_r_dev%lf\nmax_angle_error:%lf", x/1000,y/1000,heading,bearing,mob_rad_0_l_dev, mob_rad_0_r_dev, mob_rad_1_l_dev, mob_rad_1_r_dev, max_angle_error);
   res.fail = false;//this has been changed to always true
 
   //TODO: This is very simple, should use radio errors make better decisions
@@ -561,6 +563,7 @@ int td_navigation::worker::run_full_pose(){
   bool rad1_r_mal = false;
   
   int doom_count = 0;
+  bool failed = false;
 
 
   request_confirmed = false;
@@ -575,12 +578,15 @@ int td_navigation::worker::run_full_pose(){
       ROS_DEBUG("Mob_L Base_L didn't respond in time!");
       rad0_l_mal = true;
       doom_count++;
-      continue;
+      failed = true;
     }
+    if(!failed){
     rad0_l_mal = false;
     doom_count = 0;
     num++;
     update_count();
+    }
+    failed = false;
   }
 
 
@@ -596,11 +602,15 @@ int td_navigation::worker::run_full_pose(){
       ROS_DEBUG("Mob_L Base_R didn't responsd in time!");
       rad0_r_mal = true;
       doom_count++;
-      continue;
+      failed = true;
     }
-    rad0_r_mal = false;
-    num++;
-    update_count();
+    if(!failed){
+      rad0_r_mal = false;
+      doom_count = 0;
+      num++;
+      update_count();
+    }
+    failed = false;
   }
 
   selector = 2;
@@ -615,11 +625,16 @@ int td_navigation::worker::run_full_pose(){
       ROS_DEBUG("Mob_R Base_L didn't responsd in time!");
       rad1_l_mal = true;
       doom_count++;
-      continue;
+      failed = true;
     }
-    rad1_l_mal = false;
-    num++;
-    update_count();
+    if(!failed){
+      rad1_l_mal = false;
+      doom_count = 0;
+      num++;
+      update_count();
+    }
+    failed = false;
+
   }
 
   selector = 3;
@@ -634,11 +649,16 @@ int td_navigation::worker::run_full_pose(){
       ROS_DEBUG("Mob_R Base_R didn't responsd in time!");
       rad1_r_mal = true;
       doom_count++;
-      continue;
+      failed = true;
     }
-    rad1_l_mal = false;
-    num++;
-    update_count();
+    if(!failed){
+     rad1_l_mal = false;
+      doom_count = 0;
+      num++;
+      update_count();
+    }
+    failed = false;
+ 
   }
 
   base_rad_0_malfunction = rad0_l_mal && rad1_l_mal;
@@ -707,6 +727,15 @@ return 0;
 }
 
 int td_navigation::worker::run_half_pose(){
+
+  dist0_l[0].clear();
+  dist0_l[1].clear();
+  dist0_r[0].clear();
+  dist0_r[1].clear();
+  dist1_l[0].clear();
+  dist1_l[1].clear();
+  dist1_r[0].clear();
+  dist1_r[1].clear();
 
   ROS_INFO("Count: %d", count);
 
@@ -796,7 +825,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1308.1, 101, 106, 0, 635, 550); // base = 736.6, robot width = 546, robot length = 635
+  td_navigation::worker worker(50, 727.075, 101, 106, 0, 635, 559); // base = 736.6, robot width = 546, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;
