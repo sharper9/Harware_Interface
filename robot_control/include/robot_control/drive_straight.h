@@ -30,6 +30,7 @@ private:
 	float headingErrorSpeedI_;
 	unsigned int timeoutValue_;
 	unsigned int timeoutCounter_;
+    unsigned int timeoutMinValue_;
 	int taskEnded_;
 	const float vMin_ = 0.03; // m/s
 	const float kpV_ = 2.0; // m/(s*m)
