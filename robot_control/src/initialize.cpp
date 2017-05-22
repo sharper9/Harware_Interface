@@ -5,75 +5,75 @@ Initialize::Initialize()
     armRaised = false;
     actionList.resize(NUM_INIT_ACTIONS);
     // 0
-    actionList.at(0).emplace_back(InitAction(__straight, 0.3));
-    actionList.at(0).emplace_back(InitAction(__turn, -10.0));
+    actionList.at(0).push_back(InitAction(__straight, 0.3));
+    actionList.at(0).push_back(InitAction(__turn, -10.0));
 
     // 1
-    actionList.at(1).emplace_back(InitAction(__armRaise));
-    actionList.at(1).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(1).push_back(InitAction(__armRaise));
+    actionList.at(1).push_back(InitAction(__straight, 0.3));
 
     // 2
-    actionList.at(2).emplace_back(InitAction(__turn, 10.0));
+    actionList.at(2).push_back(InitAction(__turn, 10.0));
 
     // 3
-    actionList.at(3).emplace_back(InitAction(__turn, 10.0));
-    actionList.at(3).emplace_back(InitAction(__straight, -0.3));
-    actionList.at(3).emplace_back(InitAction(__armRaise));
-    actionList.at(3).emplace_back(InitAction(__straight, 0.3));
-    actionList.at(3).emplace_back(InitAction(__turn, -20.0));
+    actionList.at(3).push_back(InitAction(__turn, 10.0));
+    actionList.at(3).push_back(InitAction(__straight, -0.3));
+    actionList.at(3).push_back(InitAction(__armRaise));
+    actionList.at(3).push_back(InitAction(__straight, 0.3));
+    actionList.at(3).push_back(InitAction(__turn, -20.0));
 
     // 4
-    actionList.at(4).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(4).push_back(InitAction(__straight, -0.3));
 
     // 5
-    actionList.at(5).emplace_back(InitAction(__turn, -10.0));
+    actionList.at(5).push_back(InitAction(__turn, -10.0));
 
     // 6
-    actionList.at(6).emplace_back(InitAction(__turn, -10.0));
-    actionList.at(6).emplace_back(InitAction(__straight, -0.3));
-    actionList.at(6).emplace_back(InitAction(__armRaise));
-    actionList.at(6).emplace_back(InitAction(__straight, 0.3));
-    actionList.at(6).emplace_back(InitAction(__turn, 20.0));
+    actionList.at(6).push_back(InitAction(__turn, -10.0));
+    actionList.at(6).push_back(InitAction(__straight, -0.3));
+    actionList.at(6).push_back(InitAction(__armRaise));
+    actionList.at(6).push_back(InitAction(__straight, 0.3));
+    actionList.at(6).push_back(InitAction(__turn, 20.0));
 
     // 7
-    actionList.at(7).emplace_back(InitAction(__armRaise));
-    actionList.at(7).emplace_back(InitAction(__turn, 10.0));
+    actionList.at(7).push_back(InitAction(__armRaise));
+    actionList.at(7).push_back(InitAction(__turn, 10.0));
 
     // 8
-    actionList.at(8).emplace_back(InitAction(__armRaise));
-    actionList.at(8).emplace_back(InitAction(__turn, 10.0));
-    actionList.at(8).emplace_back(InitAction(__straight, -0.3));
-    actionList.at(8).emplace_back(InitAction(__turn, -20.0));
-    actionList.at(8).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(8).push_back(InitAction(__armRaise));
+    actionList.at(8).push_back(InitAction(__turn, 10.0));
+    actionList.at(8).push_back(InitAction(__straight, -0.3));
+    actionList.at(8).push_back(InitAction(__turn, -20.0));
+    actionList.at(8).push_back(InitAction(__straight, 0.3));
 
     // 9
-    actionList.at(9).emplace_back(InitAction(__armRaise));
-    actionList.at(9).emplace_back(InitAction(__turn, -10.0));
+    actionList.at(9).push_back(InitAction(__armRaise));
+    actionList.at(9).push_back(InitAction(__turn, -10.0));
 
     // 10
-    actionList.at(10).emplace_back(InitAction(__armRaise));
-    actionList.at(10).emplace_back(InitAction(__turn, -10.0));
-    actionList.at(10).emplace_back(InitAction(__straight, -0.3));
-    actionList.at(10).emplace_back(InitAction(__turn, 20.0));
-    actionList.at(10).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(10).push_back(InitAction(__armRaise));
+    actionList.at(10).push_back(InitAction(__turn, -10.0));
+    actionList.at(10).push_back(InitAction(__straight, -0.3));
+    actionList.at(10).push_back(InitAction(__turn, 20.0));
+    actionList.at(10).push_back(InitAction(__straight, 0.3));
 
     // 11
-    actionList.at(11).emplace_back(InitAction(__straight, 0.3));
-    actionList.at(11).emplace_back(InitAction(__turn, 10.0));
+    actionList.at(11).push_back(InitAction(__straight, 0.3));
+    actionList.at(11).push_back(InitAction(__turn, 10.0));
 
     // 12
-    actionList.at(12).emplace_back(InitAction(__straight, -0.3));
-    actionList.at(12).emplace_back(InitAction(__turn, 45.0));
+    actionList.at(12).push_back(InitAction(__straight, -0.3));
+    actionList.at(12).push_back(InitAction(__turn, 45.0));
 
     // 13
-    actionList.at(13).emplace_back(InitAction(__armRaise));
-    actionList.at(13).emplace_back(InitAction(__turn, -10.0));
-    actionList.at(13).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(13).push_back(InitAction(__armRaise));
+    actionList.at(13).push_back(InitAction(__turn, -10.0));
+    actionList.at(13).push_back(InitAction(__straight, -0.3));
 
     // 14
-    actionList.at(14).emplace_back(InitAction(__armRaise));
-    actionList.at(14).emplace_back(InitAction(__turn, 10.0));
-    actionList.at(14).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(14).push_back(InitAction(__armRaise));
+    actionList.at(14).push_back(InitAction(__turn, 10.0));
+    actionList.at(14).push_back(InitAction(__straight, -0.3));
 }
 
 bool Initialize::runProc()
@@ -112,17 +112,13 @@ bool Initialize::runProc()
             if(robotStatus.initialFullPoseFound)
             {
                 ROS_INFO("initial full pose found");
-                // TODO: finish this
-                if(raiseScoopFullyBeforeManeuver) sendRaiseArm(false);
+                pushInitActionsToPerform();
                 if(performAManeuver)
                 {
-                    if(driveDeltaDistance>0.0) sendDriveRel(driveDeltaDistance, rotateDeltaAngle, false, 0.0, false, false);
-                    else sendDriveRel(fabs(driveDeltaDistance), rotateDeltaAngle, false, 0.0, false, true);
-                    if(!raiseScoopFullyBeforeManeuver) sendRaiseArm(false);
+                    stage = _moveActuator;
+                    nextStage = _startTimer;
                 }
-                stage = _moveActuator;
-                if(robotStatus.fullPoseFound) nextStage = _completeInit;
-                else nextStage = _startTimer;
+                else stage = _completeInit;
             }
             else if((ros::Time::now().toSec() - startupTime) > waitForFullPoseTime)
             {
@@ -132,19 +128,22 @@ bool Initialize::runProc()
                     ROS_INFO("lower bucket and perform maneuver");
                     sendLowerBucket();
                     bucketRaised = false;
-                    driveDeltaDistance = unknownPoseManeuvers.at(badInitPoseManeuverToPerform).driveDistance;
-                    rotateDeltaAngle = unknownPoseManeuvers.at(badInitPoseManeuverToPerform).turnAngle;
-                    if(driveDeltaDistance>0.0) sendDriveRel(driveDeltaDistance, rotateDeltaAngle, false, 0.0, false, false);
-                    else sendDriveRel(fabs(driveDeltaDistance), rotateDeltaAngle, false, 0.0, false, true);
+                    pushInitActionsToPerform();
+                    if(performAManeuver)
+                    {
+                        stage = _moveActuator;
+                        nextStage = _startTimer;
+                    }
+                    else stage = _completeInit;
                 }
                 else
                 {
                     ROS_INFO("raise bucket");
-                    sendRaiseBucket();
+                    sendPartiallyRaiseBucket();
                     bucketRaised = true;
+                    stage = _moveActuator;
+                    nextStage = _startTimer;
                 }
-                stage = _moveActuator;
-                nextStage = _startTimer;
             }
             else stage = _checkFullPose;
             break;
@@ -176,6 +175,22 @@ bool Initialize::runProc()
     }
 }
 
+void Initialize::pushInitActionsToPerform()
+{
+    if(initManeuverToPerform==NUM_INIT_ACTIONS)
+    {
+        performAManeuver = false;
+    }
+    else
+    {
+        performAManeuver = true;
+        for(int i=0; i<actionList.at(initManeuverToPerform).size(); i++)
+        {
+            actionList.at(initManeuverToPerform).at(i).pushAction();
+        }
+    }
+}
+
 Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn)
 {
     actionType = actionTypeIn;
@@ -186,4 +201,32 @@ Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parame
 {
     actionType = actionTypeIn;
     parameter = parameterIn;
+}
+
+void Initialize::InitAction::pushAction()
+{
+    switch(actionType)
+    {
+    case __straight:
+        if(parameter>=0.0) sendDriveRel(parameter, 0.0, false, 0.0, false, false);
+        else sendDriveRel(parameter, 0.0, false, 0.0, false, true);
+        break;
+    case __turn:
+        sendDriveRel(0.0, parameter, false, 0.0, false, false);
+        break;
+    case __armRaise:
+        sendRaiseArm(false);
+        break;
+    case __bucketRaisePartially:
+        sendPartiallyRaiseBucket();
+        break;
+    case __bucketLower:
+        sendLowerBucket();
+        break;
+    }
+}
+
+bool Initialize::InitAction::runProc()
+{
+    return true;
 }

@@ -64,7 +64,7 @@ MissionPlanning::MissionPlanning()
     moderateQualityInitX = 1.0;
     moderateQualityInitY = 0.0;
     moderateQualityInitHeading = 0.0;
-    badInitPoseManeuverToPerform = 0;
+    initManeuverToPerform = 0;
     prevXPos = robotStatus.xPos;
     prevYPos = robotStatus.yPos;
     prevPosUnchangedTime = ros::Time::now().toSec();
@@ -350,7 +350,7 @@ void MissionPlanning::pauseCallback_(const hw_interface_plugin_agent::pause::Con
 
 void MissionPlanning::tdNavStatusCallback_(const td_navigation::Td_navigation_Status::ConstPtr &msg)
 {
-    badInitPoseManeuverToPerform = msg->backup_left_right;
+    initManeuverToPerform = msg->initialization_maneuver;
 }
 
 bool MissionPlanning::controlCallback_(messages::MissionPlanningControl::Request &req, messages::MissionPlanningControl::Response &res)

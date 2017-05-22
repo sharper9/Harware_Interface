@@ -10,7 +10,7 @@ public:
     // Methods
     Initialize();
     bool runProc();
-    bool knownPositionCheckManeuver();
+    void pushInitActionsToPerform();
     // Members
     double startupTime;
     enum INITIALIZE_STAGE_T {_startTimer, _checkFullPose, _moveActuator, _completeInit} stage;
@@ -30,7 +30,7 @@ public:
 
     bool armRaised;
     enum INIT_ACTION_TYPE_T {__straight, __turn, __armRaise, __bucketRaisePartially, __bucketLower};
-    class InitAction
+    class InitAction : public Procedure
     {
     public:
         InitAction(INIT_ACTION_TYPE_T actionTypeIn);
@@ -38,6 +38,7 @@ public:
         void pushAction();
         float parameter;
         INIT_ACTION_TYPE_T actionType;
+        bool runProc();
     };
     std::vector<std::vector<InitAction>> actionList;
 };
