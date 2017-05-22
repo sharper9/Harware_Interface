@@ -223,6 +223,9 @@ void Initialize::InitAction::pushAction()
     case __bucketLower:
         sendLowerBucket();
         break;
+    default:
+        ROS_ERROR("Initialize, InitAction, invalid action type pushed = %i",static_cast<int>(actionType));
+        break;
     }
 }
 
