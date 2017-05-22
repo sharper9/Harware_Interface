@@ -2,10 +2,13 @@
 #define INITIALIZE_H
 #include "procedure.h"
 
+#define NUM_INIT_ACTIONS 15
+
 class Initialize : public Procedure
 {
 public:
     // Methods
+    Initialize();
     bool runProc();
     bool knownPositionCheckManeuver();
     // Members
@@ -24,6 +27,19 @@ public:
     float headingToUse;
     bool performAManeuver;
     bool raiseScoopFullyBeforeManeuver;
+
+    bool armRaised;
+    enum INIT_ACTION_TYPE_T {__straight, __turn, __armRaise, __bucketRaisePartially, __bucketLower};
+    class InitAction
+    {
+    public:
+        InitAction(INIT_ACTION_TYPE_T actionTypeIn);
+        InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn);
+        void pushAction();
+        float parameter;
+        INIT_ACTION_TYPE_T actionType;
+    };
+    std::vector<std::vector<InitAction>> actionList;
 };
 
 #endif // INITIALIZE_H

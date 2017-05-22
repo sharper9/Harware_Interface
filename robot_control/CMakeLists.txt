@@ -115,6 +115,7 @@ include_directories(
  add_library(raise_bucket src/raise_bucket.cpp)
  add_library(lower_bucket src/lower_bucket.cpp)
  add_library(prepare_arm_bucket src/prepare_arm_bucket.cpp)
+ add_library(partially_raise_bucket src/partially_raise_bucket.cpp)
  add_library(shake_action src/shake.cpp)
  add_library(drive_halt src/drive_halt.cpp)
  add_library(drive_straight src/drive_straight.cpp)
@@ -168,6 +169,7 @@ include_directories(
    raise_bucket
    lower_bucket
    prepare_arm_bucket
+   partially_raise_bucket
    shake_action
    drive_halt
    drive_straight

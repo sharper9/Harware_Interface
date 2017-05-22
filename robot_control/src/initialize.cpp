@@ -1,5 +1,81 @@
 #include <robot_control/initialize.h>
 
+Initialize::Initialize()
+{
+    armRaised = false;
+    actionList.resize(NUM_INIT_ACTIONS);
+    // 0
+    actionList.at(0).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(0).emplace_back(InitAction(__turn, -10.0));
+
+    // 1
+    actionList.at(1).emplace_back(InitAction(__armRaise));
+    actionList.at(1).emplace_back(InitAction(__straight, 0.3));
+
+    // 2
+    actionList.at(2).emplace_back(InitAction(__turn, 10.0));
+
+    // 3
+    actionList.at(3).emplace_back(InitAction(__turn, 10.0));
+    actionList.at(3).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(3).emplace_back(InitAction(__armRaise));
+    actionList.at(3).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(3).emplace_back(InitAction(__turn, -20.0));
+
+    // 4
+    actionList.at(4).emplace_back(InitAction(__straight, -0.3));
+
+    // 5
+    actionList.at(5).emplace_back(InitAction(__turn, -10.0));
+
+    // 6
+    actionList.at(6).emplace_back(InitAction(__turn, -10.0));
+    actionList.at(6).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(6).emplace_back(InitAction(__armRaise));
+    actionList.at(6).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(6).emplace_back(InitAction(__turn, 20.0));
+
+    // 7
+    actionList.at(7).emplace_back(InitAction(__armRaise));
+    actionList.at(7).emplace_back(InitAction(__turn, 10.0));
+
+    // 8
+    actionList.at(8).emplace_back(InitAction(__armRaise));
+    actionList.at(8).emplace_back(InitAction(__turn, 10.0));
+    actionList.at(8).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(8).emplace_back(InitAction(__turn, -20.0));
+    actionList.at(8).emplace_back(InitAction(__straight, 0.3));
+
+    // 9
+    actionList.at(9).emplace_back(InitAction(__armRaise));
+    actionList.at(9).emplace_back(InitAction(__turn, -10.0));
+
+    // 10
+    actionList.at(10).emplace_back(InitAction(__armRaise));
+    actionList.at(10).emplace_back(InitAction(__turn, -10.0));
+    actionList.at(10).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(10).emplace_back(InitAction(__turn, 20.0));
+    actionList.at(10).emplace_back(InitAction(__straight, 0.3));
+
+    // 11
+    actionList.at(11).emplace_back(InitAction(__straight, 0.3));
+    actionList.at(11).emplace_back(InitAction(__turn, 10.0));
+
+    // 12
+    actionList.at(12).emplace_back(InitAction(__straight, -0.3));
+    actionList.at(12).emplace_back(InitAction(__turn, 45.0));
+
+    // 13
+    actionList.at(13).emplace_back(InitAction(__armRaise));
+    actionList.at(13).emplace_back(InitAction(__turn, -10.0));
+    actionList.at(13).emplace_back(InitAction(__straight, -0.3));
+
+    // 14
+    actionList.at(14).emplace_back(InitAction(__armRaise));
+    actionList.at(14).emplace_back(InitAction(__turn, 10.0));
+    actionList.at(14).emplace_back(InitAction(__straight, -0.3));
+}
+
 bool Initialize::runProc()
 {
     switch(state)
@@ -17,13 +93,6 @@ bool Initialize::runProc()
         driveDeltaDistance = 0.2; // m
         rotateDeltaAngle = 15.0; // deg
         bucketRaised = false;
-        unknownPoseManeuvers.resize(3);
-        unknownPoseManeuvers.at(0).driveDistance = -0.3;
-        unknownPoseManeuvers.at(0).turnAngle = 0.0;
-        unknownPoseManeuvers.at(1).driveDistance = 0.0;
-        unknownPoseManeuvers.at(1).turnAngle = -10.0;
-        unknownPoseManeuvers.at(2).driveDistance = 0.0;
-        unknownPoseManeuvers.at(2).turnAngle = 10.0;
         resetQueueEmptyCondition();
         break;
     case _exec_:
@@ -43,21 +112,7 @@ bool Initialize::runProc()
             if(robotStatus.initialFullPoseFound)
             {
                 ROS_INFO("initial full pose found");
-                if(moderateQualityInitPoseFound)
-                {
-                    xPosToUse = moderateQualityInitX;
-                    yPosToUse = moderateQualityInitY;
-                    headingToUse = fmod(fmod(moderateQualityInitHeading,360.0)+360.0,360.0);
-                    if(headingToUse>180.0) headingToUse -= 360.0;
-                }
-                else
-                {
-                    xPosToUse = robotStatus.xPos;
-                    yPosToUse = robotStatus.yPos;
-                    headingToUse = fmod(fmod(robotStatus.heading,360.0)+360.0,360.0);
-                    if(headingToUse>180.0) headingToUse -= 360.0;
-                }
-                performAManeuver = knownPositionCheckManeuver();
+                // TODO: finish this
                 if(raiseScoopFullyBeforeManeuver) sendRaiseArm(false);
                 if(performAManeuver)
                 {
@@ -121,94 +176,14 @@ bool Initialize::runProc()
     }
 }
 
-bool Initialize::knownPositionCheckManeuver()
+Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn)
 {
-    driveDeltaDistance = 0.0;
-    rotateDeltaAngle = 0.0;
-    raiseScoopFullyBeforeManeuver = false;
+    actionType = actionTypeIn;
+    parameter = 0.0;
+}
 
-    if(yPosToUse < -1.0 * baseStationDistance / 2.0) //in the leftmost zone
-    {
-        if(headingToUse <= -90.0 && headingToUse >= -180.0) //TODO: Test the -90 position and close measures
-        {
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-        else if(headingToUse > -90.0 && headingToUse <= 0.0)
-        {
-            ROS_WARN("INIT, CHECK_MANEUVER, LEFTMOST ZONE: I do not know how to fix this one exactly, here's a guess");
-            //TODO: I do not know how to fix this one exactly, here's a guess
-            rotateDeltaAngle = -5.0;
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-        else if (headingToUse >= 90.0 && headingToUse <= 180.0)
-        {
-            rotateDeltaAngle = 5.0;
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-        else
-        {
-            raiseScoopFullyBeforeManeuver = true;
-            driveDeltaDistance = 0.3;
-            return true;
-        }
-    }
-    else if(yPosToUse > baseStationDistance / 2.0) // in the rightmost zone
-    {
-        if(headingToUse <= -90.0 && headingToUse >= -180.0)
-        {
-            rotateDeltaAngle = -5.0;
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-        else if(headingToUse > -90.0 && headingToUse <= 0.0)
-        {
-            raiseScoopFullyBeforeManeuver = true;
-            driveDeltaDistance = 0.3;
-            return true;
-        }
-        else if (headingToUse >= 90.0 && headingToUse <= 180.0)
-        {
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-        else
-        {
-            ROS_WARN("INIT, CHECK_MANEUVER, RIGHTMOST ZONE: I do not know how to fix this one exactly, here's a guess");
-            //TODO: I do not know how to fix this one exactly, here's a guess
-            rotateDeltaAngle = 5.0;
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-    }
-    else //in the middle
-    {
-        if(headingToUse < -91.0 || headingToUse > 91.0)
-        {
-            driveDeltaDistance = -0.3;
-            return true;
-        }
-        else if(xPosToUse < 0.5)
-        {
-            if(headingToUse <= 95.0 && headingToUse >= 85.0)
-            {
-                rotateDeltaAngle = 3.0;
-                driveDeltaDistance = -0.3;
-                return true;
-            }
-            else
-            {
-                rotateDeltaAngle = -3.0;
-                driveDeltaDistance = -0.3;
-                return true;
-            }
-        }
-        else
-        {
-            raiseScoopFullyBeforeManeuver = true;
-            return false;
-        }
-    }
+Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn)
+{
+    actionType = actionTypeIn;
+    parameter = parameterIn;
 }
