@@ -5,6 +5,13 @@
 #define DEG_to_RAD 0.0174532925
 #define WT_VALUE 500
 #define REQUEST_TIMEOUT 0.5
+
+#define DIG_MAP_X_LEN 7.38
+#define DIG_MAP_Y_LEN 3.78
+#define ROBOT_CENTER_TO_SCOOP 1000 //in millimeters
+#define WALL_BUFFER_LEN 500 //in millimeters
+
+
 td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
                               int rad_L_val, int rad_R_val, int z_estimate_val,
                               int robot_length_offset_val, int mob_rad_dist_value)
@@ -320,8 +327,11 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     ROS_INFO("x:%lf, y:%lf\nhead:%lf, bear:%lf\nmob_rad_0_l_dev:%lf, mob_rad_0_r_dev:%lf\nmob_rad_1_l_dev:%lf, mob_rad_1_r_dev%lf\nmax_angle_error:%lf", x/1000,y/1000,heading,bearing,mob_rad_0_l_dev, mob_rad_0_r_dev, mob_rad_1_l_dev, mob_rad_1_r_dev, max_angle_error);
   res.fail = false;//this has been changed to always true
 
-
-  if(y <= -0.5 * base_station_distance){  //Zone 1, left of radios
+  if( (y + ROBOT_CENTER_TO_SCOOP < DIG_MAP_Y_LEN - WALL_BUFFER_LEN) && (y - ROBOT_CENTER_TO_SCOOP > -DIG_MAP_Y_LEN + WALL_BUFFER_LEN)
+    && (x -ROBOT_CENTER_TO_SCOOP > WALL_BUFFER_LEN) && position_init){        // ready to move 
+    stat.success = true;
+    stat.initialization_maneuver = 15;
+  }else if(y <= -0.5 * base_station_distance){  //Zone 1, left of radios
     if(heading > 1 && heading < 89){      //away from corner
       if(heading > 15 * DEG_to_RAD){      //bad range
         stat.success = false;
