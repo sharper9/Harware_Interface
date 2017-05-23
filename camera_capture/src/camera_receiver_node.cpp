@@ -23,9 +23,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 int main(int argc, char** argv)
 {
+  //std::string hostname = "128.217.227.41";
+  //std::string hostname = "192.168.1.13";
+  std::string hostname = "wvuirl-X202E";
+  
   std::map<std::string, std::string> remappings;
-  remappings["__master"] = "http://192.168.1.72:11311/";
-  remappings["__hostname"] = "192.168.1.72";
+  
+  remappings["__master"] = "http://" + hostname + ":11311/";
+  remappings["__hostname"] = hostname;
+  
   ros::init(remappings, "video_receiver_node");
 
   ros::NodeHandle nh;
