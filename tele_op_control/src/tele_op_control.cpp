@@ -198,7 +198,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     {
         arm_pos_=ARM_RAISED;
     }
-    else if(msg->axes[CROSS_DOWN_DOWN_INDEX]<=-0.95) //down
+    else if(msg->axes[CROSS_UP_DOWN_INDEX]<=-0.95) //down
     {
         arm_pos_=-900;
     }
@@ -207,7 +207,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     {
         wrist_pos_=300;
     }
-    else if(msg->axes[CROSS_DOWN_DOWN_INDEX]<=-0.95)  //right
+    else if(msg->axes[CROSS_LEFT_RIGHT_INDEX]<=-0.95)  //right
     {
         wrist_pos_=WRIST_RAISED;
     }
