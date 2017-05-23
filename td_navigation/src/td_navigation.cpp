@@ -130,6 +130,7 @@ int td_navigation::worker::add_distance(std::vector < std::vector<double> >& dis
     distances[0].push_back(range);
     distances[1].push_back(error);
 
+
     if(error >= mob_rad_dist/2){
       bad_ranges++;
     }
@@ -139,6 +140,7 @@ int td_navigation::worker::add_distance(std::vector < std::vector<double> >& dis
       for(int i = 0; i < distances[0].size(); i++){
 
         if(distances[1][i] >= mob_rad_dist/2){
+
           distances[0][i] = range;
           distances[1][i] = error;
           bad_ranges -= 1;
@@ -262,6 +264,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   double mob_rad_1_l_dev = 0;
   double mob_rad_1_r_dev = 0;
 
+
   double mob_rad_0_error = 0;
   double mob_rad_1_error = 0;
 
@@ -289,17 +292,18 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
 
   ROS_INFO("Base_L_fail:%d, Base_R_fail:%d, Mob_L_fail:%d, Mob_R_fail:%d", base_rad_0_malfunction, base_rad_1_malfunction, mob_rad_0_malfunction, mob_rad_1_malfunction);
 
+
   if(error_type == -1){
     res.triangulation_failure = true;
     res.fail = true;
     stat.success = false;
-    stat.initialization_maneuver = 2;
+    stat.initialization_maneuver = 9;
     status_pub.publish(stat);
     return true;
   }
   if(error_type == -2){
     stat.success = false;
-    stat.initialization_maneuver = 2;
+    stat.initialization_maneuver = 9;
     status_pub.publish(stat);
     res.fail = true;
     return true;
@@ -360,7 +364,6 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   }
 
   status_pub.publish(stat);
-
 
   return true;
 }
@@ -567,13 +570,12 @@ int td_navigation::worker::run_full_pose(){
 
   int doom_count = 0;
   bool failed = false;
-
-
   request_confirmed = false;
   selector = 0;
   int num = 0;
   count = 0;
   while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
+
     rr.msgID = count + selector;
     //range request and response from 104 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
@@ -599,6 +601,7 @@ int td_navigation::worker::run_full_pose(){
   count = 0;
   num = 0;
   while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
+
     rr.msgID = count + selector;
     //range request and response from 104 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
@@ -623,6 +626,7 @@ int td_navigation::worker::run_full_pose(){
   count = 0;
   num = 0;
   while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
+
     rr.msgID = count + selector;
     //range request and response from 105 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
@@ -667,6 +671,7 @@ int td_navigation::worker::run_full_pose(){
 
   }
   doom_count = 0;
+
 
   base_rad_0_malfunction = rad0_l_mal && rad1_l_mal;
   base_rad_1_malfunction = rad0_r_mal && rad1_r_mal;
@@ -771,6 +776,7 @@ int td_navigation::worker::run_half_pose_left(){
 
   if(to_left_mal || to_right_mal){
     return -2;
+
   }
 
   std::vector<double> distance_to_base_rads;
@@ -912,6 +918,7 @@ int main(int argc, char **argv)
 
   //TODO: these values should be launch params
   td_navigation::worker worker(50, 1780, 104, 106, 0, 635, 557); // base = 1780, robot width = 557, robot length = 635
+
 
   ROS_DEBUG("td_navigation closing");
   return 0;

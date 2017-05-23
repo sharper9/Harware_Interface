@@ -37,7 +37,7 @@ namespace td_navigation
     int selector;
     bool successful_range;
     int bad_ranges;
-
+    
     double half_dist_0;
     double half_dist_1;
 
@@ -110,6 +110,7 @@ namespace td_navigation
     int run_full_pose();
     int run_half_pose_left();
     int run_half_pose_right();
+
 
   };
 

@@ -18,7 +18,7 @@ public:
 	void sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float endHeading, bool driveBackwards);
     void sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque, bool driveBackwards);
     void sendDriveToWall();
-    void sendDig();
+    void sendDig(float goalPitchAngle);
     void sendDump();
 	void sendWait(float waitTime, bool pushToFront); // sec
     void sendRaiseArm(bool pushToFront);
@@ -153,7 +153,7 @@ void Procedure::sendDriveToWall()
     else ROS_ERROR("exec action service call unsuccessful");
 }
 
-void Procedure::sendDig()
+void Procedure::sendDig(float goalPitchAngle)
 {
 	this->serialNum++;
     execActionSrv.request.nextActionType = _dig;
@@ -163,7 +163,7 @@ void Procedure::sendDig()
 	execActionSrv.request.clearFrontFlag = false;
 	execActionSrv.request.pause = false;
 	execActionSrv.request.pauseUnchanged = true;
-	execActionSrv.request.float1 = 0.0;
+    execActionSrv.request.float1 = goalPitchAngle;
 	execActionSrv.request.float2 = 0.0;
 	execActionSrv.request.float3 = 0.0;
 	execActionSrv.request.float4 = 0.0;

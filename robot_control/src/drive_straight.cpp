@@ -10,8 +10,9 @@ void DriveStraight::init()
 	if(desiredDistance_<0.0) driveSign_ = -1.0;
 	else driveSign_ = 1.0;
 	timeoutValue_ = (unsigned int)round((4.0 + 2.0*fabs(desiredDistance_))*robotStatus.loopRate);
-	timeoutCounter_ = 0;
-    timeoutMinValue_ = (unsigned int)round(0.5*robotStatus.loopRate);
+    timeoutCounter_ = 0;
+    if(fabs(desiredDistance_>0.0)) timeoutMinValue_ = (unsigned int)round(0.5*robotStatus.loopRate);
+    else timeoutMinValue_ = 0;
 	headingErrorSpeedI_ = 0.0;
     robotOutputs.stopFlag = false;
     robotOutputs.turnFlag = false;

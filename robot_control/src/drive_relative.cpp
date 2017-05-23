@@ -31,7 +31,15 @@ int DriveRelative::run()
     switch(step_)
     {
     case _computeManeuver:
-        calculatePath_();
+        if(params.float1==0.0)
+        {
+            distanceToDrive_ = 0.0;
+            angleToTurn_ = params.float2;
+        }
+        else
+        {
+            calculatePath_();
+        }
         if(endHeading_)
         {
             pushTask(_pivot_);
@@ -46,7 +54,6 @@ int DriveRelative::run()
             if(asin(uXCurrentHeading_*uYDesiredEndHeading_ - uXDesiredEndHeading_*uYCurrentHeading_)>=0.0) signDesiredEndHeading_ = 1.0;
             else signDesiredEndHeading_ = -1.0;
             driveDeque.back()->params.float1 = RAD2DEG*signDesiredEndHeading_*acos(uXCurrentHeading_*uXDesiredEndHeading_ + uYCurrentHeading_*uYDesiredEndHeading_);
-            ROS_WARN("current heading = %f, desired heading  = %f, angle to turn = %f", fmod(robotStatus.heading, 360.0), desiredEndHeading_, driveDeque.back()->params.float1);
             driveCompleted_ = false;
         }
         else
