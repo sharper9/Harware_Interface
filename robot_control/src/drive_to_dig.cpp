@@ -34,7 +34,8 @@ bool DriveToDig::runProc()
     case _interrupt_:
         procsBeingExecuted[procType] = false;
         procsToInterrupt[procType] = false;
-        state = _exec_;
+        sendDequeClearAll();
+        state = _init_;
         break;
     case _finish_:
         if(robotStatus.xPos > miningRegionMinXDistance) atMineLocation = true; // TODO: need to wait for ranging radio update before reevaluating this

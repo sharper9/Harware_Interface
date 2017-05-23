@@ -5,6 +5,7 @@ void DrivePivot::init()
 	initHeading_ = robotStatus.heading;
 	desiredDeltaHeading_ = params.float1;
     timeoutValue_ = (unsigned int)round((10.0 + fabs(desiredDeltaHeading_)/10.0)*robotStatus.loopRate);
+    timeoutMinValue_ = (unsigned int)round(0.25*robotStatus.loopRate);
 	timeoutCounter_ = 0;
 	rSpeedI_ = 0.0;
 	inThreshold_ = false;
@@ -26,6 +27,9 @@ int DrivePivot::run()
     ROS_INFO("desiredDeltaHeading = %f", desiredDeltaHeading_);
     ROS_INFO("deltaHeading_ = %f",deltaHeading_);
 	rDes_ = kpR_*(desiredDeltaHeading_-deltaHeading_);
+    if(rDes_>0.0) rDes_ += rMin_;
+    else if(rDes_<0.0) rDes_ -+ rMin_;
+    else rDes_ = rDes_;
 	if(rDes_>rMax_) rDes_ = rMax_;
 	else if(rDes_<(-rMax_)) rDes_ = -rMax_;
     if(std::isnan(robotStatus.yawRate)) {ROS_ERROR("yaw rate is nan"); robotStatus.yawRate = yawRatePrev_;}
@@ -56,7 +60,7 @@ int DrivePivot::run()
 	if(fabs(desiredDeltaHeading_-deltaHeading_)<=deltaHeadingThreshold_ && inThreshold_==false) {thresholdInitTime_ = ros::Time::now().toSec(); inThreshold_ = true;}
 	if(fabs(desiredDeltaHeading_-deltaHeading_)<=deltaHeadingThreshold_) thresholdTime_ = ros::Time::now().toSec() - thresholdInitTime_;
 	else {thresholdTime_ = 0.0; inThreshold_ = false;}
-	if(thresholdTime_ >= thresholdMinTime_ || timeoutCounter_ >= timeoutValue_)
+    if((thresholdTime_ >= thresholdMinTime_ || timeoutCounter_ >= timeoutValue_) && timeoutCounter_ >= timeoutMinValue_)
 	{
 		robotOutputs.flMotorSpeed = 0;
 		robotOutputs.blMotorSpeed = 0;

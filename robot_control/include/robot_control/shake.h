@@ -1,22 +1,21 @@
-#ifndef DIG_H
-#define DIG_H
+#ifndef SHAKE_H
+#define SHAKE_H
 #include "action.h"
 
-class Dig : public Action
+class Shake : public Action
 {
 public:
     void init();
     int run();
 private:
-    enum DIG_STEP_T {_lowerScoop, _lowerArm, _drive1, _raiseScoop, _drive2, _raiseArm} step_;
-    bool digCompleted_;
+    enum SHAKE_STEP_T {_driveForward, _backUp} step_;
+    bool shakeCompleted_;
     bool taskPushed_;
     bool taskFinished_;
     TASK_TYPE_T taskToPush_;
     enum TYPE_OF_TASK_PUSHED_T {__drive, __scoop, __arm, __bucket} typeOfTaskPushed_;
     float valueToPush_;
-    const float digDriveDistance_ = 0.3; // m
     const float forwardAndBackUpDistance_ = 0.4; // m
 };
 
-#endif // DIG_H
+#endif // SHAKE_H

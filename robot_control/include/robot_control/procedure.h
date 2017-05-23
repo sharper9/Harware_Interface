@@ -21,10 +21,13 @@ public:
     void sendDig();
     void sendDump();
 	void sendWait(float waitTime, bool pushToFront); // sec
-    void sendRaiseArm();
-    void sendPartiallyRaiseArm();
+    void sendRaiseArm(bool pushToFront);
+    void sendPartiallyRaiseArm(bool pushToFront);
     void sendRaiseBucket();
     void sendLowerBucket();
+    void sendPrepareArmBucket();
+    void sendPartiallyRaiseBucket();
+    void sendShake();
 	void sendDequeClearFront();
 	void sendDequeClearAll();
 	void sendPause();
@@ -240,12 +243,12 @@ void Procedure::sendWait(float waitTime, bool pushToFront)
 	else ROS_ERROR("exec action service call unsuccessful");
 }
 
-void Procedure::sendRaiseArm()
+void Procedure::sendRaiseArm(bool pushToFront)
 {
     this->serialNum++;
     execActionSrv.request.nextActionType = _raiseArm;
     execActionSrv.request.newActionFlag = 1;
-    execActionSrv.request.pushToFrontFlag = false;
+    execActionSrv.request.pushToFrontFlag = pushToFront;
     execActionSrv.request.clearDequeFlag = false;
     execActionSrv.request.clearFrontFlag = false;
     execActionSrv.request.pause = false;
@@ -270,12 +273,12 @@ void Procedure::sendRaiseArm()
     else ROS_ERROR("exec action service call unsuccessful");
 }
 
-void Procedure::sendPartiallyRaiseArm()
+void Procedure::sendPartiallyRaiseArm(bool pushToFront)
 {
     this->serialNum++;
     execActionSrv.request.nextActionType = _partiallyRaiseArm;
     execActionSrv.request.newActionFlag = 1;
-    execActionSrv.request.pushToFrontFlag = false;
+    execActionSrv.request.pushToFrontFlag = pushToFront;
     execActionSrv.request.clearDequeFlag = false;
     execActionSrv.request.clearFrontFlag = false;
     execActionSrv.request.pause = false;
@@ -334,6 +337,96 @@ void Procedure::sendLowerBucket()
 {
     this->serialNum++;
     execActionSrv.request.nextActionType = _lowerBucket;
+    execActionSrv.request.newActionFlag = 1;
+    execActionSrv.request.pushToFrontFlag = false;
+    execActionSrv.request.clearDequeFlag = false;
+    execActionSrv.request.clearFrontFlag = false;
+    execActionSrv.request.pause = false;
+    execActionSrv.request.pauseUnchanged = true;
+    execActionSrv.request.float1 = 0.0;
+    execActionSrv.request.float2 = 0.0;
+    execActionSrv.request.float3 = 0.0;
+    execActionSrv.request.float4 = 0.0;
+    execActionSrv.request.float5 = 0.0;
+    execActionSrv.request.int1 = 0;
+    execActionSrv.request.bool1 = false;
+    execActionSrv.request.bool2 = false;
+    execActionSrv.request.bool3 = false;
+    execActionSrv.request.bool4 = false;
+    execActionSrv.request.bool5 = false;
+    execActionSrv.request.bool6 = false;
+    execActionSrv.request.bool7 = false;
+    execActionSrv.request.bool8 = false;
+    execActionSrv.request.procType = static_cast<uint8_t>(this->procType);
+    execActionSrv.request.serialNum = this->serialNum;
+    if(execActionClient.call(execActionSrv)) ROS_DEBUG("exec action service call successful");
+    else ROS_ERROR("exec action service call unsuccessful");
+}
+
+void Procedure::sendPrepareArmBucket()
+{
+    this->serialNum++;
+    execActionSrv.request.nextActionType = _prepareArmBucket;
+    execActionSrv.request.newActionFlag = 1;
+    execActionSrv.request.pushToFrontFlag = false;
+    execActionSrv.request.clearDequeFlag = false;
+    execActionSrv.request.clearFrontFlag = false;
+    execActionSrv.request.pause = false;
+    execActionSrv.request.pauseUnchanged = true;
+    execActionSrv.request.float1 = 0.0;
+    execActionSrv.request.float2 = 0.0;
+    execActionSrv.request.float3 = 0.0;
+    execActionSrv.request.float4 = 0.0;
+    execActionSrv.request.float5 = 0.0;
+    execActionSrv.request.int1 = 0;
+    execActionSrv.request.bool1 = false;
+    execActionSrv.request.bool2 = false;
+    execActionSrv.request.bool3 = false;
+    execActionSrv.request.bool4 = false;
+    execActionSrv.request.bool5 = false;
+    execActionSrv.request.bool6 = false;
+    execActionSrv.request.bool7 = false;
+    execActionSrv.request.bool8 = false;
+    execActionSrv.request.procType = static_cast<uint8_t>(this->procType);
+    execActionSrv.request.serialNum = this->serialNum;
+    if(execActionClient.call(execActionSrv)) ROS_DEBUG("exec action service call successful");
+    else ROS_ERROR("exec action service call unsuccessful");
+}
+
+void Procedure::sendPartiallyRaiseBucket()
+{
+    this->serialNum++;
+    execActionSrv.request.nextActionType = _partiallyRaiseBucket;
+    execActionSrv.request.newActionFlag = 1;
+    execActionSrv.request.pushToFrontFlag = false;
+    execActionSrv.request.clearDequeFlag = false;
+    execActionSrv.request.clearFrontFlag = false;
+    execActionSrv.request.pause = false;
+    execActionSrv.request.pauseUnchanged = true;
+    execActionSrv.request.float1 = 0.0;
+    execActionSrv.request.float2 = 0.0;
+    execActionSrv.request.float3 = 0.0;
+    execActionSrv.request.float4 = 0.0;
+    execActionSrv.request.float5 = 0.0;
+    execActionSrv.request.int1 = 0;
+    execActionSrv.request.bool1 = false;
+    execActionSrv.request.bool2 = false;
+    execActionSrv.request.bool3 = false;
+    execActionSrv.request.bool4 = false;
+    execActionSrv.request.bool5 = false;
+    execActionSrv.request.bool6 = false;
+    execActionSrv.request.bool7 = false;
+    execActionSrv.request.bool8 = false;
+    execActionSrv.request.procType = static_cast<uint8_t>(this->procType);
+    execActionSrv.request.serialNum = this->serialNum;
+    if(execActionClient.call(execActionSrv)) ROS_DEBUG("exec action service call successful");
+    else ROS_ERROR("exec action service call unsuccessful");
+}
+
+void Procedure::sendShake()
+{
+    this->serialNum++;
+    execActionSrv.request.nextActionType = _shake;
     execActionSrv.request.newActionFlag = 1;
     execActionSrv.request.pushToFrontFlag = false;
     execActionSrv.request.clearDequeFlag = false;

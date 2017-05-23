@@ -12,6 +12,8 @@ public:
     bool tooCloseToWall;
     float backUpDistance = 0.5; // m
     unsigned int finalSerialNum;
+    unsigned int backUpFromWallSerialNum;
+    bool sentTooCloseToWall;
 };
 
 #endif // MINE_H

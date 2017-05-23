@@ -33,6 +33,9 @@ Exec::Exec()
         actionPool_[_partiallyRaiseArm][j] = new PartiallyRaiseArm;
         actionPool_[_raiseBucket][j] = new RaiseBucket;
         actionPool_[_lowerBucket][j] = new LowerBucket;
+        actionPool_[_prepareArmBucket][j] = new PrepareArmBucket;
+        actionPool_[_partiallyRaiseBucket][j] = new PartiallyRaiseBucket;
+        actionPool_[_shake][j] = new Shake;
 	}
 	for(int k=0; k<NUM_TASKS; k++)
 	{
@@ -48,6 +51,7 @@ Exec::Exec()
         pauseIdle_.taskPool[_scoopSetPos_][l] = new ScoopSetPos;
         pauseIdle_.taskPool[_armHalt_][l] = new ArmHalt;
         pauseIdle_.taskPool[_armSetPos_][l] = new ArmSetPos;
+        pauseIdle_.taskPool[_armLowerToPitch_][l] = new ArmLowerToPitch;
         pauseIdle_.taskPool[_armShake_][l] = new ArmShake;
         pauseIdle_.taskPool[_bucketHalt_][l] = new BucketHalt;
         pauseIdle_.taskPool[_bucketSetPos_][l] = new BucketSetPos;

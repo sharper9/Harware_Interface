@@ -104,13 +104,13 @@ void NavigationFilter::run()
                 packInfoMsgAndPub();
                 ros::spinOnce();
                 ROS_INFO("Calling TD Nav Service");
-                if(ranging_radio_client.call(rr_srv))
+                if(ranging_radio_client.call(rr_srv) && !rr_srv.response.fail)
                 {
                     double rr_heading_error = rr_srv.response.max_angle_error; //radians
                     double rr_heading; //radians
                     double rr_x;
                     double rr_y;
-                    if(rr_heading_error < rr_heading_update_tolerance)
+                    if(rr_heading_error < rr_error_heading_update_tolerance) //todo, put check back
                     {
                         if(!rr_initial_pose_found || fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
                         {

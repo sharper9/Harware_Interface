@@ -1,2 +1,2 @@
 bool success
-int16 backup_left_right
+int16 initialization_maneuver 

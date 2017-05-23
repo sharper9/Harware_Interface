@@ -92,6 +92,7 @@ class NavigationFilter
         bool rr_initial_pose_found = false;
         bool perform_rr_heading_update = false;
         const float rr_heading_update_tolerance = 15.0*DEG_2_RAD;
+        const float rr_error_heading_update_tolerance = 18*DEG_2_RAD;
         const float rr_stopped_position_update_tolerence = 2.0; //meters
         bool rr_found_full_pose = false;
         int rr_full_pose_failed_counter = 0;

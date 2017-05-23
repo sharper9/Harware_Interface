@@ -5,7 +5,7 @@ void Dig::init()
     scoopFailed = false;
     armFailed = false;
     bucketFailed = false;
-    step_ = _lowerArm;
+    step_ = _lowerScoop;
     digCompleted_ = false;
     taskPushed_ = false;
     taskFinished_ = false;
@@ -26,16 +26,18 @@ int Dig::run()
     {
         switch(step_)
         {
-        case _lowerArm:
-            taskToPush_ = _armSetPos_;
-            typeOfTaskPushed_ = __arm;
-            valueToPush_ = ARM_LOWERED;
-            step_ = _lowerScoop;
-            break;
         case _lowerScoop:
             taskToPush_ = _scoopSetPos_;
             typeOfTaskPushed_ = __scoop;
             valueToPush_ = SCOOP_LOWERED;
+            pushTask(_armSetPos_);
+            armDeque.back()->params.int1 = ARM_LOWERED;
+            step_ = _lowerArm;
+            break;
+        case _lowerArm:
+            taskToPush_ = _armLowerToPitch_;
+            typeOfTaskPushed_ = __arm;
+            valueToPush_ = 0;
             step_ = _drive1;
             break;
         case _drive1:
@@ -60,26 +62,6 @@ int Dig::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = ARM_RAISED;
-            step_ = _driveForward;
-            break;
-        case _driveForward:
-            taskToPush_ = _driveStraight_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = forwardAndBackUpDistance_;
-            pushTask(_armShake_);
-            step_ = _backUp;
-            break;
-        case _backUp:
-            taskToPush_ = _driveStraight_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = -forwardAndBackUpDistance_;
-            pushTask(_armShake_);
-            digCompleted_ = true;
-            break;
-        case _shake: // currently not used
-            taskToPush_ = _armShake_;
-            typeOfTaskPushed_ = __arm;
-            valueToPush_ = 0;
             digCompleted_ = true;
             break;
         }

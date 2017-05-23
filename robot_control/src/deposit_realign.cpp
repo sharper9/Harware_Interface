@@ -13,6 +13,7 @@ bool DepositRealign::runProc()
         depositWaypointAngleTolerance += depositWaypointAngleToleranceIncrement;
         if(depositWaypointAngleTolerance > depositWaypointAngleToleranceMax) depositWaypointAngleTolerance = depositWaypointAngleToleranceMax;
         computeDriveSpeeds();
+        sendPrepareArmBucket();
         numWaypointsToTravel = 1;
         clearAndResizeWTT();
         waypointsToTravel.at(0).x = depositWaypointRecoverX;
@@ -35,7 +36,8 @@ bool DepositRealign::runProc()
     case _interrupt_:
         procsBeingExecuted[procType] = false;
         procsToInterrupt[procType] = false;
-        state = _exec_;
+        sendDequeClearAll();
+        state = _init_;
         break;
     case _finish_:
         atDepositLocation = false;

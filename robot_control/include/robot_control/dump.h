@@ -8,7 +8,7 @@ public:
     void init();
     int run();
 private:
-    enum DUMP_STEP_T {_moveArm, _raiseBucket, _waitForSand, _forward1, _back1, _forward2, _back2, _lowerBucket, _returnArm} step_;
+    enum DUMP_STEP_T {_moveArm, _raiseBucketDump, _waitForSand, _lowerBucketDump, _returnArm} step_;
     bool dumpCompleted_;
     bool taskPushed_;
     bool taskFinished_;

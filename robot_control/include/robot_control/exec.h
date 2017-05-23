@@ -16,6 +16,9 @@
 #include "partially_raise_arm.h"
 #include "raise_bucket.h"
 #include "lower_bucket.h"
+#include "prepare_arm_bucket.h"
+#include "partially_raise_bucket.h"
+#include "shake.h"
 #include <messages/ExecAction.h>
 #include <messages/ActuatorOut.h>
 #include <messages/ExecInfo.h>

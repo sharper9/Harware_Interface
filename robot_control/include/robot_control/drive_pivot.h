@@ -22,12 +22,14 @@ private:
 	float rSpeedP_;
 	float rSpeedI_;
 	unsigned int timeoutValue_;
+    unsigned int timeoutMinValue_;
 	unsigned int timeoutCounter_;
 	double thresholdInitTime_;
 	double thresholdTime_;
 	bool inThreshold_;
 	int taskEnded_;
-    const float kpR_ = 0.85; // deg/(s*deg)
+    const float rMin_ = 10.0; // deg/s
+    const float kpR_ = 1.2; // deg/(s*deg)
 	const float kiR_ = 0.1;
 	const float rSpeedIMax_ = 50.0;
 	const float kROutput_ = 450/45.0; // 45% of max speed at 45 deg/s

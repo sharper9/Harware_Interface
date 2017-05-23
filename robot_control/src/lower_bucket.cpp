@@ -7,7 +7,7 @@ void LowerBucket::init()
     bucketFailed = false;
     clearDeques();
     pushTask(_bucketSetPos_);
-    armDeque.back()->params.int1 = BUCKET_LOWERED;
+    bucketDeque.back()->params.int1 = BUCKET_LOWERED;
 }
 
 int LowerBucket::run()

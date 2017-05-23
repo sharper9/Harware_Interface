@@ -6,7 +6,7 @@ void Action::pushTask(TASK_TYPE_T taskType)
 		driveDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
     else if(taskType==_scoopHalt_ || taskType==_scoopSetPos_)
         scoopDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
-    else if(taskType==_armHalt_ || taskType==_armSetPos_ || taskType==_armShake_)
+    else if(taskType==_armHalt_ || taskType==_armSetPos_ || taskType==_armShake_ || taskType==_armLowerToPitch_)
         armDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);
     else if(taskType==_bucketHalt_ || taskType==_bucketSetPos_ || taskType==_bucketShake_)
         bucketDeque.push_back(taskPool[taskType][taskPoolIndex[taskType]]);

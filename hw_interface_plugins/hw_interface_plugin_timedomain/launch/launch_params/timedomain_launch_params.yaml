@@ -5,21 +5,37 @@ plugin_names:
 
 timedomain_serial:
     {
-        id104 : id104,
-        id105: id105,
+        idacm0 : idacm0,
+        idacm1: idacm1,
+        idacm2: idacm2,
+        idacm3: idacm3,
     }
 
-id105:
+idacm0:
     {
-        deviceName         : "/dev/ttyACM1",
+        deviceName         : "/dev/ttyACM0",
         baudrate           : 115200,
         subscribeToTopic   : "/radio105/cmd",
         publishToTopic     : "/radio105/data",
     }
 
-id104:
+idacm1:
     {
-        deviceName         : "/dev/ttyACM0",
+        deviceName         : "/dev/ttyACM1",
+        baudrate           : 115200,
+        subscribeToTopic   : "/radio104/cmd",
+        publishToTopic     : "/radio104/data",
+    }
+idacm2:
+    {
+        deviceName         : "/dev/ttyACM2",
+        baudrate           : 115200,
+        subscribeToTopic   : "/radio104/cmd",
+        publishToTopic     : "/radio104/data",
+    }
+idacm3:
+    {
+        deviceName         : "/dev/ttyACM3",
         baudrate           : 115200,
         subscribeToTopic   : "/radio104/cmd",
         publishToTopic     : "/radio104/data",

@@ -35,9 +35,9 @@ int Dump::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = ARM_DUMP;
-            step_ = _raiseBucket;
+            step_ = _raiseBucketDump;
             break;
-        case _raiseBucket:
+        case _raiseBucketDump:
             taskToPush_ = _bucketSetPos_;
             typeOfTaskPushed_ = __bucket;
             valueToPush_ = BUCKET_RAISED;
@@ -46,32 +46,9 @@ int Dump::run()
         case _waitForSand:
             waitStartTime_ = ros::Time::now().toSec();
             typeOfTaskPushed_ = __none;
-            step_ = _forward1;
+            step_ = _lowerBucketDump;
             break;
-        case _forward1:
-            taskToPush_ = _driveStraight_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = driveForwardDistance_;
-            step_ = _back1;
-            break;
-        case _back1:
-            taskToPush_ = _driveUntilLimit_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = 0.0;
-            step_ = _forward2;
-            break;
-        case _forward2:
-            taskToPush_ = _driveStraight_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = driveForwardDistance_;
-            step_ = _back2;
-            break;
-        case _back2:
-            taskToPush_ = _driveUntilLimit_;
-            typeOfTaskPushed_ = __drive;
-            valueToPush_ = 0.0;
-            step_ = _lowerBucket;
-        case _lowerBucket:
+        case _lowerBucketDump:
             taskToPush_ = _bucketSetPos_;
             typeOfTaskPushed_ = __bucket;
             valueToPush_ = BUCKET_LOWERED;

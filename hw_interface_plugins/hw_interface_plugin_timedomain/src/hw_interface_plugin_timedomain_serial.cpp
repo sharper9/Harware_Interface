@@ -14,6 +14,7 @@ hw_interface_plugin_timedomain::timedomain_serial::timedomain_serial()
 
     //enable automatic class metric collection.
     enableMetrics();
+    requestSentTime=ros::Time::now();
 }
 
 //this is called each time the plugin is enabled, before anything else of the plugin is called
@@ -34,29 +35,10 @@ bool hw_interface_plugin_timedomain::timedomain_serial::subPluginInit(ros::NodeH
 
     //retrieve string from the ROS Parameter Server
         //of the format '<plugin_name>/<parameter>
-    std::string tempString = "";
 
-    //place that wants to write data to the device
-    if(ros::param::get(pluginName+"/subscribeToTopic", tempString))
-    {
-        rosDataSub = nhPtr->subscribe(tempString, 1, &timedomain_serial::rosMsgCallback, this);
-    }
-    else
-    {
-        ROS_ERROR("%s:: Could not find topic subscription name", pluginName.c_str());
-    }
 
-    //place to publish the data after reading from device
-    if(ros::param::get(pluginName+"/publishToTopic", tempString))
-    {
-        rosDataPub = nhPtr->advertise<hw_interface_plugin_timedomain::RCM_Range_Info>(tempString, 1, false);
-    }
-    else
-    {
-        ROS_ERROR("%s:: Could not find topic advertisment name", pluginName.c_str());
-    }
-
-    setupStreamMatcherDelimAndLength(ranging_radio_types::SEND_RANGE_CONFIRM_SIZE,headerString.c_str(),"");
+    requestInProgress=true;
+    setupStreamMatcherDelimAndLength(ranging_radio_types::GET_CONFIG_CONFIRM_SIZE,headerString.c_str(),"");
 
     return true;
 }
@@ -93,12 +75,32 @@ void hw_interface_plugin_timedomain::timedomain_serial::setInterfaceOptions()
     ROS_INFO("%s :: Device: %s :: Baudrate %d", pluginName.c_str(), deviceName.c_str(), tempBaudRate);
 }
 
+bool hw_interface_plugin_timedomain::timedomain_serial::pluginStart()
+{
+if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info) ) {
+           ros::console::notifyLoggerLevelsChanged();
+        }
+    ROS_INFO("Sending Config request");
+    ranging_radio_types::GET_CONFIG_REQUEST_t configRequest;
+    configRequest.msgType=GET_CONFIG_REQUEST_MSGTYPE;
+    configRequest.sync=0xA5A5;
+    configRequest.length=ranging_radio_types::GET_CONFIG_REQUEST_SIZE-4;
+    configRequest.msgID=0;
+    postInterfaceWriteRequest(hw_interface_support_types::shared_const_buffer(((char*) &configRequest), ranging_radio_types::GET_CONFIG_REQUEST_SIZE, true));
+    return true;
+}
+
 void hw_interface_plugin_timedomain::timedomain_serial::rosMsgCallback(const hw_interface_plugin_timedomain::Range_Request::ConstPtr &msg)
 {
     ROS_DEBUG_THROTTLE(2,"Timedomain callback");
-    if(!isRequestInProgress() && msg->send_range_request && (msg->radio_id_to_target >= 0))
+    if((!isRequestInProgress() || ((ros::Time::now().toSec() - requestSentTime.toSec()) > REQUEST_TIMEOUT)) && msg->send_range_request && (msg->radio_id_to_target >= 0))
     {
         ROS_DEBUG("Sending Range Request");
+        if(isRequestInProgress() && ((ros::Time::now().toSec() - requestSentTime.toSec()) > REQUEST_TIMEOUT))
+        {
+            ROS_ERROR("Radio Exceeded Timeout, resetting in progress flag");
+        }
+        requestSentTime=ros::Time::now();
         requestInProgress = true;
         ranging_radio_types::Range_Request_t rangeRequest;
         rangeRequest.msg.sync = 0xA5A5;
@@ -148,7 +150,43 @@ bool hw_interface_plugin_timedomain::timedomain_serial::interfaceReadHandler(con
     ranging_radio_types::Pre_Response_t preRead;
     ranging_radio_types::bigToLittleEndian((const uint8_t*)receivedData.get(), preRead.msgData, ranging_radio_types::PRE_READ_SIZE);
 
-    if(preRead.msg.msgType == SEND_RANGE_CONFIRM_MSGTYPE)
+
+    if(preRead.msg.msgType == GET_CONFIG_CONFIRM_MSGTYPE)
+    {
+        ROS_INFO_EXTRA("%s Recevied Config Confirm", pluginName.c_str());
+        requestInProgress = false;
+        readLength = ranging_radio_types::SEND_RANGE_CONFIRM_SIZE;
+        setupStreamMatcherDelimAndLength(ranging_radio_types::SEND_RANGE_CONFIRM_SIZE,headerString.c_str(),"");
+
+        ranging_radio_types::GET_CONFIG_CONFIRM_t configData;
+        ranging_radio_types::bigToLittleEndian((const uint8_t*)receivedData.get(), ((uint8_t*) &configData), ranging_radio_types::GET_CONFIG_CONFIRM_SIZE);
+
+        std::string tempString = "";
+        ROS_INFO_EXTRA("%s :: Radio ID %u", pluginName.c_str(), configData.nodeID);
+        
+        ros::NodeHandle nh;
+        //place that wants to write data to the device
+        if(configData.nodeID==1509953853)
+        {
+            rosDataSub = nh.subscribe("/radio_right/cmd", 1, &timedomain_serial::rosMsgCallback, this);
+        }
+        else
+        {
+            rosDataSub = nh.subscribe("/radio_left/cmd", 1, &timedomain_serial::rosMsgCallback, this);
+        }
+
+        //place to publish the data after reading from device
+        if(configData.nodeID==1509953853)
+        {
+            rosDataPub = nh.advertise<hw_interface_plugin_timedomain::RCM_Range_Info>("/radio_right/data", 1, false);
+        }
+        else
+        {
+            rosDataPub = nh.advertise<hw_interface_plugin_timedomain::RCM_Range_Info>("/radio_left/data", 1, false);
+        }
+
+    }
+    else if(preRead.msg.msgType == SEND_RANGE_CONFIRM_MSGTYPE)
     {
         ROS_DEBUG_EXTRA("%s Received Range Confirm", pluginName.c_str());
         //because the last message received was a range confirm, the next message will be a range info
@@ -192,3 +230,4 @@ bool hw_interface_plugin_timedomain::timedomain_serial::verifyChecksum()
 {
     return true;
 }
+

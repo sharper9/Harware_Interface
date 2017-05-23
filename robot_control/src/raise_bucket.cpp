@@ -7,7 +7,7 @@ void RaiseBucket::init()
     bucketFailed = false;
     clearDeques();
     pushTask(_bucketSetPos_);
-    armDeque.back()->params.int1 = BUCKET_RAISED;
+    bucketDeque.back()->params.int1 = BUCKET_RAISED;
 }
 
 int RaiseBucket::run()

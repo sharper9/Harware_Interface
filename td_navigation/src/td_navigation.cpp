@@ -3,6 +3,13 @@
 #define PI 3.14159265358
 
 #define DEG_to_RAD 0.0174532925
+#define WT_VALUE 500
+#define REQUEST_TIMEOUT 0.5
+
+#define DIG_MAP_X_LEN 7.38
+#define DIG_MAP_Y_LEN 3.78
+#define ROBOT_CENTER_TO_SCOOP 1000 //in millimeters
+#define WALL_BUFFER_LEN 500 //in millimeters
 
 
 td_navigation::worker::worker(int average_length_val, double base_station_distance_val,
@@ -10,9 +17,23 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
                               int robot_length_offset_val, int mob_rad_dist_value)
 {
   position_init = false;
-  confirmed = 0;
+  request_confirmed = 0;
+  request_failed = false;
   count = 0;
   selector = 0 ;
+  successful_range = false;
+  bad_ranges = 0;
+
+  half_dist_0 = 0;
+  half_dist_1 = 0;
+
+  base_rad_0_malfunction = false;
+  base_rad_1_malfunction = false;
+  mob_rad_0_malfunction = false;
+  mob_rad_1_malfunction = false;
+
+  half_angle_left = true;
+
 
   heading = 0;
   bearing = 0;
@@ -25,10 +46,11 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   robot_length_offset = robot_length_offset_val;
   mob_rad_dist = mob_rad_dist_value;
 
-  dist0_l.reserve(average_length);
-  dist0_r.reserve(average_length);
-  dist1_l.reserve(average_length);
-  dist1_r.reserve(average_length);
+  dist0_l.resize(2);
+  dist0_r.resize(2);
+  dist1_l.resize(2);
+  dist1_r.resize(2);
+
 
   rad_nav.create_base_radio(0, -1.0 * base_station_distance/2.0, 0);
   rad_nav.create_base_radio(0, base_station_distance/2.0, 0);
@@ -42,15 +64,15 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   ROS_INFO("td_navigation node ready to Localize");
 
   //subscriber for recieving messages
-  mob_rad_l_sub = nh.subscribe("/radio104/data", 5, &td_navigation::worker::mob_rad_0_CallBack, this);
-  mob_rad_r_sub = nh.subscribe("/radio105/data", 5, &td_navigation::worker::mob_rad_1_CallBack, this);
+  mob_rad_l_sub = nh.subscribe("/radio_left/data", 5, &td_navigation::worker::mob_rad_0_CallBack, this);
+  mob_rad_r_sub = nh.subscribe("/radio_right/data", 5, &td_navigation::worker::mob_rad_1_CallBack, this);
 
   nav_filter_sub = nh.subscribe("/navigation/navigationfilterout/navigationfilterout", 1, &td_navigation::worker::nav_filter_callback, this);
 
 
   //publisher for sending a message to timedomain serial to get a range request
-  mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio104/cmd", 5);
-  mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio105/cmd", 5);
+  mob_rad_l_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio_left/cmd", 5);
+  mob_rad_r_pub = nh.advertise<hw_interface_plugin_timedomain::Range_Request>("/radio_right/cmd", 5);
 
   rhp_pub = nh.advertise<td_navigation::Running_Half_Pose>("/Half_Pose", 1);
 
@@ -70,43 +92,52 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
 
 
 bool td_navigation::worker::send_and_recieve(int to, hw_interface_plugin_timedomain::Range_Request& rr, ros::Publisher& rad_pub){
-  int wait = 0;
-  int timeout = 0;
+
 
   //TODO: change back to about 5000
-  ros::Rate loop_rate(5000);
-
-
-  while(!confirmed){
+  //ros::Rate loop_rate(5000);
     rr.radio_id_to_target = to;
     rad_pub.publish(rr);
-    while(!confirmed && wait < 100){
-      ros::spinOnce();
-      loop_rate.sleep();
-      wait ++;
-    }
-    wait = 0;
-    if (timeout >= 10){
+    double time_sent = ros::Time::now().toSec();
+
+
+  while(!request_confirmed){
+
+    ros::spinOnce();
+    if(ros::Time::now().toSec() - time_sent > REQUEST_TIMEOUT){
       return false;
     }
-    timeout++;
+
   }
-  confirmed = false;
+  request_confirmed = false;
   return true;
 }
 
 int td_navigation::worker::add_distance(std::vector < std::vector<double> >& distances,
                                         double range, double error){
-  std::vector< std::vector<double> >::iterator it = distances.begin();
-  std::vector<double> range_and_error;
-  range_and_error.push_back(range);
-  range_and_error.push_back(error);
 
-  if(distances.size() == average_length){
-    distances.pop_back();
+
+  if(distances[0].size() < average_length){
+
+    distances[0].push_back(range);
+    distances[1].push_back(error);
+
+    if(error >= base_station_distance/2){
+      bad_ranges++;
+    }
+  }else{
+    if(bad_ranges > 0 && error < base_station_distance/2){
+
+      for(int i = 0; i < distances[0].size(); i++){
+
+        if(distances[1][i] >= base_station_distance/2){
+          distances[0][i] = range;
+          distances[1][i] = error;
+          bad_ranges -= 1;
+        }
+      }
+    }
   }
-
-  distances.insert(it, range_and_error);
 
   return 0;
 }
@@ -116,11 +147,13 @@ void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedom
     //check if the radio was busy
     if (msg->busy == true){
         ROS_WARN("TDRR was busy");
+        request_failed = true;
         return;
     }
     //check if the radio range has failed
     if (msg->failed == true){
         ROS_WARN("TDRR request has failed!");
+        request_failed = true;
         return;
 
     }
@@ -133,7 +166,7 @@ void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedom
             ROS_INFO("Reading from Mob_0 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             add_distance(dist0_l, (double)msg->PRM, (double)msg->PRMError);
-            confirmed = true;
+            request_confirmed = true;
             return;
 
         //reading 1 to l
@@ -141,7 +174,7 @@ void td_navigation::worker::mob_rad_0_CallBack(const hw_interface_plugin_timedom
           ROS_INFO("Reading from Mob_0 to Base_1");
           ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
           add_distance(dist0_r, msg->PRM, msg->PRMError);
-          confirmed = true;
+          request_confirmed = true;
           return;
 
         //no match
@@ -162,13 +195,11 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
     //check if the radio was busy
     if (msg->busy == true){
         ROS_WARN("TDRR was busy");
-        return;
     }
     //check if the radio range has failed
     if (msg->failed == true){
         ROS_WARN("TDRR request has failed!");
         return;
-
     }
 
 
@@ -178,10 +209,10 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
 
       //reading 0 to r
       if(msg-> msgID == count + selector && selector == 2){
-            ROS_INFO("Reading from Mob_0 to Base_1");
+            ROS_INFO("Reading from Mob_1 to Base_0");
             ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
             add_distance(dist1_l, msg->PRM, msg->PRMError);
-            confirmed = true;
+            request_confirmed = true;
             return;
 
       //reading 1 to r
@@ -189,7 +220,7 @@ void td_navigation::worker::mob_rad_1_CallBack(const hw_interface_plugin_timedom
           ROS_INFO("Reading from Mob_1 to Base_1");
           ROS_DEBUG("Precise Range Measure: %d", msg->PRM);
           add_distance(dist1_r, msg->PRM, msg->PRMError);
-          confirmed = true;
+          request_confirmed = true;
           return;
 
         //no match
@@ -218,139 +249,230 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
                                         td_navigation::Localize::Response &res){
 
 
-double mob_rad_0_l_error = 0;
-double mob_rad_0_r_error = 0;
-double mob_rad_1_l_error = 0;
-double mob_rad_1_r_error = 0;
+  double mob_rad_0_l_dev = 0;
+  double mob_rad_0_r_dev = 0;
+  double mob_rad_1_l_dev = 0;
+  double mob_rad_1_r_dev = 0;
 
-double mob_rad_0_error = 0;
-double mob_rad_1_error = 0;
+  double mob_rad_0_error = 0;
+  double mob_rad_1_error = 0;
 
-double max_angle_error = 0;
+  double max_angle_error = 0;
 
-td_navigation::Td_navigation_Status stat;
+  td_navigation::Td_navigation_Status stat;
 
-dist0_l.clear();
-dist0_r.clear();
-dist1_l.clear();
-dist1_r.clear();
+  dist0_l[0].clear();
+  dist0_l[1].clear();
+  dist0_r[0].clear();
+  dist0_r[1].clear();
+  dist1_l[0].clear();
+  dist1_l[1].clear();
+  dist1_r[0].clear();
+  dist1_r[1].clear();
 
-int max = average_length;
+  average_length = req.average_length;
 
-if(req.average_length <= average_length){
-  max = req.average_length;
-}
+  int error_type = run_full_pose();
 
+  res.base_L_failure = base_rad_0_malfunction;
+  res.base_R_failure = base_rad_1_malfunction;
+  res.mob_L_failure = mob_rad_0_malfunction;
+  res.mob_R_failure = mob_rad_1_malfunction;
 
-int error_count = 0;
-for(int i = 0; i < max; i++){
-  if (run() != 0){
-    error_count++;
-  }
-}
-
-
-
-if (error_count >= req.average_length){
+  if(error_type == -1){
+    res.triangulation_failure = true;
     res.fail = true;
     stat.success = false;
-    stat.backup_left_right = 1;
+    stat.initialization_maneuver = 2;
     status_pub.publish(stat);
-    return false;
-}
+    return true;
+  }
+  if(error_type == -2){
+    stat.success = false;
+    stat.initialization_maneuver = 2;
+    status_pub.publish(stat);
+    res.fail = true;
+    return true;
+  }
+
+  res.x = x/1000.0;
+  res.y = y/1000.0;
+  res.heading = heading;
+  res.bearing = bearing;
+
+  mob_rad_0_l_dev = get_std_dev(dist0_l);
+  mob_rad_0_r_dev = get_std_dev(dist0_r);
+  mob_rad_1_l_dev = get_std_dev(dist1_l);
+  mob_rad_1_r_dev = get_std_dev(dist1_r);
+
+  res.mob_rad_0_l_dev = mob_rad_0_l_dev;
+  res.mob_rad_0_r_dev = mob_rad_0_r_dev;
+  res.mob_rad_1_l_dev = mob_rad_1_l_dev;
+  res.mob_rad_1_r_dev = mob_rad_1_r_dev;
 
 
+  mob_rad_0_error = sqrt( pow(mob_rad_0_l_dev, 2.0) + pow(mob_rad_0_r_dev, 2.0));
+  mob_rad_1_error = sqrt( pow(mob_rad_1_l_dev, 2.0) + pow(mob_rad_1_r_dev, 2.0));
+  ROS_DEBUG("mob_rad_0_error: %lf", mob_rad_0_error);
+  ROS_DEBUG("mob_rad_1_error: %lf", mob_rad_1_error);
 
-//service response
-res.x = x/1000.0;
-res.y = y/1000.0;
-res.heading = heading;
-res.bearing = bearing;
+  if(mob_rad_0_error >= mob_rad_dist || mob_rad_1_error >= mob_rad_dist){
+    max_angle_error = PI;
+  }else{
+    max_angle_error = atan(mob_rad_0_error/ (mob_rad_dist/
+                  ( (mob_rad_0_error/mob_rad_1_error)+1) ) );
+  }
+  ROS_DEBUG("max_angle_error: %lf", max_angle_error);
+  res.max_angle_error = max_angle_error;
+    ROS_INFO("x:%lf, y:%lf\nhead:%lf, bear:%lf\nmob_rad_0_l_dev:%lf, mob_rad_0_r_dev:%lf\nmob_rad_1_l_dev:%lf, mob_rad_1_r_dev%lf\nmax_angle_error:%lf", x/1000,y/1000,heading,bearing,mob_rad_0_l_dev, mob_rad_0_r_dev, mob_rad_1_l_dev, mob_rad_1_r_dev, max_angle_error);
+  res.fail = false;//this has been changed to always true
 
-mob_rad_0_l_error = get_avg_err0_l(req.average_length);
-mob_rad_0_r_error = get_avg_err0_r(req.average_length);
-mob_rad_1_l_error = get_avg_err1_l(req.average_length);
-mob_rad_1_r_error = get_avg_err1_r(req.average_length);
-
-res.mob_rad_0_l_error = mob_rad_0_l_error;
-res.mob_rad_0_r_error = mob_rad_0_r_error;
-res.mob_rad_1_l_error = mob_rad_1_l_error;
-res.mob_rad_1_r_error = mob_rad_1_r_error;
-
-mob_rad_0_error = sqrt( pow(get_avg_err0_l(req.average_length), 2.0) + pow(get_avg_err0_r(req.average_length), 2.0));
-mob_rad_1_error = sqrt( pow(get_avg_err1_l(req.average_length), 2.0) + pow(get_avg_err1_r(req.average_length), 2.0));
-
-if(mob_rad_0_error > mob_rad_dist || mob_rad_1_error > mob_rad_dist){
-  max_angle_error = PI;
-}else{
-  max_angle_error = atan(mob_rad_0_error/ (mob_rad_dist/ ( (mob_rad_0_error/mob_rad_1_error)+1) ) );
-}
-
-res.max_angle_error = max_angle_error;
-res.fail = false;
-
-//TODO: This is very simple, should use radio errors make better decisions
-if (max_angle_error >= 15 * DEG_to_RAD && max_angle_error <= 30 * DEG_to_RAD){
-  stat.success = false;
-  if(y <= -1.0 * base_station_distance / 2.0){  //left of the left radio
-    if(heading < -110 * DEG_to_RAD && heading > -150 * DEG_to_RAD){
-      stat.backup_left_right = 0;
-    }else if(heading > 110 * DEG_to_RAD && heading < 150 * DEG_to_RAD){
-      stat.backup_left_right = 1;
-    }else{
-      stat.backup_left_right = 1;
+  if( (y + ROBOT_CENTER_TO_SCOOP < DIG_MAP_Y_LEN - WALL_BUFFER_LEN) && (y - ROBOT_CENTER_TO_SCOOP > -DIG_MAP_Y_LEN + WALL_BUFFER_LEN)
+    && (x -ROBOT_CENTER_TO_SCOOP > WALL_BUFFER_LEN) && position_init){        // ready to move 
+    stat.success = true;
+    stat.initialization_maneuver = 15;
+  }else if(y <= -0.5 * base_station_distance){  //Zone 1, left of radios
+    if(heading > 1 && heading < 89){      //away from corner
+      if(heading > 15 * DEG_to_RAD){      //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 0;
+      }else{                              //good range
+        stat.success = true;
+        stat.initialization_maneuver = 1;
+      }
+      }else if(heading > 91 && heading  <= 180){ //FU Position toward radio
+        if(heading > 15 * DEG_to_RAD){     //bad range
+          stat.success = false;
+          stat.initialization_maneuver = 2;
+        }else{                             //good range
+          stat.success = true;
+          stat.initialization_maneuver = 3;
+        }
+      }else if(heading <= -90 && heading >= -180){  //towards corner
+        if(heading > 15 * DEG_to_RAD){    //bad range
+          stat.success = false;
+          stat.initialization_maneuver = 4;
+        }else{                            //good range
+          stat.success = true;
+          stat.initialization_maneuver = 4;
+        }
+      }else if(heading < 1 && heading >= -90){    //FU away from radios
+        if(heading > 15 * DEG_to_RAD){    //bad range
+          stat.success = false;
+          stat.initialization_maneuver = 5;
+        }else{                            //good range
+          stat.success = true;
+          stat.initialization_maneuver = 6;
+        }
+      }else{                              // parallel to wall facing toward radios
+      if(heading > 15 * DEG_to_RAD){    //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 7;
+      }else{                            //good range
+        stat.success = true;
+        stat.initialization_maneuver = 8;
+      }
     }
-  }else if (y >= base_station_distance / 2.0){  //right of the right radio
-    if(heading < -110 * DEG_to_RAD && heading > -150 * DEG_to_RAD){
-      stat.backup_left_right = 2;
-    }else if(heading > 110 * DEG_to_RAD && heading < 150 * DEG_to_RAD){
-      stat.backup_left_right = 0;
-    }else{
-      stat.backup_left_right = 2;
+  }else if(y >= 0.5 * base_station_distance){ //Zone 3, right of radios
+    if(heading > 1 && heading < 90){      //FU away from radios
+      if(heading > 15 * DEG_to_RAD){      //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 2;
+      }else{                              //good range
+        stat.success = true;
+        stat.initialization_maneuver = 3;
+      }
+    }else if(heading >= 90 && heading  <= 180){ //facing corner
+      if(heading > 15 * DEG_to_RAD){     //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 4;
+      }else{                             //good range
+        stat.success = true;
+        stat.initialization_maneuver = 4;
+      }
+    }else if(heading < -91 && heading >= -180){  //FU radios away
+      if(heading > 15 * DEG_to_RAD){    //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 5;
+      }else{                            //good range
+        stat.success = true;
+        stat.initialization_maneuver = 6;
+      }
+    }else if(heading >= -91 && heading <= -89){    //parallel with wall, facing radios
+      if(heading > 15 * DEG_to_RAD){    //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 9;
+      }else{                            //good range
+        stat.success = true;
+        stat.initialization_maneuver = 10;
+      }
+    }else{                              //facing away from corner
+      if(heading > 15 * DEG_to_RAD){    //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 11;
+      }else{                            //good range
+        stat.success = true;
+        stat.initialization_maneuver = 1;
+      }
     }
-  }else{                                       //between the radios
-    if (heading <= -160 * DEG_to_RAD || heading >= 160 * DEG_to_RAD){
-      stat.backup_left_right = 0;
-    }else if (heading > -160 * DEG_to_RAD && heading <= -60 * DEG_to_RAD){
-      stat.backup_left_right = 2;
-    }else if (heading < 160 * DEG_to_RAD && heading >= 60 * DEG_to_RAD){
-      stat.backup_left_right = 1;
+  }else{                              //Zone 2, between radios
+    if((heading >= -180 && heading < -91) || (heading >= 180 && heading < 91)){     // facing base station
+      if(heading > 15 * DEG_to_RAD){      //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 12;
+      }else{                              //good range
+        stat.success = true;
+        stat.initialization_maneuver = 4;
+      }
+    }else if(heading >= -91 && heading  <= -89){ //parllel with wall. facing left
+      if(heading > 15 * DEG_to_RAD){     //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 9;
+      }else{                             //good range
+        stat.success = true;
+        stat.initialization_maneuver = 13;
+      }
+    }else if(heading >= 89 && heading <= 91){  //facing parallel with wall, faing right
+      if(heading > 15 * DEG_to_RAD){    //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 7;
+      }else{                            //good range
+        stat.success = true;
+        stat.initialization_maneuver = 14;
+      }
+    }else if(heading > -89 && heading < 89){    //FU away from radios
+      if(heading > 15 * DEG_to_RAD){    //bad range
+        stat.success = false;
+        stat.initialization_maneuver = 1;
+      }else{                            //good range
+        stat.success = true;
+        stat.initialization_maneuver = 1;
+      }
     }
   }
-}else if (max_angle_error > 30 * DEG_to_RAD){
-  stat.success = false;
-  if(y <= -1.0 * base_station_distance / 2.0){  //left of the left radio
-    stat.backup_left_right = 1;
-  }else if (y >= base_station_distance / 2.0){  //right of the right radio
-    stat.backup_left_right = 2;
-  }else{                                        //between the radios
-    stat.backup_left_right = 0;
-  }
-}else{
-  stat.success = true;
-  stat.backup_left_right = -1;
-}
 
-status_pub.publish(stat);
+  status_pub.publish(stat);
 
 
-return true;
+  return true;
 }
 
 double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& dist, int& amount_to_avg){
   double top = 0;
   double bottom = 0;
+  double weight = 0;
   int max = 0;
 
-  if(amount_to_avg <= dist.size()){
+  if(amount_to_avg <= dist[0].size()){
     max = amount_to_avg;
   }else{
-    max = dist.size();
+    max = dist[0].size();
   }
   for(int i = 0; i < max; i++){
-
-    top += dist[i][0] * (65535 - dist[i][1]);
-    bottom += (65535 - dist[i][1]);
+    weight = (-1.0 * WT_VALUE / (PI/2.0) * atan(0.05 * (dist[1][i] - (base_station_distance / 5))) + WT_VALUE + 1);
+    ROS_INFO("dist:%lf ,err:%lf, wt:%lf", dist[0][i], dist[1][i], weight);
+    top += dist[0][i] * weight;
+    bottom += weight;
   }
 
   if(bottom == 0){
@@ -361,23 +483,67 @@ double td_navigation::worker::get_avg_dist(std::vector< std::vector< double> >& 
 
 }
 
+double td_navigation::worker::get_std_dev(std::vector< std::vector< double> >& distances){
+  double avg = get_avg_dist(distances, average_length);
+  double sum = 0;
+  for(int i = 0; i < distances[0].size(); i++){
+    sum += ( pow(distances[0][i] - avg, 2.0) );
+  }
+
+  if(distances[0].size() == 0){
+    return 0;
+  }
+  return sqrt(sum/distances[0].size());
+}
+
 double td_navigation::worker::get_avg_error(std::vector< std::vector< double > >& error, int& amount_to_avg){
   double sum = 0;
+  double bottom = 0;
+  double weight = 0;
+
   int max = 0;
 
-  if(amount_to_avg <= error.size()){
+  if(amount_to_avg <= error[0].size()){
     max = amount_to_avg;
   }else{
-    max = error.size();
+    max = error[0].size();
   }
   for(int i = 0; i < max; i++){
-    sum += error[i][1];
+    sum += error[1][i];
+    bottom += 1;
   }
 
   if(max == 0){
-    return -1;
+    return 0;
   }
   return sum/max;
+}
+
+double td_navigation::worker::get_med_error(std::vector< std::vector< double > >& error){
+    std::vector<double> err;
+    err.resize(error[0].size());
+    for(int i = 0; i < error.size(); i++){
+        err[i] = error[1][i];
+    }
+    sort(err.begin(), err.end());
+    return err[(int)(err.size()/2)];
+
+}
+
+double td_navigation::worker::get_med_err0_l(){
+    return get_med_error(dist0_l);
+}
+
+double td_navigation::worker::get_med_err0_r(){
+    return get_med_error(dist0_r);
+}
+
+double td_navigation::worker::get_med_err1_l(){
+    return get_med_error(dist1_l);
+}
+
+double td_navigation::worker::get_med_err1_r(){
+    return get_med_error(dist1_r);
 }
 
 double td_navigation::worker::get_avg_err0_l(int amount_to_avg){
@@ -399,19 +565,23 @@ double td_navigation::worker::get_avg_err1_r(int amount_to_avg){
 
 
 double td_navigation::worker::get_avg_dist0_l(int amount_to_avg){
+  ROS_INFO("Radio mob_l to base_l");
   return get_avg_dist(dist0_l, amount_to_avg);
 }
 
 double td_navigation::worker::get_avg_dist0_r(int amount_to_avg){
+    ROS_INFO("Radio mob_l to base_r");
   return get_avg_dist(dist0_r, amount_to_avg);
 
 }
 
 double td_navigation::worker::get_avg_dist1_l(int amount_to_avg){
+    ROS_INFO("Radio mob_r to base_l");
   return get_avg_dist(dist1_l, amount_to_avg);
 }
 
 double td_navigation::worker::get_avg_dist1_r(int amount_to_avg){
+    ROS_INFO("Radio mob_r to base_r");
   return get_avg_dist(dist1_r, amount_to_avg);
 }
 
@@ -475,45 +645,124 @@ double td_navigation::worker::smart_atan(double adj, double opp){
 }
 
 
-int td_navigation::worker::run(){
+int td_navigation::worker::run_full_pose(){
 
   ROS_INFO("Count: %d", count);
 
   hw_interface_plugin_timedomain::Range_Request rr;
   rr.send_range_request = true;
 
+  bool rad0_l_mal = false;
+  bool rad0_r_mal = false;
+  bool rad1_l_mal = false;
+  bool rad1_r_mal = false;
 
-  confirmed = false;
+  int doom_count = 0;
+  bool failed = false;
+
+
+  request_confirmed = false;
   selector = 0;
-  rr.msgID = count + selector;
-  //range request and response from 104 to 101
-  if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
-    //call a function to tell about the malfunction
-    ROS_DEBUG("We didn't get a response in time!");
+  int num = 0;
+  count = 0;
+  while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+    rr.msgID = count + selector;
+    //range request and response from 104 to 101
+    if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
+      //call a function to tell about the malfunction
+      ROS_DEBUG("Mob_L Base_L didn't respond in time!");
+      rad0_l_mal = true;
+      doom_count++;
+      failed = true;
+    }
+    if(!failed){
+    rad0_l_mal = false;
+    doom_count = 0;
+    num++;
+    update_count();
+    }
+    failed = false;
   }
 
+
   selector = 1;
-  rr.msgID = count + selector;
-  //range request and response from 104 to 106
-  if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
-    //call a function to tell about the malfunction
-    ROS_DEBUG("We didn't get a response in time!");
+  bad_ranges = 0;
+  count = 0;
+  num = 0;
+  while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+    rr.msgID = count + selector;
+    //range request and response from 104 to 106
+    if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
+      //call a function to tell about the malfunction
+      ROS_DEBUG("Mob_L Base_R didn't responsd in time!");
+      rad0_r_mal = true;
+      doom_count++;
+      failed = true;
+    }
+    if(!failed){
+      rad0_r_mal = false;
+      doom_count = 0;
+      num++;
+      update_count();
+    }
+    failed = false;
   }
 
   selector = 2;
-  rr.msgID = count + selector;
-  //range request and response from 105 to 101
-  if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
-    //call a function to tell about the malfunction
-    ROS_DEBUG("We didn't get a response in time!");
+  bad_ranges = 0;
+  count = 0;
+  num = 0;
+  while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+    rr.msgID = count + selector;
+    //range request and response from 105 to 101
+    if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
+      //call a function to tell about the malfunction
+      ROS_DEBUG("Mob_R Base_L didn't responsd in time!");
+      rad1_l_mal = true;
+      doom_count++;
+      failed = true;
+    }
+    if(!failed){
+      rad1_l_mal = false;
+      doom_count = 0;
+      num++;
+      update_count();
+    }
+    failed = false;
+
   }
 
   selector = 3;
-  rr.msgID = count + selector;
-  //range request and response from 105 to 106
-  if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
-    //call a function to tell about the malfunction
-    ROS_DEBUG("We didn't get a response in time!");
+  bad_ranges = 0;
+  count = 0;
+  num = 0;
+  while(num <= average_length + 20 && !(dist1_r[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+    rr.msgID = count + selector;
+    //range request and response from 105 to 106
+    if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
+      //call a function to tell about the malfunction
+      ROS_DEBUG("Mob_R Base_R didn't responsd in time!");
+      rad1_r_mal = true;
+      doom_count++;
+      failed = true;
+    }
+    if(!failed){
+     rad1_l_mal = false;
+      doom_count = 0;
+      num++;
+      update_count();
+    }
+    failed = false;
+
+  }
+
+  base_rad_0_malfunction = rad0_l_mal && rad1_l_mal;
+  base_rad_1_malfunction = rad0_r_mal && rad1_r_mal;
+  mob_rad_0_malfunction = rad0_l_mal && rad0_r_mal;
+  mob_rad_1_malfunction = rad1_l_mal && rad1_r_mal;
+
+  if (rad0_l_mal || rad0_r_mal || rad1_l_mal || rad1_r_mal){
+    return -2;
   }
 
   std::vector<double> distance_to_base_rads;
@@ -566,14 +815,7 @@ int td_navigation::worker::run(){
   }else {
     ROS_DEBUG("Problem encountered with triangulation!");
     return -1;
-
   }
-
-  //update count
-  update_count();
-  if(count >= 32000){
-    count = 0;
-}
 
 return 0;
 
@@ -581,19 +823,28 @@ return 0;
 
 int td_navigation::worker::run_half_pose(){
 
+  dist0_l[0].clear();
+  dist0_l[1].clear();
+  dist0_r[0].clear();
+  dist0_r[1].clear();
+  dist1_l[0].clear();
+  dist1_l[1].clear();
+  dist1_r[0].clear();
+  dist1_r[1].clear();
+
   ROS_INFO("Count: %d", count);
 
   hw_interface_plugin_timedomain::Range_Request rr;
   rr.send_range_request = true;
 
 
-  confirmed = false;
+  request_confirmed = false;
   selector = 0;
   rr.msgID = count + selector;
   //range request and response from 104 to 101
   if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
     //call a function to tell about the malfunction
-    ROS_DEBUG("We didn't get a response in time!");
+    ROS_DEBUG("Mob_L Base_L didn't respond in time!");
   }
 
   selector = 1;
@@ -601,7 +852,7 @@ int td_navigation::worker::run_half_pose(){
   //range request and response from 104 to 106
   if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
     //call a function to tell about the malfunction
-    ROS_DEBUG("We didn't get a response in time!");
+    ROS_DEBUG("Mob_L Base_R didn't respond in time!");
   }
 
   std::vector<double> distance_to_base_rads;
@@ -637,7 +888,7 @@ int td_navigation::worker::run_half_pose(){
 
 
   }else {
-    ROS_DEBUG("Problem encountered with triangulation!");
+    ROS_ERROR("Problem encountered with triangulation!");
     return -1;
   }
 
@@ -669,7 +920,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1638.3, 101, 106, 0, 635, 546); // base = 736.6, robot width = 546, robot length = 635
+  td_navigation::worker worker(50, 727.075, 101, 106, 0, 635, 559); // base = 736.6, robot width = 546, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;

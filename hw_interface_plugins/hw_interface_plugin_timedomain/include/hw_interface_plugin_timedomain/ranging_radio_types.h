@@ -65,6 +65,38 @@ namespace ranging_radio_types
 	    uint16_t sync;
 	} __attribute__ ((packed));
         const static int SEND_RANGE_CONFIRM_SIZE = sizeof(SEND_RANGE_CONFIRM_t);
+
+        struct GET_CONFIG_REQUEST_t
+        {
+            uint16_t msgID;
+            uint16_t msgType;
+            uint16_t length;
+            uint16_t sync;
+        } __attribute__ ((packed));
+        const static int GET_CONFIG_REQUEST_SIZE = sizeof(GET_CONFIG_REQUEST_t);
+        #define GET_CONFIG_REQUEST_MSGTYPE 0x0002
+
+
+        struct GET_CONFIG_CONFIRM_t
+        {
+            uint32_t status;
+            uint32_t timestamp;
+            uint8_t  reserved1;
+            uint8_t  tGain;
+            uint16_t flags;
+            int32_t  antDelayB;
+            int32_t  antDelayA;
+            uint8_t  codeChannel;
+            uint8_t  antMode;
+            uint16_t PII;
+            uint32_t nodeID;
+            uint16_t msgID;
+            uint16_t msgType;
+            uint16_t length;
+            uint16_t sync;
+        } __attribute__ ((packed));
+        const static int GET_CONFIG_CONFIRM_SIZE= sizeof(GET_CONFIG_CONFIRM_t);
+        #define GET_CONFIG_CONFIRM_MSGTYPE 0x0102
 	
 
 	struct PRE_READ_t
@@ -129,4 +161,5 @@ namespace ranging_radio_types
     };
     
 }
+
 
