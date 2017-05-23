@@ -1,2 +1,2 @@
 float32 time_step
-float32 usage
+int16 usage

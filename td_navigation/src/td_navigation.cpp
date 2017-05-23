@@ -283,13 +283,13 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     res.triangulation_failure = true;
     res.fail = true;
     stat.success = false;
-    stat.initialization_maneuver = 2;
+    stat.initialization_maneuver = 9;
     status_pub.publish(stat);
     return true;
   }
   if(error_type == -2){
     stat.success = false;
-    stat.initialization_maneuver = 2;
+    stat.initialization_maneuver = 9;
     status_pub.publish(stat);
     res.fail = true;
     return true;
@@ -327,129 +327,29 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     ROS_INFO("x:%lf, y:%lf\nhead:%lf, bear:%lf\nmob_rad_0_l_dev:%lf, mob_rad_0_r_dev:%lf\nmob_rad_1_l_dev:%lf, mob_rad_1_r_dev%lf\nmax_angle_error:%lf", x/1000,y/1000,heading,bearing,mob_rad_0_l_dev, mob_rad_0_r_dev, mob_rad_1_l_dev, mob_rad_1_r_dev, max_angle_error);
   res.fail = false;//this has been changed to always true
 
-  if( (y + ROBOT_CENTER_TO_SCOOP < DIG_MAP_Y_LEN - WALL_BUFFER_LEN) && (y - ROBOT_CENTER_TO_SCOOP > -DIG_MAP_Y_LEN + WALL_BUFFER_LEN)
-    && (x -ROBOT_CENTER_TO_SCOOP > WALL_BUFFER_LEN) && position_init){        // ready to move 
+
+  if (max_angle_error > 15*DEG_to_RAD){
+    stat.success = false;
+  }else{
     stat.success = true;
-    stat.initialization_maneuver = 15;
-  }else if(y <= -0.5 * base_station_distance){  //Zone 1, left of radios
-    if(heading > 1 && heading < 89){      //away from corner
-      if(heading > 15 * DEG_to_RAD){      //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 0;
-      }else{                              //good range
-        stat.success = true;
-        stat.initialization_maneuver = 1;
-      }
-      }else if(heading > 91 && heading  <= 180){ //FU Position toward radio
-        if(heading > 15 * DEG_to_RAD){     //bad range
-          stat.success = false;
-          stat.initialization_maneuver = 2;
-        }else{                             //good range
-          stat.success = true;
-          stat.initialization_maneuver = 3;
-        }
-      }else if(heading <= -90 && heading >= -180){  //towards corner
-        if(heading > 15 * DEG_to_RAD){    //bad range
-          stat.success = false;
-          stat.initialization_maneuver = 4;
-        }else{                            //good range
-          stat.success = true;
-          stat.initialization_maneuver = 4;
-        }
-      }else if(heading < 1 && heading >= -90){    //FU away from radios
-        if(heading > 15 * DEG_to_RAD){    //bad range
-          stat.success = false;
-          stat.initialization_maneuver = 5;
-        }else{                            //good range
-          stat.success = true;
-          stat.initialization_maneuver = 6;
-        }
-      }else{                              // parallel to wall facing toward radios
-      if(heading > 15 * DEG_to_RAD){    //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 7;
-      }else{                            //good range
-        stat.success = true;
-        stat.initialization_maneuver = 8;
-      }
-    }
-  }else if(y >= 0.5 * base_station_distance){ //Zone 3, right of radios
-    if(heading > 1 && heading < 90){      //FU away from radios
-      if(heading > 15 * DEG_to_RAD){      //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 2;
-      }else{                              //good range
-        stat.success = true;
-        stat.initialization_maneuver = 3;
-      }
-    }else if(heading >= 90 && heading  <= 180){ //facing corner
-      if(heading > 15 * DEG_to_RAD){     //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 4;
-      }else{                             //good range
-        stat.success = true;
-        stat.initialization_maneuver = 4;
-      }
-    }else if(heading < -91 && heading >= -180){  //FU radios away
-      if(heading > 15 * DEG_to_RAD){    //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 5;
-      }else{                            //good range
-        stat.success = true;
-        stat.initialization_maneuver = 6;
-      }
-    }else if(heading >= -91 && heading <= -89){    //parallel with wall, facing radios
-      if(heading > 15 * DEG_to_RAD){    //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 9;
-      }else{                            //good range
-        stat.success = true;
-        stat.initialization_maneuver = 10;
-      }
-    }else{                              //facing away from corner
-      if(heading > 15 * DEG_to_RAD){    //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 11;
-      }else{                            //good range
-        stat.success = true;
-        stat.initialization_maneuver = 1;
-      }
-    }
-  }else{                              //Zone 2, between radios
-    if((heading >= -180 && heading < -91) || (heading >= 180 && heading < 91)){     // facing base station
-      if(heading > 15 * DEG_to_RAD){      //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 12;
-      }else{                              //good range
-        stat.success = true;
-        stat.initialization_maneuver = 4;
-      }
-    }else if(heading >= -91 && heading  <= -89){ //parllel with wall. facing left
-      if(heading > 15 * DEG_to_RAD){     //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 9;
-      }else{                             //good range
-        stat.success = true;
-        stat.initialization_maneuver = 13;
-      }
-    }else if(heading >= 89 && heading <= 91){  //facing parallel with wall, faing right
-      if(heading > 15 * DEG_to_RAD){    //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 7;
-      }else{                            //good range
-        stat.success = true;
-        stat.initialization_maneuver = 14;
-      }
-    }else if(heading > -89 && heading < 89){    //FU away from radios
-      if(heading > 15 * DEG_to_RAD){    //bad range
-        stat.success = false;
-        stat.initialization_maneuver = 1;
-      }else{                            //good range
-        stat.success = true;
-        stat.initialization_maneuver = 1;
-      }
-    }
   }
+  if( (y + ROBOT_CENTER_TO_SCOOP < DIG_MAP_Y_LEN - WALL_BUFFER_LEN) && (y - ROBOT_CENTER_TO_SCOOP > -DIG_MAP_Y_LEN + WALL_BUFFER_LEN)
+     && (x -ROBOT_CENTER_TO_SCOOP > WALL_BUFFER_LEN) && position_init){        // ready to move
+     stat.success = true;
+     stat.initialization_maneuver = 15;
+  }else if (heading < 45 && heading >-45){
+    stat.initialization_maneuver = 1;
+  }else if(heading >= 45 && heading <= 135){
+    stat.initialization_maneuver = 9;
+  }else if(heading <= -45 && heading >= -135){
+    stat.initialization_maneuver = 7;
+  }else if ( (heading >= -180 && heading < -135) || (heading <= 180 && heading > 135) ){
+    stat.initialization_maneuver = 12;
+  }else{
+    stat.initialization_maneuver = 5;
+  }
+
+
 
   status_pub.publish(stat);
 
@@ -832,11 +732,11 @@ int td_navigation::worker::run_half_pose(){
   dist1_r[0].clear();
   dist1_r[1].clear();
 
-  ROS_INFO("Count: %d", count);
-
   hw_interface_plugin_timedomain::Range_Request rr;
   rr.send_range_request = true;
 
+  bool to_left_mal = false;
+  bool to_right_mal = false;
 
   request_confirmed = false;
   selector = 0;
@@ -845,6 +745,7 @@ int td_navigation::worker::run_half_pose(){
   if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
     //call a function to tell about the malfunction
     ROS_DEBUG("Mob_L Base_L didn't respond in time!");
+    to_left_mal = true;
   }
 
   selector = 1;
@@ -853,6 +754,11 @@ int td_navigation::worker::run_half_pose(){
   if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
     //call a function to tell about the malfunction
     ROS_DEBUG("Mob_L Base_R didn't respond in time!");
+    to_right_mal = true;
+  }
+
+  if(to_left_mal || to_right_mal){
+    return -1;
   }
 
   std::vector<double> distance_to_base_rads;
@@ -920,7 +826,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 727.075, 101, 106, 0, 635, 559); // base = 736.6, robot width = 546, robot length = 635
+  td_navigation::worker worker(50, 1425.0, 104, 106, 0, 635, 559); // base = 736.6, robot width = 546, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;
