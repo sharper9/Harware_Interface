@@ -6,76 +6,76 @@ Initialize::Initialize()
     armRaised = false;
     actionList.resize(NUM_INIT_ACTIONS);
     // 0
-    actionList.at(0).push_back(InitAction(__straight, 0.3));
-    actionList.at(0).push_back(InitAction(__turn, -20.0));
+    actionList.at(0).push_back(InitAction(__straight, 0.3, &this->serialNum));
+    actionList.at(0).push_back(InitAction(__turn, -20.0, &this->serialNum));
 
     // 1
-    actionList.at(1).push_back(InitAction(__armRaise));
-    actionList.at(1).push_back(InitAction(__straight, 0.3));
+    actionList.at(1).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(1).push_back(InitAction(__straight, 0.3, &this->serialNum));
 
     // 2
-    actionList.at(2).push_back(InitAction(__turn, 20.0));
+    actionList.at(2).push_back(InitAction(__turn, 20.0, &this->serialNum));
 
     // 3
-    actionList.at(3).push_back(InitAction(__turn, 20.0));
-    actionList.at(3).push_back(InitAction(__straight, -0.3));
-    actionList.at(3).push_back(InitAction(__armRaise));
-    actionList.at(3).push_back(InitAction(__straight, 0.3));
-    actionList.at(3).push_back(InitAction(__turn, -30.0));
+    actionList.at(3).push_back(InitAction(__turn, 20.0, &this->serialNum));
+    actionList.at(3).push_back(InitAction(__straight, -0.3, &this->serialNum));
+    actionList.at(3).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(3).push_back(InitAction(__straight, 0.3, &this->serialNum));
+    actionList.at(3).push_back(InitAction(__turn, -30.0, &this->serialNum));
 
     // 4
-    actionList.at(4).push_back(InitAction(__straight, -0.3));
+    actionList.at(4).push_back(InitAction(__straight, -0.3, &this->serialNum));
 
     // 5
-    actionList.at(5).push_back(InitAction(__turn, -20.0));
+    actionList.at(5).push_back(InitAction(__turn, -20.0, &this->serialNum));
 
     // 6
-    actionList.at(6).push_back(InitAction(__turn, -20.0));
-    actionList.at(6).push_back(InitAction(__straight, -0.3));
-    actionList.at(6).push_back(InitAction(__armRaise));
-    actionList.at(6).push_back(InitAction(__straight, 0.3));
-    actionList.at(6).push_back(InitAction(__turn, 30.0));
+    actionList.at(6).push_back(InitAction(__turn, -20.0, &this->serialNum));
+    actionList.at(6).push_back(InitAction(__straight, -0.3, &this->serialNum));
+    actionList.at(6).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(6).push_back(InitAction(__straight, 0.3, &this->serialNum));
+    actionList.at(6).push_back(InitAction(__turn, 30.0, &this->serialNum));
 
     // 7
-    actionList.at(7).push_back(InitAction(__armRaise));
-    actionList.at(7).push_back(InitAction(__turn, 20.0));
+    actionList.at(7).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(7).push_back(InitAction(__turn, 20.0, &this->serialNum));
 
     // 8
-    actionList.at(8).push_back(InitAction(__armRaise));
-    actionList.at(8).push_back(InitAction(__turn, 20.0));
-    actionList.at(8).push_back(InitAction(__straight, -0.3));
-    actionList.at(8).push_back(InitAction(__turn, -30.0));
-    actionList.at(8).push_back(InitAction(__straight, 0.3));
+    actionList.at(8).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(8).push_back(InitAction(__turn, 20.0, &this->serialNum));
+    actionList.at(8).push_back(InitAction(__straight, -0.3, &this->serialNum));
+    actionList.at(8).push_back(InitAction(__turn, -30.0, &this->serialNum));
+    actionList.at(8).push_back(InitAction(__straight, 0.3, &this->serialNum));
 
     // 9
-    actionList.at(9).push_back(InitAction(__armRaise));
-    actionList.at(9).push_back(InitAction(__turn, -20.0));
+    actionList.at(9).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(9).push_back(InitAction(__turn, -20.0, &this->serialNum));
 
     // 10
-    actionList.at(10).push_back(InitAction(__armRaise));
-    actionList.at(10).push_back(InitAction(__turn, -20.0));
-    actionList.at(10).push_back(InitAction(__straight, -0.3));
-    actionList.at(10).push_back(InitAction(__turn, 30.0));
-    actionList.at(10).push_back(InitAction(__straight, 0.3));
+    actionList.at(10).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(10).push_back(InitAction(__turn, -20.0, &this->serialNum));
+    actionList.at(10).push_back(InitAction(__straight, -0.3, &this->serialNum));
+    actionList.at(10).push_back(InitAction(__turn, 30.0, &this->serialNum));
+    actionList.at(10).push_back(InitAction(__straight, 0.3, &this->serialNum));
 
     // 11
-    actionList.at(11).push_back(InitAction(__straight, 0.3));
-    actionList.at(11).push_back(InitAction(__turn, 20.0));
+    actionList.at(11).push_back(InitAction(__straight, 0.3, &this->serialNum));
+    actionList.at(11).push_back(InitAction(__turn, 20.0, &this->serialNum));
 
     // 12
-    actionList.at(12).push_back(InitAction(__straight, -0.3));
-    actionList.at(12).push_back(InitAction(__armRaise));
-    actionList.at(12).push_back(InitAction(__turn, 45.0));
+    actionList.at(12).push_back(InitAction(__straight, -0.3, &this->serialNum));
+    actionList.at(12).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(12).push_back(InitAction(__turn, 45.0, &this->serialNum));
 
     // 13
-    actionList.at(13).push_back(InitAction(__armRaise));
-    actionList.at(13).push_back(InitAction(__turn, -20.0));
-    actionList.at(13).push_back(InitAction(__straight, -0.3));
+    actionList.at(13).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(13).push_back(InitAction(__turn, -20.0, &this->serialNum));
+    actionList.at(13).push_back(InitAction(__straight, -0.3, &this->serialNum));
 
     // 14
-    actionList.at(14).push_back(InitAction(__armRaise));
-    actionList.at(14).push_back(InitAction(__turn, 20.0));
-    actionList.at(14).push_back(InitAction(__straight, -0.3));
+    actionList.at(14).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(14).push_back(InitAction(__turn, 20.0, &this->serialNum));
+    actionList.at(14).push_back(InitAction(__straight, -0.3, &this->serialNum));
 }
 
 bool Initialize::runProc()
@@ -108,6 +108,7 @@ bool Initialize::runProc()
             ROS_INFO("_startTimer");
             startupTime = ros::Time::now().toSec();
             performFullPoseUpdate = true;
+            sendDequeClearAll();
             stage = _checkFullPose;
             break;
         case _checkFullPose:
@@ -115,12 +116,8 @@ bool Initialize::runProc()
             {
                 ROS_INFO("initial full pose found");
                 pushInitActionsToPerform();
-                if(performAManeuver)
-                {
-                    stage = _moveActuator;
-                    nextStage = _startTimer;
-                }
-                else stage = _completeInit;
+                stage = _moveActuator;
+                nextStage = _completeInit;
             }
             else if((ros::Time::now().toSec() - startupTime) > waitForFullPoseTime)
             {
@@ -179,16 +176,18 @@ void Initialize::pushInitActionsToPerform()
     }
 }
 
-Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn)
+Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn, unsigned int* initializeSerialNumPtrIn)
 {
     actionType = actionTypeIn;
     parameter = 0.0;
+    initializeSerialNumPtr = initializeSerialNumPtrIn;
 }
 
-Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn)
+Initialize::InitAction::InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn, unsigned int* initializeSerialNumPtrIn)
 {
     actionType = actionTypeIn;
     parameter = parameterIn;
+    initializeSerialNumPtr = initializeSerialNumPtrIn;
 }
 
 void Initialize::InitAction::pushAction()
@@ -216,6 +215,7 @@ void Initialize::InitAction::pushAction()
         ROS_ERROR("Initialize, InitAction, invalid action type pushed = %i",static_cast<int>(actionType));
         break;
     }
+    *initializeSerialNumPtr = this->serialNum;
 }
 
 bool Initialize::InitAction::runProc()

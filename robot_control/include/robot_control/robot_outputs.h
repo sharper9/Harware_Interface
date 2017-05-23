@@ -6,11 +6,11 @@
 #define SCOOP_LOWERED 600
 #define ARM_RAISED 1000
 #define ARM_PARTIALLY_RAISED -700
-//#define ARM_LOWERED -650
-#define ARM_LOWERED -100 // TODO: This is temporary for testing indoors
+#define ARM_LOWERED -650
+//#define ARM_LOWERED -100 // TODO: This is temporary for testing indoors
 #define ARM_PRE_LOWER 0
-//#define ARM_INIT -900
-#define ARM_INIT -100 // TODO: This is temporary for testing indoors
+#define ARM_INIT -900
+//#define ARM_INIT -100 // TODO: This is temporary for testing indoors
 #define ARM_DUMP -1000
 #define BUCKET_RAISED 1000
 #define BUCKET_LOWERED -1000

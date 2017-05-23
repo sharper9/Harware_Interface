@@ -20,9 +20,9 @@ void rightRoboteqCallback(const hw_interface_plugin_roboteq::Roboteq_Data::Const
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "power_usage_node");
+    ros::NodeHandle nh;
     startTime = ros::Time::now();
     
-    ros::NodeHandle nh;
     ros::Subscriber rightRoboteqSub = nh.subscribe("/roboteq/drivemotorin/right", 1, &rightRoboteqCallback);
     powerPub = nh.advertise<messages::PowerUsage>("/energy_consumed", 1, false);
 

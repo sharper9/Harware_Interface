@@ -2,12 +2,12 @@
 
 #define PI 3.14159265358
 
-#define DEG_to_RAD 0.0174532925
+#define DEG_TO_RAD 0.0174532925
 #define WT_VALUE 500
 #define REQUEST_TIMEOUT 0.5
 
-#define DIG_MAP_X_LEN 7.38
-#define DIG_MAP_Y_LEN 3.78
+#define DIG_MAP_X_LEN 7380
+#define DIG_MAP_Y_LEN 3780
 #define ROBOT_CENTER_TO_SCOOP 1000 //in millimeters
 #define WALL_BUFFER_LEN 500 //in millimeters
 
@@ -94,6 +94,7 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
         }
       }
     }
+    ROS_INFO("Spinning");
     ros::spinOnce();
   }
 }
@@ -299,6 +300,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     stat.success = false;
     stat.initialization_maneuver = 9;
     status_pub.publish(stat);
+    ros::spinOnce();
     return true;
   }
   if(error_type == -2){
@@ -306,6 +308,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     stat.initialization_maneuver = 9;
     status_pub.publish(stat);
     res.fail = true;
+    ros::spinOnce();
     return true;
   }
 
@@ -342,7 +345,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   res.fail = false;//this has been changed to always true
 
 
-  if (max_angle_error > 15*DEG_to_RAD){
+  if (max_angle_error > 15*DEG_TO_RAD){
     stat.success = false;
   }else{
     stat.success = true;
@@ -351,19 +354,20 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
      && (x -ROBOT_CENTER_TO_SCOOP > WALL_BUFFER_LEN) && position_init){        // ready to move
      stat.success = true;
      stat.initialization_maneuver = 15;
-  }else if (heading < 45 && heading >-45){
+  }else if (heading < 45 * DEG_TO_RAD && heading > -45 * DEG_TO_RAD){
     stat.initialization_maneuver = 1;
-  }else if(heading >= 45 && heading <= 135){
+  }else if(heading >= 45 * DEG_TO_RAD && heading <= 135 * DEG_TO_RAD){
     stat.initialization_maneuver = 9;
-  }else if(heading <= -45 && heading >= -135){
+  }else if(heading <= -45 * DEG_TO_RAD && heading >= -135 * DEG_TO_RAD){
     stat.initialization_maneuver = 7;
-  }else if ( (heading >= -180 && heading < -135) || (heading <= 180 && heading > 135) ){
+  }else if ( (heading >= -180 * DEG_TO_RAD && heading < -135 * DEG_TO_RAD) || (heading <= 180 * DEG_TO_RAD && heading > 135 * DEG_TO_RAD) ){
     stat.initialization_maneuver = 12;
   }else{
     stat.initialization_maneuver = 5;
   }
 
   status_pub.publish(stat);
+  ros::spinOnce();
 
   return true;
 }

@@ -261,6 +261,7 @@ void MissionPlanning::packAndPubInfoMsg_()
     }
     infoMsg.missionTime = missionTime;
     infoMsg.performFullPose = performFullPoseUpdate;
+    if(infoMsg.performFullPose) ROS_WARN("perform full pose  = true");
     infoPub.publish(infoMsg);
 }
 
@@ -286,7 +287,7 @@ void MissionPlanning::initializeDigPlanningMap_()
 
 void MissionPlanning::checkStuckCondition_()
 {
-    if(execInfoMsg.stopFlag)
+    if(execInfoMsg.stopFlag || execInfoMsg.turnFlag)
     {
         stuck = false;
         prevXPos = robotStatus.xPos;
@@ -302,7 +303,7 @@ void MissionPlanning::checkStuckCondition_()
             prevYPos = robotStatus.yPos;
             prevPosUnchangedTime = ros::Time::now().toSec();
         }
-        else if((ros::Time::now().toSec() - prevPosUnchangedTime) > maxStuckTime)
+        else if(((ros::Time::now().toSec() - prevPosUnchangedTime) > maxStuckTime) && (hypot(robotStatus.xPos - prevXPos, robotStatus.yPos - prevYPos) <= maxStuckDistance))
         {
             stuck = true;
         }
@@ -341,6 +342,7 @@ void MissionPlanning::navCallback_(const messages::NavFilterOut::ConstPtr &msg)
 void MissionPlanning::execInfoCallback_(const messages::ExecInfo::ConstPtr &msg)
 {
     execInfoMsg = *msg;
+    if(msg->stopFlag==false) performFullPoseUpdate = false;
 }
 
 void MissionPlanning::pauseCallback_(const hw_interface_plugin_agent::pause::ConstPtr &msg)

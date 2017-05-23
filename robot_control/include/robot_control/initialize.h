@@ -33,8 +33,9 @@ public:
     class InitAction : public Procedure
     {
     public:
-        InitAction(INIT_ACTION_TYPE_T actionTypeIn);
-        InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn);
+        InitAction(INIT_ACTION_TYPE_T actionTypeIn, unsigned int* initializeSerialNumPtrIn);
+        InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn, unsigned int* initializeSerialNumPtrIn);
+        unsigned int* initializeSerialNumPtr;
         void pushAction();
         float parameter;
         INIT_ACTION_TYPE_T actionType;
