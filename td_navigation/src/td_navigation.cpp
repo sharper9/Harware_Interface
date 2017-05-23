@@ -84,7 +84,15 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
   while(nh.ok())
   {
     if(position_init == true){
-        run_half_pose();
+      if(half_angle_left){
+        if(run_half_pose_left() != 0){
+          half_angle_left = false;
+        }
+      }else{
+        if(run_half_pose_right() != 0){
+          half_angle_left = true;
+        }
+      }
     }
     ros::spinOnce();
   }
@@ -122,15 +130,17 @@ int td_navigation::worker::add_distance(std::vector < std::vector<double> >& dis
     distances[0].push_back(range);
     distances[1].push_back(error);
 
-    if(error >= base_station_distance/2){
+
+    if(error >= mob_rad_dist/2){
       bad_ranges++;
     }
   }else{
-    if(bad_ranges > 0 && error < base_station_distance/2){
+    if(bad_ranges > 0 && error < mob_rad_dist/2){
 
       for(int i = 0; i < distances[0].size(); i++){
 
-        if(distances[1][i] >= base_station_distance/2){
+        if(distances[1][i] >= mob_rad_dist/2){
+
           distances[0][i] = range;
           distances[1][i] = error;
           bad_ranges -= 1;
@@ -254,6 +264,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   double mob_rad_1_l_dev = 0;
   double mob_rad_1_r_dev = 0;
 
+
   double mob_rad_0_error = 0;
   double mob_rad_1_error = 0;
 
@@ -278,6 +289,9 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   res.base_R_failure = base_rad_1_malfunction;
   res.mob_L_failure = mob_rad_0_malfunction;
   res.mob_R_failure = mob_rad_1_malfunction;
+
+  ROS_INFO("Base_L_fail:%d, Base_R_fail:%d, Mob_L_fail:%d, Mob_R_fail:%d", base_rad_0_malfunction, base_rad_1_malfunction, mob_rad_0_malfunction, mob_rad_1_malfunction);
+
 
   if(error_type == -1){
     res.triangulation_failure = true;
@@ -349,10 +363,7 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     stat.initialization_maneuver = 5;
   }
 
-
-
   status_pub.publish(stat);
-
 
   return true;
 }
@@ -559,13 +570,12 @@ int td_navigation::worker::run_full_pose(){
 
   int doom_count = 0;
   bool failed = false;
-
-
   request_confirmed = false;
   selector = 0;
   int num = 0;
   count = 0;
-  while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+  while(num <= average_length + 20 && !(dist0_l[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
+
     rr.msgID = count + selector;
     //range request and response from 104 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_l_pub) == false){
@@ -587,9 +597,11 @@ int td_navigation::worker::run_full_pose(){
 
   selector = 1;
   bad_ranges = 0;
+  doom_count = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+  while(num <= average_length + 20 && !(dist0_r[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
+
     rr.msgID = count + selector;
     //range request and response from 104 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_l_pub) == false){
@@ -610,9 +622,11 @@ int td_navigation::worker::run_full_pose(){
 
   selector = 2;
   bad_ranges = 0;
+  doom_count = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+  while(num <= average_length + 20 && !(dist1_l[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
+
     rr.msgID = count + selector;
     //range request and response from 105 to 101
     if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
@@ -634,9 +648,10 @@ int td_navigation::worker::run_full_pose(){
 
   selector = 3;
   bad_ranges = 0;
+  doom_count = 0;
   count = 0;
   num = 0;
-  while(num <= average_length + 20 && !(dist1_r[0].size() == average_length && bad_ranges == 0) && doom_count < 3){
+  while(num <= average_length + 20 && !(dist1_r[0].size() == average_length && bad_ranges == 0) && doom_count < 10){
     rr.msgID = count + selector;
     //range request and response from 105 to 106
     if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
@@ -655,6 +670,8 @@ int td_navigation::worker::run_full_pose(){
     failed = false;
 
   }
+  doom_count = 0;
+
 
   base_rad_0_malfunction = rad0_l_mal && rad1_l_mal;
   base_rad_1_malfunction = rad0_r_mal && rad1_r_mal;
@@ -721,7 +738,7 @@ return 0;
 
 }
 
-int td_navigation::worker::run_half_pose(){
+int td_navigation::worker::run_half_pose_left(){
 
   dist0_l[0].clear();
   dist0_l[1].clear();
@@ -758,7 +775,8 @@ int td_navigation::worker::run_half_pose(){
   }
 
   if(to_left_mal || to_right_mal){
-    return -1;
+    return -2;
+
   }
 
   std::vector<double> distance_to_base_rads;
@@ -798,14 +816,87 @@ int td_navigation::worker::run_half_pose(){
     return -1;
   }
 
-  //update count
-  update_count();
-  if(count >= 32000){
-    count = 0;
+return 0;
 }
 
-return 0;
+int td_navigation::worker::run_half_pose_right(){
 
+  dist0_l[0].clear();
+  dist0_l[1].clear();
+  dist0_r[0].clear();
+  dist0_r[1].clear();
+  dist1_l[0].clear();
+  dist1_l[1].clear();
+  dist1_r[0].clear();
+  dist1_r[1].clear();
+
+  hw_interface_plugin_timedomain::Range_Request rr;
+  rr.send_range_request = true;
+
+  bool to_left_mal = false;
+  bool to_right_mal = false;
+
+  request_confirmed = false;
+  selector = 2;
+  rr.msgID = count + selector;
+  //range request and response from 104 to 101
+  if (send_and_recieve(rad_L, rr, mob_rad_r_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("Mob_R Base_L didn't respond in time!");
+    to_left_mal = true;
+  }
+
+  selector = 3;
+  rr.msgID = count + selector;
+  //range request and response from 104 to 106
+  if (send_and_recieve(rad_R, rr, mob_rad_r_pub) == false){
+    //call a function to tell about the malfunction
+    ROS_DEBUG("Mob_R Base_R didn't respond in time!");
+    to_right_mal = true;
+  }
+
+  if(to_left_mal || to_right_mal){
+    return -2;
+  }
+
+  std::vector<double> distance_to_base_rads;
+
+
+  distance_to_base_rads.push_back(get_avg_dist1_l(1));
+  distance_to_base_rads.push_back(get_avg_dist1_r(1));
+  rad_nav.update_mobile_radio(1 ,distance_to_base_rads);
+
+  if (rad_nav.triangulate_2Base(z_estimate) == 0){
+
+    double angle_2 = heading + PI/2.0;
+    double back_x, back_y;
+
+    back_x = rad_nav.get_mobile_radio_coordinate(1,0) + cos(angle_2) * mob_rad_dist / 2.0;
+
+    back_y = rad_nav.get_mobile_radio_coordinate(1,1) + sin(angle_2) * mob_rad_dist / 2.0;
+
+    x = back_x + (cos(heading) * robot_length_offset);
+
+    y = back_y + (sin(heading) * robot_length_offset);
+
+
+    ROS_DEBUG("Head: %lf, Bear: %lf, x: %lf, y: %lf", heading * 180.0 / PI, bearing * 180.0 / PI, x, y );
+
+
+    td_navigation::Running_Half_Pose rhp;
+
+    rhp.x = x/1000.0;
+    rhp.y = y/1000.0;
+
+    rhp_pub.publish(rhp);
+
+
+  }else {
+    ROS_ERROR("Problem encountered with triangulation!");
+    return -1;
+  }
+
+return 0;
 }
 
 /*
@@ -826,7 +917,8 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1425.0, 104, 106, 0, 635, 559); // base = 736.6, robot width = 546, robot length = 635
+  td_navigation::worker worker(50, 1780, 104, 106, 0, 635, 557); // base = 1780, robot width = 557, robot length = 635
+
 
   ROS_DEBUG("td_navigation closing");
   return 0;
