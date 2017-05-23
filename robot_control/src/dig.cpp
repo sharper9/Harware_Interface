@@ -9,6 +9,7 @@ void Dig::init()
     digCompleted_ = false;
     taskPushed_ = false;
     taskFinished_ = false;
+    digPitchAngle_ = params.float1;
     clearDeques();
 }
 
@@ -37,7 +38,7 @@ int Dig::run()
         case _lowerArm:
             taskToPush_ = _armLowerToPitch_;
             typeOfTaskPushed_ = __arm;
-            valueToPush_ = 0;
+            valueToPush_ = (int)digPitchAngle_;
             step_ = _drive1;
             break;
         case _drive1:

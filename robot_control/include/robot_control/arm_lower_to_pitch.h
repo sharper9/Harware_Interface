@@ -12,7 +12,7 @@ private:
 	float initialPitch_;
 	double initialTime_;
 	const int armPosDelta_ = -16;
-	const float deltaPitchGoal_ = -2.0; // deg
+    float deltaPitchGoal_ = -2.0; // deg
 	const double timeoutValue_ = 4.0; // sec
 };
 

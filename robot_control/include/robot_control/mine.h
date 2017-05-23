@@ -14,6 +14,7 @@ public:
     unsigned int finalSerialNum;
     unsigned int backUpFromWallSerialNum;
     bool sentTooCloseToWall;
+    float digPitchAngle;
 };
 
 #endif // MINE_H

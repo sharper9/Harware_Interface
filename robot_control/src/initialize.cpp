@@ -2,21 +2,22 @@
 
 Initialize::Initialize()
 {
+    // 1, 7, 9, 12, (15)
     armRaised = false;
     actionList.resize(NUM_INIT_ACTIONS);
     // 0
     actionList.at(0).push_back(InitAction(__straight, 0.3));
-    actionList.at(0).push_back(InitAction(__turn, -15.0));
+    actionList.at(0).push_back(InitAction(__turn, -20.0));
 
     // 1
     actionList.at(1).push_back(InitAction(__armRaise));
     actionList.at(1).push_back(InitAction(__straight, 0.3));
 
     // 2
-    actionList.at(2).push_back(InitAction(__turn, 15.0));
+    actionList.at(2).push_back(InitAction(__turn, 20.0));
 
     // 3
-    actionList.at(3).push_back(InitAction(__turn, 15.0));
+    actionList.at(3).push_back(InitAction(__turn, 20.0));
     actionList.at(3).push_back(InitAction(__straight, -0.3));
     actionList.at(3).push_back(InitAction(__armRaise));
     actionList.at(3).push_back(InitAction(__straight, 0.3));
@@ -26,10 +27,10 @@ Initialize::Initialize()
     actionList.at(4).push_back(InitAction(__straight, -0.3));
 
     // 5
-    actionList.at(5).push_back(InitAction(__turn, -15.0));
+    actionList.at(5).push_back(InitAction(__turn, -20.0));
 
     // 6
-    actionList.at(6).push_back(InitAction(__turn, -15.0));
+    actionList.at(6).push_back(InitAction(__turn, -20.0));
     actionList.at(6).push_back(InitAction(__straight, -0.3));
     actionList.at(6).push_back(InitAction(__armRaise));
     actionList.at(6).push_back(InitAction(__straight, 0.3));
@@ -37,42 +38,43 @@ Initialize::Initialize()
 
     // 7
     actionList.at(7).push_back(InitAction(__armRaise));
-    actionList.at(7).push_back(InitAction(__turn, 15.0));
+    actionList.at(7).push_back(InitAction(__turn, 20.0));
 
     // 8
     actionList.at(8).push_back(InitAction(__armRaise));
-    actionList.at(8).push_back(InitAction(__turn, 15.0));
+    actionList.at(8).push_back(InitAction(__turn, 20.0));
     actionList.at(8).push_back(InitAction(__straight, -0.3));
     actionList.at(8).push_back(InitAction(__turn, -30.0));
     actionList.at(8).push_back(InitAction(__straight, 0.3));
 
     // 9
     actionList.at(9).push_back(InitAction(__armRaise));
-    actionList.at(9).push_back(InitAction(__turn, -15.0));
+    actionList.at(9).push_back(InitAction(__turn, -20.0));
 
     // 10
     actionList.at(10).push_back(InitAction(__armRaise));
-    actionList.at(10).push_back(InitAction(__turn, -15.0));
+    actionList.at(10).push_back(InitAction(__turn, -20.0));
     actionList.at(10).push_back(InitAction(__straight, -0.3));
     actionList.at(10).push_back(InitAction(__turn, 30.0));
     actionList.at(10).push_back(InitAction(__straight, 0.3));
 
     // 11
     actionList.at(11).push_back(InitAction(__straight, 0.3));
-    actionList.at(11).push_back(InitAction(__turn, 15.0));
+    actionList.at(11).push_back(InitAction(__turn, 20.0));
 
     // 12
     actionList.at(12).push_back(InitAction(__straight, -0.3));
+    actionList.at(12).push_back(InitAction(__armRaise));
     actionList.at(12).push_back(InitAction(__turn, 45.0));
 
     // 13
     actionList.at(13).push_back(InitAction(__armRaise));
-    actionList.at(13).push_back(InitAction(__turn, -15.0));
+    actionList.at(13).push_back(InitAction(__turn, -20.0));
     actionList.at(13).push_back(InitAction(__straight, -0.3));
 
     // 14
     actionList.at(14).push_back(InitAction(__armRaise));
-    actionList.at(14).push_back(InitAction(__turn, 15.0));
+    actionList.at(14).push_back(InitAction(__turn, 20.0));
     actionList.at(14).push_back(InitAction(__straight, -0.3));
 }
 
@@ -123,27 +125,13 @@ bool Initialize::runProc()
             else if((ros::Time::now().toSec() - startupTime) > waitForFullPoseTime)
             {
                 ROS_INFO("check full pose timeout");
-                if(bucketRaised)
+                pushInitActionsToPerform();
+                if(performAManeuver)
                 {
-                    ROS_INFO("lower bucket and perform maneuver");
-                    sendLowerBucket();
-                    bucketRaised = false;
-                    pushInitActionsToPerform();
-                    if(performAManeuver)
-                    {
-                        stage = _moveActuator;
-                        nextStage = _startTimer;
-                    }
-                    else stage = _completeInit;
-                }
-                else
-                {
-                    ROS_INFO("raise bucket");
-                    sendPartiallyRaiseBucket();
-                    bucketRaised = true;
                     stage = _moveActuator;
                     nextStage = _startTimer;
                 }
+                else stage = _completeInit;
             }
             else stage = _checkFullPose;
             break;

@@ -4,6 +4,7 @@ void ArmLowerToPitch::init()
 {
     armFailed = false;
     armEnded = false;
+    deltaPitchGoal_ = (float)params.int1;
     initialPitch_ = robotStatus.pitchAngle;
     initialTime_ = ros::Time::now().toSec();
     ROS_WARN("ArmLowerToPitch init()");

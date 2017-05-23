@@ -9,10 +9,12 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
+        digPitchAngle = -2.0;
         for(int i=0; i<numDigsPerMine; i++)
         {
-            sendDig();
+            sendDig(digPitchAngle);
             sendShake();
+            digPitchAngle -= 1.0;
         }
         finalSerialNum = serialNum;
         tooCloseToWallLatch.LE_Latch(0);
