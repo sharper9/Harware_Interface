@@ -2,7 +2,6 @@
 
 void DrivePivot::init()
 {
-    ROS_INFO("drive pivot init, float1 = %f",params.float1);
 	initHeading_ = robotStatus.heading;
 	desiredDeltaHeading_ = params.float1;
     timeoutValue_ = (unsigned int)round((10.0 + fabs(desiredDeltaHeading_)/10.0)*robotStatus.loopRate);
