@@ -14,6 +14,7 @@
 #define BUCKET_RAISED 1000
 #define BUCKET_LOWERED -1000
 #define BUCKET_PRE_RAISED 0
+#define BUCKET_PARTIALLY_RAISED 600
 
 class RobotOutputs
 {

@@ -11,6 +11,7 @@ void DriveStraight::init()
 	else driveSign_ = 1.0;
 	timeoutValue_ = (unsigned int)round((4.0 + 2.0*fabs(desiredDistance_))*robotStatus.loopRate);
 	timeoutCounter_ = 0;
+    timeoutMinValue_ = (unsigned int)round(0.5*robotStatus.loopRate);
 	headingErrorSpeedI_ = 0.0;
     robotOutputs.stopFlag = false;
     robotOutputs.turnFlag = false;
@@ -68,7 +69,7 @@ int DriveStraight::run()
     //ROS_INFO("leftSpeed_ = %i",leftSpeed_);
     //ROS_INFO("rightSpeed_ = %i",rightSpeed_);
 	timeoutCounter_++;
-	if(fabs(traversedDistance_) >= fabs(desiredDistance_) || timeoutCounter_ >= timeoutValue_)
+    if((fabs(traversedDistance_) >= fabs(desiredDistance_) || timeoutCounter_ >= timeoutValue_) && timeoutCounter_ >= timeoutMinValue_ )
 	{
 		robotOutputs.flMotorSpeed = 0;
 		robotOutputs.blMotorSpeed = 0;

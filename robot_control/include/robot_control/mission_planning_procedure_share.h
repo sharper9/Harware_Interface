@@ -17,7 +17,7 @@
 #include "bit_utils.h"
 
 #define DIG_MAP_RES 1.0
-#define DIG_MAP_X_LEN 7.163 // 7.38 // TODO: set these numbers back for real arena size
+#define DIG_MAP_X_LEN 7.38
 #define DIG_MAP_Y_LEN 3.78
 
 class MissionPlanningProcedureShare
@@ -67,7 +67,7 @@ public:
     static float moderateQualityInitX;
     static float moderateQualityInitY;
     static float moderateQualityInitHeading;
-    static int badInitPoseManeuverToPerform;
+    static int initManeuverToPerform;
     static float prevXPos;
     static float prevYPos;
     static double prevPosUnchangedTime;
@@ -141,7 +141,7 @@ bool MissionPlanningProcedureShare::moderateQualityInitPoseFound;
 float MissionPlanningProcedureShare::moderateQualityInitX;
 float MissionPlanningProcedureShare::moderateQualityInitY;
 float MissionPlanningProcedureShare::moderateQualityInitHeading;
-int MissionPlanningProcedureShare::badInitPoseManeuverToPerform;
+int MissionPlanningProcedureShare::initManeuverToPerform;
 float MissionPlanningProcedureShare::prevXPos;
 float MissionPlanningProcedureShare::prevYPos;
 double MissionPlanningProcedureShare::prevPosUnchangedTime;

@@ -10,7 +10,7 @@ operator_UDP:
     
 op_UDP:
     {
-        remoteAddress           : "192.168.1.102",
+        remoteAddress           : "192.168.1.103",
         remotePort              : 26014,
         localPort               : 9003,
         heartbeatRate_ms        : 100,

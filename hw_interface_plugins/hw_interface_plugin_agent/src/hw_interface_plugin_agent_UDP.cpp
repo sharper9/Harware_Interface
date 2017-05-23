@@ -37,6 +37,7 @@ void hw_interface_plugin_agent::agent_UDP::msgCallback(const topic_tools::ShapeS
             boost::lock_guard<boost::mutex> guard(webCamCmdMutex);
             if(/*webCamCmdFromCommand.start && */(type==MSG_TYPE_CAMERA_IMAGE))
             {
+              // 2000 bytes each packets then send over network
                 ROS_DEBUG("Camera IMAGE");
                 postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
             }
