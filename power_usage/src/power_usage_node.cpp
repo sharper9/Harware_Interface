@@ -8,9 +8,12 @@ ros::Publisher powerPub;
 void rightRoboteqCallback(const hw_interface_plugin_roboteq::Roboteq_Data::ConstPtr &msg)
 {
     messages::PowerUsage powerMsg;
-    float volts = (msg->analog_inputs[2] / 40) * msg->volts[1];
+    float roboteqVolts = msg->analog_inputs[2] / 1000;
+    float batteryVolts = msg->volts[1];
+    float volts = (roboteqVolts / 40) * batteryVolts;
     powerMsg.time_step = startTime.toSec() - ros::Time::now().toSec();
-    powerMsg.usage = volts * powerMsg.time_step;
+    float joules = volts * powerMsg.time_step;
+    powerMsg.usage = joules * 3600;
     powerPub.publish(powerMsg);
 } 
 
