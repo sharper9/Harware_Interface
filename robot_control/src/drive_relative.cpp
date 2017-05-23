@@ -6,6 +6,7 @@ void DriveRelative::init()
     armFailed = false;
     bucketFailed = false;
     driveBackwards_ = params.bool3;
+    ROS_INFO("drive rel float 1 = %f, float2 = %f",params.float1,params.float2);
     if(driveBackwards_)
     {
         desiredX_ = -params.float1*cos(DEG2RAD*(params.float2 + robotStatus.heading)) + robotStatus.xPos;

@@ -200,6 +200,7 @@ void Initialize::InitAction::pushAction()
         else sendDriveRel(parameter, 0.0, false, 0.0, false, true);
         break;
     case __turn:
+        ROS_INFO("turn parameter = %f",parameter);
         sendDriveRel(0.0, parameter, false, 0.0, false, false);
         break;
     case __armRaise:
