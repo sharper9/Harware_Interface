@@ -17,8 +17,8 @@
 #include "bit_utils.h"
 
 #define DIG_MAP_RES 1.0
-#define DIG_MAP_X_LEN 4.75 //7.38
-#define DIG_MAP_Y_LEN 4.64
+#define DIG_MAP_X_LEN 7.38
+#define DIG_MAP_Y_LEN 3.78
 
 class MissionPlanningProcedureShare
 {
@@ -79,17 +79,17 @@ public:
     const float depositWaypointAngleToleranceMax = 20.0; // deg
     const float depositWaypointDistanceToleranceIncrement = 0.1; // m
     const float depositWaypointAngleToleranceIncrement = 5.0; // deg
-    const float depositWaypointRecoverX = 1.60; // m // TODO: set back to 2.0 m
+    const float depositWaypointRecoverX = 2.0; // m
     const float depositWaypointRecoverY = 0.0; // m
     const float queueEmptyTimerPeriod = 30.0; // sec
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 	const float mapYOffset = 1.94; // m
-    const float miningRegionMinXDistance = 1.75; // m (4.55) // TODO: set these numbers back for real arena size
-	const float miningRegionTargetXDistance = 1.80; // m (4.65)
+    const float miningRegionMinXDistance = 4.55; // m (4.55)
+	const float miningRegionTargetXDistance = 4.65; // m (4.65)
 	const float miningWallBufferDistance = 0.5; // m
     const float robotCenterToScoopLength = 1.0; // m
-    const float baseStationDistance = 1.638; // m
+    const float baseStationDistance = 1.780; // m
     const float maxStuckDistance = 0.75; // m
     const double maxStuckTime = 4.0; // sec
     const float flipBackDistanceToDrive = 0.3; // m
