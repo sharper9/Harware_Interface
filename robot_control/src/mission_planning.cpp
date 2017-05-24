@@ -261,7 +261,7 @@ void MissionPlanning::packAndPubInfoMsg_()
     }
     infoMsg.missionTime = missionTime;
     infoMsg.performFullPose = performFullPoseUpdate;
-    if(infoMsg.performFullPose) ROS_WARN("perform full pose  = true");
+    //if(infoMsg.performFullPose) ROS_WARN("perform full pose  = true");
     infoPub.publish(infoMsg);
 }
 

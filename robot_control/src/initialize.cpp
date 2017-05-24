@@ -114,7 +114,6 @@ bool Initialize::runProc()
             stage = _checkFullPose;
             break;
         case _checkFullPose:
-            ROS_INFO("check full pose");
             if(robotStatus.initialFullPoseFound)
             {
                 ROS_INFO("initial full pose found");
@@ -140,7 +139,6 @@ bool Initialize::runProc()
             else stage = _checkFullPose;
             break;
         case _moveActuator:
-            ROS_INFO("move actuator");
             if((execLastProcType == procType && execLastSerialNum == serialNum) || queueEmptyTimedOut) stage = nextStage;
             else stage = _moveActuator;
             break;
