@@ -36,7 +36,8 @@ public:
         InitAction(INIT_ACTION_TYPE_T actionTypeIn, unsigned int* initializeSerialNumPtrIn);
         InitAction(INIT_ACTION_TYPE_T actionTypeIn, float parameterIn, unsigned int* initializeSerialNumPtrIn);
         unsigned int* initializeSerialNumPtr;
-        void pushAction();
+        void pushAction(PROC_TYPES_T procTypeIn);
+        void setProcType(PROC_TYPES_T procTypeIn);
         float parameter;
         INIT_ACTION_TYPE_T actionType;
         bool runProc();
