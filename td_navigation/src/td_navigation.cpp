@@ -298,14 +298,14 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     res.triangulation_failure = true;
     res.fail = true;
     stat.success = false;
-    stat.initialization_maneuver = 9;
+    stat.initialization_maneuver = 5;
     status_pub.publish(stat);
     ros::spinOnce();
     return true;
   }
   if(error_type == -2){
     stat.success = false;
-    stat.initialization_maneuver = 9;
+    stat.initialization_maneuver = 5;
     status_pub.publish(stat);
     res.fail = true;
     ros::spinOnce();
@@ -354,13 +354,13 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
      && (x -ROBOT_CENTER_TO_SCOOP > WALL_BUFFER_LEN) && position_init){        // ready to move
      stat.success = true;
      stat.initialization_maneuver = 15;
-  }else if (heading < 45 * DEG_TO_RAD && heading > -45 * DEG_TO_RAD){
+  }else if (heading < 30 * DEG_TO_RAD && heading > -30 * DEG_TO_RAD){
     stat.initialization_maneuver = 1;
-  }else if(heading >= 45 * DEG_TO_RAD && heading <= 135 * DEG_TO_RAD){
+  }else if(heading >= 30 * DEG_TO_RAD && heading <= 135 * DEG_TO_RAD){
     stat.initialization_maneuver = 9;
-  }else if(heading <= -45 * DEG_TO_RAD && heading >= -135 * DEG_TO_RAD){
+  }else if(heading <= -30 * DEG_TO_RAD && heading >= -135 * DEG_TO_RAD){
     stat.initialization_maneuver = 7;
-  }else if ( (heading >= -180 * DEG_TO_RAD && heading < -135 * DEG_TO_RAD) || (heading <= 180 * DEG_TO_RAD && heading > 135 * DEG_TO_RAD) ){
+  }else if ( (heading >= -180 * DEG_TO_RAD && heading < -150 * DEG_TO_RAD) || (heading <= 180 * DEG_TO_RAD && heading > 150 * DEG_TO_RAD) ){
     stat.initialization_maneuver = 12;
   }else{
     stat.initialization_maneuver = 5;
@@ -921,7 +921,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1780, 104, 106, 0, 635, 557); // base = 1780, robot width = 557, robot length = 635
+  td_navigation::worker worker(50, 1780, 104, 106, 0, 610, 557); // base = 1780, robot width = 557, robot length = 635
 
 
   ROS_DEBUG("td_navigation closing");
