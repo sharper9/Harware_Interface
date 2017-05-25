@@ -93,7 +93,7 @@ void NavigationFilter::run()
 
         //if no motion detected
         if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/
-                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0575) && encoders.delta_distance == 0) //if no motion detected
+                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0575) && fabs(encoders.delta_distance) <= .05) //if no motion detected
         {
             if(perform_rr_heading_update && !rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
             {
@@ -112,9 +112,9 @@ void NavigationFilter::run()
                         double rr_heading; //radians
                         double rr_x;
                         double rr_y;
-                        if(rr_heading_error < rr_error_heading_update_tolerance) //todo, put check back
+                        //if() //todo, put check back
                         {
-                            if(!rr_initial_pose_found || fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
+                            if(!rr_initial_pose_found || (rr_heading_error < rr_error_heading_update_tolerance) || (fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance)) // Trust RR updated heading
                             {
                                 if(!rr_initial_pose_found || ((hypot(filter.x-rr_srv.response.x, filter.y-rr_srv.response.y)) < rr_stopped_position_update_tolerence))
                                 {
@@ -139,12 +139,12 @@ void NavigationFilter::run()
                                 ROS_ERROR("RR heading too far from current heading. Not updating pose. %f", rr_srv.response.heading*RAD_2_DEG);
                             }
                         }
-                        else
+                       /* else
                         {
                             ROS_ERROR("Rejecting RR Update due to heading error outside of tolerence. Not Updating. %f",rr_heading_error*RAD_2_DEG);
                             rr_found_full_pose = false;
                             rr_full_pose_failed_counter++;
-                        }
+                        }*/
                     }
                     else
                     {

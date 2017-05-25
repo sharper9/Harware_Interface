@@ -10,6 +10,10 @@ void Shake::init()
     taskPushed_ = false;
     taskFinished_ = false;
     clearDeques();
+    pushTask(_scoopSetPos_);
+    scoopDeque.back()->params.int1 = SCOOP_RAISED;
+    pushTask(_armSetPos_);
+    armDeque.back()->params.int1 = ARM_RAISED;
 }
 
 int Shake::run()
