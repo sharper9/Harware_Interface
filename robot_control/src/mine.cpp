@@ -44,7 +44,8 @@ bool Mine::runProc()
         {
             sentTooCloseToWall = false;
         }
-        if((execLastProcType == procType && execLastSerialNum == finalSerialNum) || queueEmptyTimedOut) state = _finish_;
+        if(execLastProcType == procType && execLastSerialNum == finalSerialNum) performFullPoseUpdate = true;
+        if((execLastProcType == procType && execLastSerialNum == finalSerialNum && robotStatus.fullPoseFound) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;
         serviceQueueEmptyCondition();
         break;

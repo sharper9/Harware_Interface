@@ -74,7 +74,7 @@ MissionPlanning::MissionPlanning()
 void MissionPlanning::run()
 {
     ROS_INFO_THROTTLE(3,"Mission Planning running...");
-    if(missionTime > 480 && !bucketFull && atMineLocation && !atDepositLocation) // Go dump if time is almost up
+    if(missionTime > 480.0 && !bucketFull && atMineLocation && !atDepositLocation) // Go dump if time is almost up
     {
         bucketFull = true;
     }
