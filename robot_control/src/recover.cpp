@@ -10,6 +10,7 @@ bool Recover::runProc()
         procsToResume[procType] = false;
         computeDriveSpeeds();
         sendDriveRel(0.0, 360.0, false, 0.0, true, false);
+        sendRaiseArm(true);
         state = _exec_;
         resetQueueEmptyCondition();
         break;

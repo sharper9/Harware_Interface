@@ -44,7 +44,7 @@ int main(int argc, char** argv)
     double linV; // m/s
     double angV; // deg/s
     const double linVGain = 1.2/900.0/4.0; // m/s per speed cmd
-    const double angVGain = 45.0/2650.0; // deg/s per speed cmd
+    const double angVGain = 15.0/2650.0; // deg/s per speed cmd
     double prevPubTime = 0.0;
     double prevLoopTime;
     double currentLoopTime;

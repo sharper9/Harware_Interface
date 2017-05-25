@@ -8,6 +8,7 @@ bool Deposit::runProc()
         procsBeingExecuted[procType] = true;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
+        recoverLockout = true;
         depositWaypointDistanceTolerance = depositWaypointDistanceToleranceInit;
         depositWaypointAngleTolerance = depositWaypointAngleToleranceInit;
         computeDriveSpeeds();
@@ -32,6 +33,7 @@ bool Deposit::runProc()
         state = _exec_;
         break;
     case _finish_:
+        recoverLockout = false;
         bucketFull = false;
         atDepositLocation = false;
         procsBeingExecuted[procType] = false;

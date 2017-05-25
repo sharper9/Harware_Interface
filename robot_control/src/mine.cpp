@@ -9,7 +9,8 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        digPitchAngle = -2.0;
+        recoverLockout = true;
+        digPitchAngle = -4.0;
         for(int i=0; i<numDigsPerMine; i++)
         {
             sendDig(digPitchAngle);
@@ -28,7 +29,8 @@ bool Mine::runProc()
         computeDriveSpeeds();
         tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistance))
                           || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - mapYOffset - miningWallBufferDistance))
-                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance - mapYOffset));
+                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance - mapYOffset)
+                               && (execInfoMsg.actionDeque.at(0) == 1 || execInfoMsg.actionDeque.at(0) == 2 || execInfoMsg.actionDeque.at(0) == 3 || execInfoMsg.actionDeque.at(0) == 13));
         if(tooCloseToWallLatch.LE_Latch(tooCloseToWall) && !sentTooCloseToWall)
         {
             ROS_WARN("Scoop too close to wall. Must back up.");
@@ -54,6 +56,7 @@ bool Mine::runProc()
     case _finish_:
         bucketFull = true;
         atMineLocation = false;
+        recoverLockout = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;

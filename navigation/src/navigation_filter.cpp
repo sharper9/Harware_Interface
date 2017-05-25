@@ -93,7 +93,7 @@ void NavigationFilter::run()
 
         //if no motion detected
         if (/*(fabs(sqrt(imu.ax*imu.ax+imu.ay*imu.ay+imu.az*imu.az)-1)< 0.175) &&*/
-                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0575) && encoders.delta_distance == 0) //if no motion detected
+                (sqrt((imu.p)*(imu.p)+(imu.q)*(imu.q)+(imu.r)*(imu.r))<0.0575) && fabs(encoders.delta_distance) <= .05) //if no motion detected
         {
             if(perform_rr_heading_update && !rr_found_full_pose && rr_full_pose_failed_counter<rr_full_pose_failed_max_count)
             {
@@ -104,50 +104,58 @@ void NavigationFilter::run()
                 packInfoMsgAndPub();
                 ros::spinOnce();
                 ROS_INFO("Calling TD Nav Service");
-                if(ranging_radio_client.call(rr_srv) && !rr_srv.response.fail)
+                if(ranging_radio_client.call(rr_srv))
                 {
-                    double rr_heading_error = rr_srv.response.max_angle_error; //radians
-                    double rr_heading; //radians
-                    double rr_x;
-                    double rr_y;
-                    if(rr_heading_error < rr_error_heading_update_tolerance) //todo, put check back
+                    if(!rr_srv.response.fail)
                     {
-                        if(!rr_initial_pose_found || fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance) // Trust RR updated heading
+                        double rr_heading_error = rr_srv.response.max_angle_error; //radians
+                        double rr_heading; //radians
+                        double rr_x;
+                        double rr_y;
+                        //if() //todo, put check back
                         {
-                            if(!rr_initial_pose_found || ((hypot(filter.x-rr_srv.response.x, filter.y-rr_srv.response.y)) < rr_stopped_position_update_tolerence))
+                            if(!rr_initial_pose_found || (rr_heading_error < rr_error_heading_update_tolerance) || (fabs(rr_srv.response.heading - filter.psi) < rr_heading_update_tolerance)) // Trust RR updated heading
                             {
-                                rr_initial_pose_found=true;
-                                rr_x = rr_srv.response.x;
-                                rr_y = rr_srv.response.y;
-                                rr_heading = rr_srv.response.heading;
-                                //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
-                                filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
-                                rr_found_full_pose = true;
-                                rr_full_pose_failed_counter = 0;
+                                if(!rr_initial_pose_found || ((hypot(filter.x-rr_srv.response.x, filter.y-rr_srv.response.y)) < rr_stopped_position_update_tolerence))
+                                {
+                                    rr_initial_pose_found=true;
+                                    rr_x = rr_srv.response.x;
+                                    rr_y = rr_srv.response.y;
+                                    rr_heading = rr_srv.response.heading;
+                                    //void Filter::initialize_states(double phi_init, double theta_init, double psi_init, double x_init, double y_init, double P_phi_init, double P_theta_init, double P_psi_init, double P_x_init, double P_y_init)
+                                    filter.initialize_states(filter.phi, filter.theta, rr_heading, rr_x, rr_y, filter.P_phi, 0.05, filter.P_psi, 1.0, 1.0);
+                                    rr_found_full_pose = true;
+                                    rr_full_pose_failed_counter = 0;
+                                }
+                                else
+                                {
+                                    ROS_ERROR("Rejecting RR update while stopped. Outside X/Y tolerence, Not updating pose. %f", rr_heading_error*RAD_2_DEG);
+                                }
                             }
-                            else
+                            else // RR heading update too far off from current heading. Do not trust
                             {
-                                ROS_ERROR("Rejecting RR update while stopped. Outside tolerence, Not updating pose.");
+                                rr_found_full_pose = false;
+                                rr_full_pose_failed_counter++;
+                                ROS_ERROR("RR heading too far from current heading. Not updating pose. %f", rr_srv.response.heading*RAD_2_DEG);
                             }
                         }
-                        else // RR heading update too far off from current heading. Do not trust
+                       /* else
                         {
+                            ROS_ERROR("Rejecting RR Update due to heading error outside of tolerence. Not Updating. %f",rr_heading_error*RAD_2_DEG);
                             rr_found_full_pose = false;
                             rr_full_pose_failed_counter++;
-                            ROS_ERROR("RR heading too far from current heading. Not updating pose.");
-                        }
+                        }*/
                     }
                     else
                     {
-                        ROS_ERROR("Rejecting RR Update due to heading error outside of tolerence. Not Updating");
-                        rr_found_full_pose = false;
-                        rr_full_pose_failed_counter++;
-                    }
+                        ROS_ERROR("Full Pose update failed out. Possible bad observation. Ignoring and not sending more pose requests");
+                        rr_full_pose_failed_counter = 55;
+                    }   
                 }
                 else // RR service request failed
                 {
                     rr_found_full_pose = false;
-                    rr_full_pose_failed_counter++;
+                    rr_full_pose_failed_counter=55;
                     ROS_ERROR("RR service request failed. Not updating pose.");
                 }
             }

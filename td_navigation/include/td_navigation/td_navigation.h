@@ -108,7 +108,8 @@ namespace td_navigation
     void update_count();
     double smart_atan(double adj, double opp);
     int run_full_pose();
-    int run_half_pose();
+    int run_half_pose_left();
+    int run_half_pose_right();
 
 
   };

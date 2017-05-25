@@ -16,6 +16,7 @@ bool DriveToDig::runProc()
                  digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit) + digPlanningMap.atPos(robotStatus.xPos,robotStatus.yPos+mapYOffset).headingLowerLimit;
         distanceToDrive = (miningRegionTargetXDistance - robotStatus.xPos)/cos(DEG2RAD*chosenHeading);
         angleToTurn = chosenHeading - robotStatus.heading;
+        sendRaiseArm(false);
         sendDriveRel(distanceToDrive, angleToTurn, true, 0.0, false, false);
         //sendWait(5.0, false); // TODO: remove, this is temporary for testing
         state = _exec_;

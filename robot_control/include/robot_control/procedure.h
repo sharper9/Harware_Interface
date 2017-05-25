@@ -96,6 +96,7 @@ void Procedure::sendDriveGlobal(bool pushToFront, bool endHeadingFlag, float end
 void Procedure::sendDriveRel(float deltaDistance, float deltaHeading, bool endHeadingFlag, float endHeading, bool frontOfDeque, bool driveBackwards)
 {
 	this->serialNum++;
+    ROS_INFO("driveRel serialNum = %i",this->serialNum);
     execActionSrv.request.nextActionType = _driveRelative;
     execActionSrv.request.newActionFlag = 1;
     execActionSrv.request.pushToFrontFlag = frontOfDeque;
