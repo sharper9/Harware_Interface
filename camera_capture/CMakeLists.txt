@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -122,6 +122,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -150,6 +151,7 @@ add_dependencies(camera_sender_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin
 target_link_libraries(camera_sender_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
+   ${OpenCV_LIBS}
 )
 
 add_executable(camera_receiver_node src/camera_receiver_node.cpp)
@@ -157,6 +159,7 @@ add_dependencies(camera_receiver_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 target_link_libraries(camera_receiver_node
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
+   ${OpenCV_LIBS}
 )
 
 #############

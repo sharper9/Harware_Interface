@@ -1,6 +1,8 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
-#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <cv_bridge/cv_bridge.h>
 
 int main(int argc, char** argv)
@@ -8,7 +10,6 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "video_sender_node");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
-  image_transport::Publisher publisher = it.advertise("camera/image", 1);
 
   cv::VideoCapture capture(0);
 
@@ -18,10 +19,12 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  image_transport::Publisher publisher = it.advertise("camera/image", 480*640);
+
   cv::Mat frame;
   sensor_msgs::ImagePtr msg;
 
-  ros::Rate loop_rate(5);
+  ros::Rate loop_rate(10);
   while(nh.ok())
   {
     capture >> frame;
