@@ -35,6 +35,8 @@ int Dump::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm;
             valueToPush_ = ARM_DUMP;
+            pushTask(_scoopSetPos_);
+            scoopDeque.back()->params.int1 = SCOOP_LOWERED;
             step_ = _raiseBucketDump;
             break;
         case _raiseBucketDump:
@@ -58,6 +60,8 @@ int Dump::run()
             taskToPush_ = _armSetPos_;
             typeOfTaskPushed_ = __arm ;
             valueToPush_ = ARM_RAISED;
+            pushTask(_scoopSetPos_);
+            scoopDeque.back()->params.int1 = SCOOP_RAISED;
             dumpCompleted_ = true;
             break;
         }

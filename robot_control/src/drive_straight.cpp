@@ -7,6 +7,7 @@ void DriveStraight::init()
     initY_ = robotStatus.yPos;
 	initHeading_ = robotStatus.heading;
 	desiredDistance_ = params.float1;
+	ROS_INFO("drive straight des distance = %f",desiredDistance_);
 	if(desiredDistance_<0.0) driveSign_ = -1.0;
 	else driveSign_ = 1.0;
 	timeoutValue_ = (unsigned int)round((4.0 + 2.0*fabs(desiredDistance_))*robotStatus.loopRate);
