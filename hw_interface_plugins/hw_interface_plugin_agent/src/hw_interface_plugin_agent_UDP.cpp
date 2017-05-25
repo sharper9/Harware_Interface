@@ -12,7 +12,7 @@ hw_interface_plugin_agent::agent_UDP::agent_UDP()
            ros::console::notifyLoggerLevelsChanged();
         }
     enableMetrics();
-    lastLOStime=ros::Time::now();
+    lastSentNavTime=lastLOStime=ros::Time::now();
     lastMsgTimeStamp = 0.0;
     agentTimeOnFirstReceipt = 0.0;
     agentOpTimeOffset = 0.0;
@@ -33,18 +33,16 @@ void hw_interface_plugin_agent::agent_UDP::msgCallback(const topic_tools::ShapeS
             postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
         }
         else
-        {
+        {   
             boost::lock_guard<boost::mutex> guard(webCamCmdMutex);
-            if(/*webCamCmdFromCommand.start && */(type==MSG_TYPE_CAMERA_IMAGE))
-            {
-              // 2000 bytes each packets then send over network
-                ROS_DEBUG("Camera IMAGE");
-                postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
-            }
-            else if(!/*(webCamCmdFromCommand.start) &&*/ (type==MSG_TYPE_LASER_SCAN))
-            {
-                ROS_DEBUG("scan");
-                postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
+            if(lastSentNavTime.toSec()-ros::Time::now().toSec() > NAV_UPDATE_RATE)
+            { 
+                lastSentNavTime=ros::Time::now();
+                if(!/*(webCamCmdFromCommand.start) &&*/ (type==MSG_TYPE_LASER_SCAN))
+                {
+                    ROS_DEBUG("scan");
+                    postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
+                }
             }
         }
     }
@@ -95,7 +93,7 @@ bool hw_interface_plugin_agent::agent_UDP::subPluginInit(ros::NodeHandlePtr nhPt
     LOSPub = nhPtr->advertise<hw_interface_plugin_agent::LOS>("/agent/LOS",1,true);
     //webCamCmdPub = nhPtr->advertise<msgs_and_srvs::WebcamCommands>("/agent/operatorIP",1,true);
 
-    scanSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/scan",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
+    scanSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/navigation/navigationfilterout/navigationfilterout",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
     bumperParamsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/vvirtualbumperparams",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
     armPositionSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/arm/position",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_ARM_POSITION));
     bumperStatusSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/lidar/lidar/virtualbumperstatus",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_BUMPER_STATUS));

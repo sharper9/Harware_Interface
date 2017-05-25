@@ -2,5 +2,6 @@
 
 <launch>
     <include file="$(find hw_interface_plugin_operator)/launch/Operator_Interface.launch" />
+    <include file="$(find hw_interface_plugin_agent)/launch/Agent_Interface.launch" />
     
 </launch>

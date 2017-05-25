@@ -15,6 +15,7 @@
 #include <image_transport/camera_common.h>
 #include <sensor_msgs/LaserScan.h>
 #include <image_transport/image_transport.h>
+#include <messages/NavFilterOut.h>
 
 #define MSG_TIMESTAMP_OFFSET    0
 #define MSG_TYPE_OFFSET         8 //1 after the double timestep which occupies [0-7], at byte index [8]
@@ -102,7 +103,7 @@ namespace hw_interface_plugin_operator {
         void rosMsgCallback(const topic_tools::ShapeShifter::ConstPtr &msg, std::string &topicName);
         ros::Publisher rosPub;
 
-        sensor_msgs::LaserScan lastScan;
+        messages::NavFilterOut lastScan;
         ros::Publisher scanPublisher;
 
         std::vector<ros::Subscriber> subscriberVector;
