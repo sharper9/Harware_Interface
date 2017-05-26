@@ -72,6 +72,7 @@ public:
     static float prevYPos;
     static double prevPosUnchangedTime;
     static bool tooCloseToWall;
+    static bool tooCloseToWallLockout;
     const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
     const float depositWaypointDistanceToleranceInit = 0.25; // m
@@ -152,5 +153,6 @@ float MissionPlanningProcedureShare::prevXPos;
 float MissionPlanningProcedureShare::prevYPos;
 double MissionPlanningProcedureShare::prevPosUnchangedTime;
 bool MissionPlanningProcedureShare::tooCloseToWall;
+bool MissionPlanningProcedureShare::tooCloseToWallLockout;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

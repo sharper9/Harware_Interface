@@ -16,6 +16,7 @@
 #include "deposit.h"
 #include "recover.h"
 #include "flip_back.h"
+#include "close_to_wall.h"
 #include "pause.h"
 #include "bit_utils.h"
 
@@ -43,6 +44,7 @@ public:
     Deposit deposit;
     Recover recover;
     FlipBack flipBack;
+    CloseToWall closeToWall;
     Pause pause;
 	bool multiProcLockout;
 	unsigned int lockoutSum;
@@ -58,6 +60,7 @@ private:
 	void initializeDigPlanningMap_();
     void checkStuckCondition_();
     void checkTippedOverCondition_();
+    void checkTooCloseToWallCondition_();
 	void ExecActionEndedCallback_(const messages::ExecActionEnded::ConstPtr& msg);
 	void navCallback_(const messages::NavFilterOut::ConstPtr& msg);
 	void execInfoCallback_(const messages::ExecInfo::ConstPtr& msg);

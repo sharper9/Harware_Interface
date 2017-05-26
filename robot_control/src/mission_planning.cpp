@@ -23,6 +23,7 @@ MissionPlanning::MissionPlanning()
     stuck = false;
     tippedOver = false;
     tooCloseToWall = false;
+    tooCloseToWallLockout = false;
     pauseStarted = false;
     robotStatus.pauseSwitch = true;
     execDequeEmpty = true;
@@ -35,6 +36,7 @@ MissionPlanning::MissionPlanning()
     deposit.reg(__deposit__);
     recover.reg(__recover__);
     flipBack.reg(__flipBack__);
+    closeToWall.reg(__closeToWall__);
     missionTime = 0.0;
     prevTime = ros::Time::now().toSec();
     timers[_queueEmptyTimer_] = new CataglyphisTimer<MissionPlanning>(&MissionPlanning::queueEmptyTimerCallback_, this);
@@ -80,6 +82,8 @@ void MissionPlanning::run()
         bucketFull = true;
     }
     checkStuckCondition_();
+    //checkTippedOverCondition_();
+    checkTooCloseToWallCondition_();
     evalConditions_();
     ROS_DEBUG("robotStatus.pauseSwitch = %i",robotStatus.pauseSwitch);
     if(robotStatus.pauseSwitch) runPause_();
@@ -116,6 +120,15 @@ void MissionPlanning::evalConditions_()
             procsToExecute[__recover__] = true;
             recoverLockout = true;
             ROS_INFO("to execute recover");
+        }
+        calcnumProcsBeingOrToBeExecOrRes_();
+        if(initialized && tooCloseToWall && !tooCloseToWallLockout && !tippedOver && !stuck && !atDepositLocation) // Close to wall
+        {
+            for(int i=0; i<NUM_PROC_TYPES; i++) procsToInterrupt[i] = procsBeingExecuted[i];
+            procsToInterrupt[__closeToWall__] = false;
+            procsToExecute[__closeToWall__] = true;
+            tooCloseToWallLockout = true;
+            ROS_INFO("to execute closeToWall");
         }
         calcnumProcsBeingOrToBeExecOrRes_();
         if(numProcsBeingOrToBeExecOrRes==0 && !initialized && !robotStatus.pauseSwitch) // Initialize
@@ -193,6 +206,7 @@ void MissionPlanning::runProcedures_()
     driveToDeposit.run();
     depositRealign.run();
     deposit.run();
+    closeToWall.run();
     recover.run();
     flipBack.run();
 }
@@ -323,6 +337,14 @@ void MissionPlanning::checkTippedOverCondition_()
 {
     if(fabs(robotStatus.pitchAngle) > tippedOverMaxPitchAngle) tippedOver = true;
     else tippedOver = false;
+}
+
+void MissionPlanning::checkTooCloseToWallCondition_()
+{
+    tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistanceX))
+                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - mapYOffset - miningWallBufferDistanceY))
+                                  || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistanceY - mapYOffset)
+                                   && (execInfoMsg.actionDeque.at(0) == 1 || execInfoMsg.actionDeque.at(0) == 2 || execInfoMsg.actionDeque.at(0) == 3 || execInfoMsg.actionDeque.at(0) == 13));
 }
 
 void MissionPlanning::ExecActionEndedCallback_(const messages::ExecActionEnded::ConstPtr &msg)

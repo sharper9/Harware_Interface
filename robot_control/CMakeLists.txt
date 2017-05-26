@@ -140,6 +140,7 @@ include_directories(
  add_library(deposit src/deposit.cpp)
  add_library(recover src/recover.cpp)
  add_library(flip_back src/flip_back.cpp)
+ add_library(close_to_wall src/close_to_wall.cpp)
  add_library(pause src/pause.cpp)
 
 ## Declare a cpp executable
@@ -198,6 +199,7 @@ include_directories(
    deposit
    recover
    flip_back
+   close_to_wall
    pause
  )
 
