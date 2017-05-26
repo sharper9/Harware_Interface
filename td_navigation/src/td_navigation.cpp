@@ -94,7 +94,6 @@ td_navigation::worker::worker(int average_length_val, double base_station_distan
         }
       }
     }
-    ROS_INFO("Spinning");
     ros::spinOnce();
   }
 }
@@ -304,8 +303,18 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
     return true;
   }
   if(error_type == -2){
+    bool b_0_m_0_obstruction = get_avg_err0_l() > mob_rad_dist;
+    bool b_0_m_1_obstruction = get_avg_err0_r() > mob_rad_dist;
+    bool b_1_m_0_obstruction = get_avg_err1_l() > mob_rad_dist;
+    bool b_1_m_1_obstruction = get_avg_err1_r() > mob_rad_dist;
+
+    if()
+
+
     stat.success = false;
     stat.initialization_maneuver = 5;
+
+
     status_pub.publish(stat);
     res.fail = true;
     ros::spinOnce();
@@ -875,9 +884,9 @@ int td_navigation::worker::run_half_pose_right(){
     double angle_2 = heading + PI/2.0;
     double back_x, back_y;
 
-    back_x = rad_nav.get_mobile_radio_coordinate(1,0) + cos(angle_2) * mob_rad_dist / 2.0;
+    back_x = rad_nav.get_mobile_radio_coordinate(1,0) - cos(angle_2) * mob_rad_dist / 2.0;
 
-    back_y = rad_nav.get_mobile_radio_coordinate(1,1) + sin(angle_2) * mob_rad_dist / 2.0;
+    back_y = rad_nav.get_mobile_radio_coordinate(1,1) - sin(angle_2) * mob_rad_dist / 2.0;
 
     x = back_x + (cos(heading) * robot_length_offset);
 
@@ -921,7 +930,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1780, 104, 106, 0, 610, 557); // base = 1780, robot width = 557, robot length = 635
+  td_navigation::worker worker(50, 1780, 104, 106, 0, 610 , 557); // base = 1780, robot width = 557, robot length = 635
 
 
   ROS_DEBUG("td_navigation closing");
