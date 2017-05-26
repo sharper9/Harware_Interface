@@ -71,14 +71,15 @@ public:
     static float prevXPos;
     static float prevYPos;
     static double prevPosUnchangedTime;
+    static bool tooCloseToWall;
     const float depositWaypointX = 1.5; // m
     const float depositWaypointY = 0.0; // m
-    const float depositWaypointDistanceToleranceInit = 0.3; // m
+    const float depositWaypointDistanceToleranceInit = 0.25; // m
     const float depositWaypointAngleToleranceInit = 5.0; // deg
-    const float depositWaypointDistanceToleranceMax = 0.6; // m
-    const float depositWaypointAngleToleranceMax = 20.0; // deg
-    const float depositWaypointDistanceToleranceIncrement = 0.1; // m
-    const float depositWaypointAngleToleranceIncrement = 5.0; // deg
+    const float depositWaypointDistanceToleranceMax = 0.4; // m
+    const float depositWaypointAngleToleranceMax = 10.0; // deg
+    const float depositWaypointDistanceToleranceIncrement = 0.05; // m
+    const float depositWaypointAngleToleranceIncrement = 1.0; // deg
     const float depositWaypointRecoverX = 2.0; // m
     const float depositWaypointRecoverY = 0.0; // m
     const float queueEmptyTimerPeriod = 30.0; // sec
@@ -92,11 +93,13 @@ public:
     const float miningWallPlanningDistanceX = 0.5; // m
     const float miningWallPlanningDistanceY = 1.25; // m
     const float robotCenterToScoopLength = 1.0; // m
-    const float baseStationDistance = 1.780; // m
+    const float baseStationDistance = 1.776; // m
     const float maxStuckDistance = 0.75; // m
     const double maxStuckTime = 4.0; // sec
     const float flipBackDistanceToDrive = 0.3; // m
     const float tippedOverMaxPitchAngle = 20.0; // deg
+    const float digWaypointDistanceTolerance = 0.5; // m
+    const float digWaypointAngleTolerance = 15.0; // deg
     const int numDigsPerMine = 5;
 };
 
@@ -148,5 +151,6 @@ int MissionPlanningProcedureShare::initManeuverToPerform;
 float MissionPlanningProcedureShare::prevXPos;
 float MissionPlanningProcedureShare::prevYPos;
 double MissionPlanningProcedureShare::prevPosUnchangedTime;
+bool MissionPlanningProcedureShare::tooCloseToWall;
 
 #endif // MISSION_PLANNING_PROCESS_SHARE_H

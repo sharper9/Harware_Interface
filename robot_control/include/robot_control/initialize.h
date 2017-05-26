@@ -2,7 +2,8 @@
 #define INITIALIZE_H
 #include "procedure.h"
 
-#define NUM_INIT_ACTIONS 15
+#define NUM_INIT_ACTIONS 21
+#define INIT_COMPLETE_NUM 15
 
 class Initialize : public Procedure
 {

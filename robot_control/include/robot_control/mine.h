@@ -9,11 +9,8 @@ public:
     bool runProc();
     // Members
     Leading_Edge_Latch tooCloseToWallLatch;
-    bool tooCloseToWall;
     float backUpDistance = 0.5; // m
     unsigned int finalSerialNum;
-    unsigned int backUpFromWallSerialNum;
-    bool sentTooCloseToWall;
     float digPitchAngle;
 };
 

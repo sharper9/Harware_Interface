@@ -27,7 +27,7 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistanceX))
+        /*tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistanceX))
                           || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - mapYOffset - miningWallBufferDistanceY))
                               || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistanceY - mapYOffset)
                                && (execInfoMsg.actionDeque.at(0) == 1 || execInfoMsg.actionDeque.at(0) == 2 || execInfoMsg.actionDeque.at(0) == 3 || execInfoMsg.actionDeque.at(0) == 13));
@@ -43,7 +43,7 @@ bool Mine::runProc()
         if(sentTooCloseToWall && (execLastProcType == procType && execLastSerialNum == backUpFromWallSerialNum))
         {
             sentTooCloseToWall = false;
-        }
+        }*/
         if(execLastProcType == procType && execLastSerialNum == finalSerialNum) performFullPoseUpdate = true;
         if((execLastProcType == procType && execLastSerialNum == finalSerialNum && robotStatus.fullPoseFound) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;

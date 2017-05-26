@@ -45,15 +45,27 @@ int Dig::run()
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
             valueToPush_ = digDriveDistance_;
+            step_ = _midScoop;
+            break;
+        case _midScoop:
+            taskToPush_ = _scoopSetPos_;
+            typeOfTaskPushed_ = __scoop;
+            valueToPush_ = SCOOP_MID;
+            step_ = _drive2;
+            break;
+        case _drive2:
+            taskToPush_ = _driveStraight_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = digDriveDistance_;
             step_ = _raiseScoop;
             break;
         case _raiseScoop:
             taskToPush_ = _scoopSetPos_;
             typeOfTaskPushed_ = __scoop;
             valueToPush_ = SCOOP_RAISED;
-            step_ = _drive2;
+            step_ = _drive3;
             break;
-        case _drive2:
+        case _drive3:
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
             valueToPush_ = digDriveDistance_;

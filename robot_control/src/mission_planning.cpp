@@ -22,6 +22,7 @@ MissionPlanning::MissionPlanning()
     confirmedAtDepositLocation = false;
     stuck = false;
     tippedOver = false;
+    tooCloseToWall = false;
     pauseStarted = false;
     robotStatus.pauseSwitch = true;
     execDequeEmpty = true;

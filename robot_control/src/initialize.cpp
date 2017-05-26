@@ -76,6 +76,29 @@ Initialize::Initialize()
     actionList.at(14).push_back(InitAction(__armRaise, &this->serialNum));
     actionList.at(14).push_back(InitAction(__turn, 20.0, &this->serialNum));
     actionList.at(14).push_back(InitAction(__straight, -0.4, &this->serialNum));
+
+    // 15 (no maneuver)
+
+    // 16
+    actionList.at(16).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(16).push_back(InitAction(__turn, -130.0, &this->serialNum));
+
+    // 17
+    actionList.at(17).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(17).push_back(InitAction(__turn, 90.0, &this->serialNum));
+
+    // 18
+    actionList.at(18).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(18).push_back(InitAction(__turn, 40.0, &this->serialNum));
+
+    // 19
+    actionList.at(19).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(19).push_back(InitAction(__turn, -40.0, &this->serialNum));
+
+    // 20
+    actionList.at(20).push_back(InitAction(__armRaise, &this->serialNum));
+    actionList.at(20).push_back(InitAction(__turn, -90.0, &this->serialNum));
+
 }
 
 bool Initialize::runProc()
@@ -172,7 +195,7 @@ bool Initialize::runProc()
 
 void Initialize::pushInitActionsToPerform()
 {
-    if(initManeuverToPerform==NUM_INIT_ACTIONS)
+    if(initManeuverToPerform==INIT_COMPLETE_NUM)
     {
         performAManeuver = false;
     }
