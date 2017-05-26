@@ -85,9 +85,12 @@ public:
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 	const float mapYOffset = 1.94; // m
-    const float miningRegionMinXDistance = 4.1; // m (4.55)
-	const float miningRegionTargetXDistance = 4.35; // m (4.65)
-	const float miningWallBufferDistance = 0.5; // m
+    const float miningRegionMinXDistance = 4.2; // m (4.55)
+    const float miningRegionTargetXDistance = 4.45; // m (4.65)
+    const float miningWallBufferDistanceX = 0.5; // m
+    const float miningWallBufferDistanceY = 0.5; // m
+    const float miningWallPlanningDistanceX = 0.5; // m
+    const float miningWallPlanningDistanceY = 1.25; // m
     const float robotCenterToScoopLength = 1.0; // m
     const float baseStationDistance = 1.780; // m
     const float maxStuckDistance = 0.75; // m

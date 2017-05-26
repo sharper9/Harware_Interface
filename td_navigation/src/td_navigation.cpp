@@ -875,9 +875,9 @@ int td_navigation::worker::run_half_pose_right(){
     double angle_2 = heading + PI/2.0;
     double back_x, back_y;
 
-    back_x = rad_nav.get_mobile_radio_coordinate(1,0) + cos(angle_2) * mob_rad_dist / 2.0;
+    back_x = rad_nav.get_mobile_radio_coordinate(1,0) - cos(angle_2) * mob_rad_dist / 2.0;
 
-    back_y = rad_nav.get_mobile_radio_coordinate(1,1) + sin(angle_2) * mob_rad_dist / 2.0;
+    back_y = rad_nav.get_mobile_radio_coordinate(1,1) - sin(angle_2) * mob_rad_dist / 2.0;
 
     x = back_x + (cos(heading) * robot_length_offset);
 
