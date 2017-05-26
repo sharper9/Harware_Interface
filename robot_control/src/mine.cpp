@@ -36,7 +36,12 @@ bool Mine::runProc()
             ROS_WARN("Scoop too close to wall. Must back up.");
             sendDequeClearFront();
             sendRaiseArm(true);
-            sendDriveRel(backUpDistance, 0.0, true, -fmod(robotStatus.heading, 360.0), true, true);
+            //sendDriveRel(backUpDistance, 0.0, true, -fmod(robotStatus.heading, 360.0), true, true);
+            numWaypointsToTravel = 1;
+            clearAndResizeWTT();
+            waypointsToTravel.at(0).x = miningRegionTargetXDistance;
+            waypointsToTravel.at(0).y = 0.0;
+            sendDriveGlobal(true, true, 0.0, true);
             sentTooCloseToWall = true;
             backUpFromWallSerialNum = serialNum;
         }
