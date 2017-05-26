@@ -209,7 +209,7 @@ void TeleOp::joystickCallback(const sensor_msgs::Joy::ConstPtr &msg)
     }
     else if(msg->axes[CROSS_LEFT_RIGHT_INDEX]<=-0.95)  //right
     {
-        wrist_pos_=WRIST_RAISED;
+        wrist_pos_=-1000;
     }
 
     if(exec_manual_override_srv_.request.manualOverride)
