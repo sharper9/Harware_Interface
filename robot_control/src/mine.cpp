@@ -36,12 +36,24 @@ bool Mine::runProc()
             ROS_WARN("Scoop too close to wall. Must back up.");
             sendDequeClearFront();
             sendRaiseArm(true);
-            sendDriveRel(backUpDistance, 0.0, false, 0.0, true, true);
+            sendDriveRel(backUpDistance, 0.0, true, -fmod(robotStatus.heading, 360.0), true, true);
             sentTooCloseToWall = true;
             backUpFromWallSerialNum = serialNum;
         }
         if(sentTooCloseToWall && (execLastProcType == procType && execLastSerialNum == backUpFromWallSerialNum))
         {
+            if(robotStatus.xPos <= miningRegionMinXDistance)
+            {
+                sendDequeClearAll();
+                state = _init_;
+                atMineLocation = false;
+                bucketFull = false;
+                recoverLockout = false;
+                procsBeingExecuted[procType] = false;
+                procsToExecute[procType] = false;
+                procsToResume[procType] = false;
+                break;
+            }
             sentTooCloseToWall = false;
         }
         if(execLastProcType == procType && execLastSerialNum == finalSerialNum) performFullPoseUpdate = true;
