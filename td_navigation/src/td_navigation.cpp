@@ -398,10 +398,14 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
      stat.initialization_maneuver = 15;
   }else if (heading < 30 * DEG_TO_RAD && heading > -30 * DEG_TO_RAD){
     stat.initialization_maneuver = 1;
-  }else if(heading >= 30 * DEG_TO_RAD && heading <= 135 * DEG_TO_RAD){
+  }else if(heading >= 30 * DEG_TO_RAD && heading <= 100 * DEG_TO_RAD){
     stat.initialization_maneuver = 9;
-  }else if(heading <= -30 * DEG_TO_RAD && heading >= -135 * DEG_TO_RAD){
+  }else if(heading >= 100 * DEG_TO_RAD && heading <=135 * DEG_TO_RAD){
+    stat.initialization_maneuver = 19;
+  }else if(heading <= -30 * DEG_TO_RAD && heading >= -100 * DEG_TO_RAD){
     stat.initialization_maneuver = 7;
+  }else if(heading <= -100 * DEG_TO_RAD && heading >= -135 * DEG_TO_RAD){
+    stat.initialization_maneuver = 18;
   }else if ( (heading >= -180 * DEG_TO_RAD && heading < -150 * DEG_TO_RAD) || (heading <= 180 * DEG_TO_RAD && heading > 150 * DEG_TO_RAD) ){
     stat.initialization_maneuver = 12;
   }else{
