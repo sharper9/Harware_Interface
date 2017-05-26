@@ -78,7 +78,7 @@ MissionPlanning::MissionPlanning()
 void MissionPlanning::run()
 {
     ROS_INFO_THROTTLE(3,"Mission Planning running...");
-    if(missionTime > 480.0 && !bucketFull && atMineLocation && !atDepositLocation) // Go dump if time is almost up
+    if(missionTime > 540.0 && !bucketFull && atMineLocation && !atDepositLocation) // Go dump if time is almost up
     {
         bucketFull = true;
     }
@@ -290,7 +290,7 @@ void MissionPlanning::initializeDigPlanningMap_()
     size_t xSize = (size_t)ceil(DIG_MAP_X_LEN/DIG_MAP_RES);
     size_t ySize = (size_t)ceil(DIG_MAP_Y_LEN/DIG_MAP_RES);
     float cornerPointX[2] = {DIG_MAP_X_LEN - miningWallPlanningDistanceX, DIG_MAP_X_LEN - miningWallPlanningDistanceX};
-    float cornerPointY[2] = {miningWallBufferDistanceY - mapYOffset, DIG_MAP_Y_LEN - miningWallBufferDistanceY - mapYOffset};
+    float cornerPointY[2] = {miningWallPlanningDistanceY - mapYOffset, DIG_MAP_Y_LEN - miningWallPlanningDistanceY - mapYOffset};
     float cellXPos;
     float cellYPos;
     for(int i=0; i<xSize; i++)
