@@ -122,7 +122,7 @@ void MissionPlanning::evalConditions_()
             recoverLockout = true;
             ROS_INFO("to execute recover");
         }
-        calcnumProcsBeingOrToBeExecOrRes_();
+        /*calcnumProcsBeingOrToBeExecOrRes_();
         if(initialized && tooCloseToWall && !tooCloseToWallLockout && !tippedOver && !stuck && !atDepositLocation) // Close to wall
         {
             for(int i=0; i<NUM_PROC_TYPES; i++) procsToInterrupt[i] = procsBeingExecuted[i];
@@ -130,7 +130,7 @@ void MissionPlanning::evalConditions_()
             procsToExecute[__closeToWall__] = true;
             tooCloseToWallLockout = true;
             ROS_INFO("to execute closeToWall");
-        }
+        }*/
         calcnumProcsBeingOrToBeExecOrRes_();
         if(numProcsBeingOrToBeExecOrRes==0 && !initialized && !robotStatus.pauseSwitch) // Initialize
         {
@@ -291,6 +291,7 @@ void MissionPlanning::initializeDigPlanningMap_()
     size_t ySize = (size_t)ceil(DIG_MAP_Y_LEN/DIG_MAP_RES);
     float cornerPointX[2] = {DIG_MAP_X_LEN - miningWallPlanningDistanceX, DIG_MAP_X_LEN - miningWallPlanningDistanceX};
     float cornerPointY[2] = {miningWallPlanningDistanceY - mapYOffset, DIG_MAP_Y_LEN - miningWallPlanningDistanceY - mapYOffset};
+    //ROS_WARN("corners = [%f,%f] [%f,%f]",cornerPointX[0],cornerPointY[0],cornerPointX[1],cornerPointY[1]);
     float cellXPos;
     float cellYPos;
     for(int i=0; i<xSize; i++)
@@ -298,7 +299,7 @@ void MissionPlanning::initializeDigPlanningMap_()
         for(int j=0; j<ySize; j++)
         {
             cellXPos = i*DIG_MAP_RES + DIG_MAP_RES/2.0;
-            cellYPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0;
+            cellYPos = j*DIG_MAP_RES + DIG_MAP_RES/2.0 - mapYOffset;
             digPlanningMap.atIndex(i,j).headingLowerLimit = RAD2DEG*atan2(cornerPointY[0] - cellYPos, cornerPointX[0] - cellXPos);
             digPlanningMap.atIndex(i,j).headingUpperLimit = RAD2DEG*atan2(cornerPointY[1] - cellYPos, cornerPointX[1] - cellXPos);
         }

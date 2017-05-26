@@ -12,6 +12,8 @@ public:
     float backUpDistance = 0.5; // m
     unsigned int finalSerialNum;
     float digPitchAngle;
+    unsigned int backUpFromWallSerialNum;
+    bool sentTooCloseToWall;
 };
 
 #endif // MINE_H
