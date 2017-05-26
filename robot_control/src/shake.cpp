@@ -10,6 +10,10 @@ void Shake::init()
     taskPushed_ = false;
     taskFinished_ = false;
     clearDeques();
+    pushTask(_scoopSetPos_);
+    scoopDeque.back()->params.int1 = SCOOP_RAISED;
+    pushTask(_armSetPos_);
+    armDeque.back()->params.int1 = ARM_RAISED;
 }
 
 int Shake::run()
@@ -29,15 +33,21 @@ int Shake::run()
         case _driveForward:
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
-            valueToPush_ = forwardAndBackUpDistance_;
+            valueToPush_ = forwardDistance_;
             pushTask(_armShake_);
             step_ = _backUp;
             break;
         case _backUp:
             taskToPush_ = _driveStraight_;
             typeOfTaskPushed_ = __drive;
-            valueToPush_ = -forwardAndBackUpDistance_;
+            valueToPush_ = -backupDistance_;
             pushTask(_armShake_);
+            step_ = _finalBackUp;
+            break;
+        case _finalBackUp:
+            taskToPush_ = _driveStraight_;
+            typeOfTaskPushed_ = __drive;
+            valueToPush_ = -finalBackupDistance_;
             shakeCompleted_ = true;
             break;
         }

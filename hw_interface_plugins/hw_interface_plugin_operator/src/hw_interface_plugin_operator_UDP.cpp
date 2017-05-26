@@ -121,7 +121,7 @@ bool hw_interface_plugin_operator::operator_UDP::subPluginInit(ros::NodeHandlePt
         heartbeatRate_ms=50;
     }
 
-    scanPublisher = nhPtr->advertise<sensor_msgs::LaserScan>("/scan",1,false);
+    scanPublisher = nhPtr->advertise<messages::NavFilterOut>("/navigation/navigationfilterout/navigationfilterout",1,false);
 
     localPort = 0;
     remotePort = 0;
@@ -187,7 +187,7 @@ bool hw_interface_plugin_operator::operator_UDP::interfaceReadHandler(const size
                     ROS_DEBUG("Creating Stream");
                     ros::serialization::IStream stream((uint8_t*)(&(receivedData[MSG_OFFSET])), ros::serialization::serializationLength(lastScan));
                     ROS_DEBUG("reading into msg");
-                    ros::serialization::Serializer<sensor_msgs::LaserScan>::read(stream, lastScan);
+                    ros::serialization::Serializer<messages::NavFilterOut>::read(stream, lastScan);
                     ROS_DEBUG("publishing");
                     scanPublisher.publish(lastScan);
 

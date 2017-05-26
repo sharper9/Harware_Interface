@@ -1,6 +1,6 @@
-#include <robot_control/drive_straight.h>
+#include <robot_control/drive_power_dig.h>
 
-void DriveStraight::init()
+void DrivePowerDig::init()
 {
 	traversedDistance_ = 0.0;
     initX_ = robotStatus.xPos;
@@ -10,7 +10,7 @@ void DriveStraight::init()
 	ROS_INFO("drive straight des distance = %f",desiredDistance_);
 	if(desiredDistance_<0.0) driveSign_ = -1.0;
 	else driveSign_ = 1.0;
-    timeoutValue_ = (unsigned int)round((1.0 + 2.5*fabs(desiredDistance_))*robotStatus.loopRate);
+	timeoutValue_ = (unsigned int)round((4.0 + 2.0*fabs(desiredDistance_))*robotStatus.loopRate);
     timeoutCounter_ = 0;
     if(fabs(desiredDistance_>0.0)) timeoutMinValue_ = (unsigned int)round(0.5*robotStatus.loopRate);
     else timeoutMinValue_ = 0;
@@ -19,7 +19,7 @@ void DriveStraight::init()
     robotOutputs.turnFlag = false;
 }
 
-int DriveStraight::run()
+int DrivePowerDig::run()
 {
     //int temp;
     ROS_INFO_THROTTLE(1, "drive straight running");

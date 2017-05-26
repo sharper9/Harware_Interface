@@ -1,8 +1,8 @@
-#ifndef DRIVE_STRAIGHT_H
-#define DRIVE_STRAIGHT_H
+#ifndef DRIVE_POWER_DIG_H
+#define DRIVE_POWER_DIG_H
 #include "task.h"
 
-class DriveStraight : public Task
+class DrivePowerDig : public Task
 {
 public:
 	void init();
@@ -43,4 +43,4 @@ private:
 	const float maxHeadingErrorSpeedI_ = 30.0;
 };
 
-#endif // DRIVE_STRAIGHT_H
+#endif // DRIVE_POWER_DIG_H

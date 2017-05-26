@@ -33,6 +33,7 @@
 #define MSG_TYPE_HEARTBEAT      0xff
 
 
+
 namespace hw_interface_plugin_agent {
 
     class const_shared_buf_agent : public hw_interface_support_types::shared_const_buffer
@@ -91,6 +92,7 @@ namespace hw_interface_plugin_agent {
 
         void compressedImageTransportCallback(const sensor_msgs::ImageConstPtr &msg);
 
+        double NAV_UPDATE_RATE=1/2;
 
         bool operatorConnected;
         double lastMsgTimeStamp;
@@ -98,6 +100,9 @@ namespace hw_interface_plugin_agent {
         double opTimeOnFirstReceipt;
         double agentTimeOnFirstReceipt;
         double agentOpTimeOffset;
+        
+        
+        ros::Time lastSentNavTime;
 
         double instantLatency;
 

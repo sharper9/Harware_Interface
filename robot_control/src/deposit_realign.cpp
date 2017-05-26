@@ -13,13 +13,20 @@ bool DepositRealign::runProc()
         depositWaypointAngleTolerance += depositWaypointAngleToleranceIncrement;
         if(depositWaypointAngleTolerance > depositWaypointAngleToleranceMax) depositWaypointAngleTolerance = depositWaypointAngleToleranceMax;
         computeDriveSpeeds();
-        sendPrepareArmBucket();
-        numWaypointsToTravel = 1;
-        clearAndResizeWTT();
-        waypointsToTravel.at(0).x = depositWaypointRecoverX;
-        waypointsToTravel.at(0).y = depositWaypointRecoverY;
-        sendDriveGlobal(false, true, 0.0, false);
-        //sendWait(5.0, false); // TODO: remove, this is temporary for testing
+        //sendPrepareArmBucket();
+        if(hypot(depositWaypointRecoverX-robotStatus.xPos, depositWaypointRecoverY-robotStatus.yPos) < depositWaypointDistanceTolerance)
+        {
+            sendDriveRel(0.0, 0.0, true, 0.0, false, false);
+        }
+        else
+        {
+            numWaypointsToTravel = 1;
+            clearAndResizeWTT();
+            waypointsToTravel.at(0).x = depositWaypointRecoverX;
+            waypointsToTravel.at(0).y = depositWaypointRecoverY;
+            sendDriveGlobal(false, true, 0.0, false);
+            //sendWait(5.0, false); // TODO: remove, this is temporary for testing
+        }
         state = _exec_;
         resetQueueEmptyCondition();
         break;

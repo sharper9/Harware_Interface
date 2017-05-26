@@ -9,7 +9,8 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        digPitchAngle = -3.0;
+        recoverLockout = true;
+        digPitchAngle = -4.0;
         for(int i=0; i<numDigsPerMine; i++)
         {
             sendDig(digPitchAngle);
@@ -26,9 +27,10 @@ bool Mine::runProc()
         procsToExecute[procType] = false;
         procsToResume[procType] = false;
         computeDriveSpeeds();
-        tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistance))
-                          || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - mapYOffset - miningWallBufferDistance))
-                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistance - mapYOffset));
+        tooCloseToWall = (((robotStatus.xPos + robotCenterToScoopLength*cos(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_X_LEN - miningWallBufferDistanceX))
+                          || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) >= (DIG_MAP_Y_LEN - mapYOffset - miningWallBufferDistanceY))
+                              || ((robotStatus.yPos + robotCenterToScoopLength*sin(DEG2RAD*robotStatus.heading)) <= miningWallBufferDistanceY - mapYOffset)
+                               && (execInfoMsg.actionDeque.at(0) == 1 || execInfoMsg.actionDeque.at(0) == 2 || execInfoMsg.actionDeque.at(0) == 3 || execInfoMsg.actionDeque.at(0) == 13));
         if(tooCloseToWallLatch.LE_Latch(tooCloseToWall) && !sentTooCloseToWall)
         {
             ROS_WARN("Scoop too close to wall. Must back up.");
@@ -42,7 +44,8 @@ bool Mine::runProc()
         {
             sentTooCloseToWall = false;
         }
-        if((execLastProcType == procType && execLastSerialNum == finalSerialNum) || queueEmptyTimedOut) state = _finish_;
+        if(execLastProcType == procType && execLastSerialNum == finalSerialNum) performFullPoseUpdate = true;
+        if((execLastProcType == procType && execLastSerialNum == finalSerialNum && robotStatus.fullPoseFound) || queueEmptyTimedOut) state = _finish_;
         else state = _exec_;
         serviceQueueEmptyCondition();
         break;
@@ -54,6 +57,7 @@ bool Mine::runProc()
     case _finish_:
         bucketFull = true;
         atMineLocation = false;
+        recoverLockout = false;
         procsBeingExecuted[procType] = false;
         procsToExecute[procType] = false;
         procsToResume[procType] = false;

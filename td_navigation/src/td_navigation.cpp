@@ -296,24 +296,57 @@ bool td_navigation::worker::srvCallBack(td_navigation::Localize::Request &req,
   if(error_type == -1){
     res.triangulation_failure = true;
     res.fail = true;
+    //check if any obstructions are clear, gives a hint to our position
+    bool b_0_m_0_obstruction = get_avg_err0_l(average_length) > mob_rad_dist;
+    bool b_0_m_1_obstruction = get_avg_err0_r(average_length) > mob_rad_dist;
+    bool b_1_m_0_obstruction = get_avg_err1_l(average_length) > mob_rad_dist;
+    bool b_1_m_1_obstruction = get_avg_err1_r(average_length) > mob_rad_dist;
+
+    //for future programmers: this behavioral analysis doesn't really belong here,
+    //it should be done in mission control/planning area. This was a bit of a last minute addition
+
+    if(b_0_m_0_obstruction && b_1_m_1_obstruction){
+      stat.initialization_maneuver = 16; //not yet set // left 130
+    }else if(b_0_m_0_obstruction && b_0_m_1_obstruction){
+      stat.initialization_maneuver = 17; //not yet set // right 90
+    }else if(b_0_m_1_obstruction){
+      stat.initialization_maneuver = 18; //not yet set // right 40
+    }else if(b_1_m_0_obstruction){
+      stat.initialization_maneuver = 19; //not yet set // left 40
+    }else if(b_1_m_0_obstruction && b_1_m_1_obstruction){
+      stat.initialization_maneuver = 20; //not yet set //left 90
+    }else {
+      stat.initialization_maneuver = 5; //turn left 20
+    }
     stat.success = false;
-    stat.initialization_maneuver = 5;
     status_pub.publish(stat);
     ros::spinOnce();
     return true;
   }
   if(error_type == -2){
-    bool b_0_m_0_obstruction = get_avg_err0_l() > mob_rad_dist;
-    bool b_0_m_1_obstruction = get_avg_err0_r() > mob_rad_dist;
-    bool b_1_m_0_obstruction = get_avg_err1_l() > mob_rad_dist;
-    bool b_1_m_1_obstruction = get_avg_err1_r() > mob_rad_dist;
-
-    if()
-
-
     stat.success = false;
-    stat.initialization_maneuver = 5;
+    //check if any obstructions are clear, gives a hint to our position
+    bool b_0_m_0_obstruction = get_avg_err0_l(average_length) > mob_rad_dist;
+    bool b_0_m_1_obstruction = get_avg_err0_r(average_length) > mob_rad_dist;
+    bool b_1_m_0_obstruction = get_avg_err1_l(average_length) > mob_rad_dist;
+    bool b_1_m_1_obstruction = get_avg_err1_r(average_length) > mob_rad_dist;
 
+    //for future programmers: this behavioral analysis doesn't really belong here,
+    //it should be done in mission control/planning area. This was a bit of a last minute addition
+
+    if(b_0_m_0_obstruction && b_1_m_1_obstruction){
+      stat.initialization_maneuver = 16; //not yet set // left 130
+    }else if(b_0_m_0_obstruction && b_0_m_1_obstruction){
+      stat.initialization_maneuver = 17; //not yet set // right 90
+    }else if(b_0_m_1_obstruction){
+      stat.initialization_maneuver = 18; //not yet set // right 40
+    }else if(b_1_m_0_obstruction){
+      stat.initialization_maneuver = 19; //not yet set // left 40
+    }else if(b_1_m_0_obstruction && b_1_m_1_obstruction){
+      stat.initialization_maneuver = 20; //not yet set //left 90
+    }else {
+      stat.initialization_maneuver = 5; //turn left 20
+    }
 
     status_pub.publish(stat);
     res.fail = true;
@@ -930,8 +963,7 @@ int main(int argc, char **argv)
   ROS_INFO(" - ros::init complete");
 
   //TODO: these values should be launch params
-  td_navigation::worker worker(50, 1780, 104, 106, 0, 610 , 557); // base = 1780, robot width = 557, robot length = 635
-
+  td_navigation::worker worker(50, 1776, 104, 106, 0, 595, 557); // base = 1780, robot width = 557, robot length = 635
 
   ROS_DEBUG("td_navigation closing");
   return 0;
