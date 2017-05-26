@@ -19,6 +19,8 @@ namespace hw_interface_plugin_roboteq
     std::map <std::string, std::string> script_list = {
       {"Reg_Left", 
           "# C\r"
+          "^ALIM 1 160"
+          "^ALIM 2 160"
           "^DINA 6 0\r"
           "^THLD 2\r"
           "^BLFB 1 1\r"
@@ -54,6 +56,8 @@ namespace hw_interface_plugin_roboteq
           "#\r"},
       {"Reg_Right", 
           "# C\r"
+          "^ALIM 1 160"
+          "^ALIM 2 160"
           "^DINA 6 0\r"
           "^THLD 2\r"
           "^BLFB 1 1\r"
@@ -89,6 +93,8 @@ namespace hw_interface_plugin_roboteq
           "#\r"},
       {"Comp_Left", 
           "# C\r"
+          "^ALIM 1 160"
+          "^ALIM 2 160"
           "^DINA 6 0\r"
           "^THLD 2\r"
           "^BLFB 1 1\r"
@@ -124,6 +130,8 @@ namespace hw_interface_plugin_roboteq
           "#\r"},
       {"Comp_Right", 
           "# C\r"
+          "^ALIM 1 160"
+          "^ALIM 2 160"
           "^DINA 6 0\r"
           "^THLD 2\r"
           "^BLFB 1 1\r"
