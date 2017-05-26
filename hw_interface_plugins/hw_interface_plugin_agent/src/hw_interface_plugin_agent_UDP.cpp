@@ -35,10 +35,10 @@ void hw_interface_plugin_agent::agent_UDP::msgCallback(const topic_tools::ShapeS
         else
         {   
             boost::lock_guard<boost::mutex> guard(webCamCmdMutex);
-            if(lastSentNavTime.toSec()-ros::Time::now().toSec() > NAV_UPDATE_RATE)
+            if(ros::Time::now().toSec()-lastSentNavTime.toSec() > 1.0)
             { 
                 lastSentNavTime=ros::Time::now();
-                if(!/*(webCamCmdFromCommand.start) &&*/ (type==MSG_TYPE_LASER_SCAN))
+                //if(!/*(webCamCmdFromCommand.start) &&*/ (type==MSG_TYPE_LASER_SCAN))
                 {
                     ROS_DEBUG("scan");
                     postInterfaceWriteRequest(const_shared_buf_agent(*msg,type));
@@ -94,12 +94,12 @@ bool hw_interface_plugin_agent::agent_UDP::subPluginInit(ros::NodeHandlePtr nhPt
     //webCamCmdPub = nhPtr->advertise<msgs_and_srvs::WebcamCommands>("/agent/operatorIP",1,true);
 
     scanSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/navigation/navigationfilterout/navigationfilterout",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
-    bumperParamsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/vvirtualbumperparams",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
-    armPositionSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/arm/position",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_ARM_POSITION));
-    bumperStatusSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/lidar/lidar/virtualbumperstatus",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_BUMPER_STATUS));
-    driveCommandsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/drivecommands",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_DRIVE_CMDS));
-    armModeSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/armmanualmode",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_ARM_MODE));
-    cameraImageSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/webcam/publishimages/image",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_CAMERA_IMAGE));
+//    bumperParamsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/vvirtualbumperparams",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_LASER_SCAN));
+  //  armPositionSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/arm/position",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_ARM_POSITION));
+   // bumperStatusSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/lidar/lidar/virtualbumperstatus",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_BUMPER_STATUS));
+   // driveCommandsSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/drivecommands",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_DRIVE_CMDS));
+   // armModeSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/command/interface/armmanualmode",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_ARM_MODE));
+    //cameraImageSub = nhPtr->subscribe<topic_tools::ShapeShifter>("/webcam/publishimages/image",1,boost::bind(&hw_interface_plugin_agent::agent_UDP::msgCallback,this,_1,MSG_TYPE_CAMERA_IMAGE));
     //webCamCmdSub = nhPtr->subscribe<msgs_and_srvs::WebcamCommands>("/command/interface/webcam",1,&hw_interface_plugin_agent::agent_UDP::webCamCmdCallback,this);
 
 //    nhPtr->setParam("~image_transport","compressed");
