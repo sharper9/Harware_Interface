@@ -83,7 +83,7 @@ public:
     const float depositWaypointAngleToleranceIncrement = 1.0; // deg
     const float depositWaypointRecoverX = 2.0; // m
     const float depositWaypointRecoverY = 0.0; // m
-    const float queueEmptyTimerPeriod = 30.0; // sec
+    const float queueEmptyTimerPeriod = 15.0; // sec
     const float defaultVMax = 1.0; // m/s
     const float defaultRMax = 45.0; // deg/s
 	const float mapYOffset = 1.94; // m

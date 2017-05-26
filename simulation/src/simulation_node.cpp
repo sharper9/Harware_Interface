@@ -18,6 +18,7 @@ const double simRate = 50.0; // Hz
 messages::ActuatorOut actuatorCmd;
 RobotSim robotSim(1.0, 0.0, 0.0,simRate);
 hw_interface_plugin_agent::pause pauseMsg;
+messages::NavFilterOut navMsgOut;
 
 int main(int argc, char** argv)
 {
@@ -33,7 +34,6 @@ int main(int argc, char** argv)
     ros::Publisher pausePub = nh.advertise<hw_interface_plugin_agent::pause>("/agent/pause",1);
     ros::Publisher leftDrivePub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/drivemotorin/left",1);
     ros::Publisher rightDrivePub = nh.advertise<hw_interface_plugin_roboteq::Roboteq_Data>("/roboteq/drivemotorin/right",1);
-    messages::NavFilterOut navMsgOut;
     hw_interface_plugin_roboteq::Roboteq_Data scoopFeedbackMsg;
     hw_interface_plugin_roboteq::Roboteq_Data armFeedbackMsg;
     hw_interface_plugin_roboteq::Roboteq_Data bucketFeedbackMsg;
@@ -120,6 +120,8 @@ void simControlCallback(const messages::SimControl::ConstPtr& msg)
         if(msg->simSpeed>0.0) robotSim.dt = robotSim.normalSpeedDT*msg->simSpeed;
     }
     pauseMsg.pause = msg->pauseSwitch;
+    navMsgOut.initial_pose_found = msg->initialFullPoseFound;
+    navMsgOut.full_pose_found = msg->fullPoseFound;
 }
 
 void rotateCoord(float origX, float origY, float &newX, float &newY, float angleDeg)

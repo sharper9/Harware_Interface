@@ -52,6 +52,7 @@ MissionPlanning::MissionPlanning()
     infoMsg.procsBeingExecuted.resize(NUM_PROC_TYPES,0);
     infoMsg.procsToResume.resize(NUM_PROC_TYPES,0);
     infoMsg.procStates.resize(NUM_PROC_TYPES,_init_);
+    initManeuverToPerform = 15; // default to "no maneuver"
     srand(time(NULL));
     for(int i=0; i<NUM_PROC_TYPES; i++)
     {
