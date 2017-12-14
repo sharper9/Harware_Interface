@@ -1,0 +1,3 @@
+[submodule "camera_stream"]
+	path = camera_stream
+	url = https://github.com/jennuine/camera_stream
