@@ -1,7 +1,0 @@
-launch_params:
-  {
-  average_length: 20,
-  dStation: 1930.4,
-  rad_L: 101,
-  rad_R: 106,
-  }
