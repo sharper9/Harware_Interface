@@ -1,0 +1,17 @@
+plugin_names: 
+    {
+        teensy_serial : hw_interface_plugin_teensy,
+    }
+    
+teensy_serial:
+    {
+        teensy1 : "teensy1",
+    }
+    
+teensy1:
+    {
+        deviceName         : "/dev/ttyACM0",
+        baudrate           : 115200,
+        subscribeToTopic   : "/teensy/subscribe",
+        publishToTopic     : "/teensy/publish",
+}
