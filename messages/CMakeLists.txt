@@ -49,32 +49,13 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
  add_message_files(
    FILES
-   ActuatorOut.msg
-   ExecInfo.msg
-   ExecActionEnded.msg
-   NavFilterOut.msg
-   Servo_command.msg
-   Servo_status.msg
-   RobotPose.msg
-   MissionPlanningInfo.msg
-   NextWaypointOut.msg
-   SimControl.msg
-   #added for Comm port, remove
-   nb1_to_i7_msg.msg
-   nb2_3_to_i7_msg.msg
-   i7_to_nb1_msg.msg
-   encoder_data.msg
-   PowerUsage.msg
+   encoderUpdate.msg
  )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   ExecAction.srv
-   MissionPlanningControl.srv
-   ExecManualOverride.srv
-   NavFilterControl.srv
- )
+   )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -86,7 +67,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
    DEPENDENCIES
-   grid_map_msgs
+  
 #   std_msgs  # Or other packages containing msgs
  )
 

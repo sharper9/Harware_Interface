@@ -1,12 +1,5 @@
 <!-- this launch file simply loads the each plugins' launch file -->
 
 <launch>
-    <include file="$(find hw_interface_plugin_timedomain)/launch/Timedomain_Serial_Interface.launch" />
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Right_Roboteq_Interface.launch" />
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Left_Roboteq_Interface.launch" />
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Arm_Roboteq_Interface.launch" />
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Bucket_Roboteq_Interface.launch" />
-    <include file="$(find hw_interface_plugin_roboteq)/launch/Wrist_Roboteq_Interface.launch" />
-    <include file="$(find hw_interface_plugin_netburner)/launch/NB1_Interface.launch" />
-    <include file="$(find hw_interface_plugin_agent)/launch/Agent_Interface.launch" />
+    <include file="$(find hw_interface_plugin_teensy)/launch/Teensy_Serial_Interface.launch" />
 </launch>
