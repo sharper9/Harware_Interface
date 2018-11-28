@@ -21,7 +21,7 @@ class delta_loop_time
 
     public:
         delta_loop_time():
-        lastTimeMetric(ros::Time::now().toNSec()),
+        lastTimeMetric(ros::Time::now()),
         acc(boost::accumulators::tag::rolling_window::window_size = 150)
         {
             metricsEnabled = true;
