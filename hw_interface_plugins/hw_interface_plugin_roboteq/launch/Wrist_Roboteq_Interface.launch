@@ -1,9 +1,0 @@
-<launch>
-
-    <rosparam
-                command="load"
-                file="$(find hw_interface_plugin_roboteq)/launch/launch_params/Wrist_Launch_Params.yaml"
-                subst_value="true"
-    />
-
-</launch>
