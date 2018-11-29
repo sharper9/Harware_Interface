@@ -68,8 +68,7 @@ namespace base_classes
         std::string deviceName;
         boost::asio::streambuf interfaceRegexBuffer;
 
-        int readLength;
-        std::string headerString, footerString;
+        
 
         base_serial_interface();
 
