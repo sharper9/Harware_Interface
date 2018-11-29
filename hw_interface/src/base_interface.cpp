@@ -5,7 +5,7 @@
 #include <boost/accumulators/statistics/mean.hpp>
 
 base_classes::base_interface::base_interface() :
-    lastTimeMetric(ros::Time::now().toNSec()),
+    lastTimeMetric(ros::Time::now()),
     acc(boost::accumulators::tag::rolling_window::window_size = 150)
 {
     enabled = true;
