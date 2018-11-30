@@ -9,8 +9,27 @@
 
 #include <messages/encoderUpdate.h>
 
+#include <ros/console.h>
 
 namespace hw_interface_plugin_teensy {
+
+
+    typedef struct encoderUpdateSerial teensyDataMsg_t;
+    struct encoderUpdateSerial
+    {
+        uint16_t header;
+        
+        float angleLeft;
+        float angleRight;
+
+        float velocityLeft;
+        float velocityRight;
+
+        uint8_t checksum;
+
+        uint8_t footer;
+}__attribute__((packed));
+
 
     class teensy_serial : public base_classes::base_serial_interface
     {

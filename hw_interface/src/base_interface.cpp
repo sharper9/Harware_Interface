@@ -72,7 +72,7 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
     ROS_DEBUG("%s:: Length and footer matcher: buffer length%lu", pluginName.c_str(), totalBytesInBuffer);
     ROS_DEBUG("packetlength %d", packetLengthInBytes);
     ROS_DEBUG("Candidate Header: %s", headerSequence);
-    //ROS_DEBUG("Candidate Footer: %s", footerSequence);
+    ROS_DEBUG("Candidate Footer: %s", footerSequence);
     if(totalBytesInBuffer <= std::strlen(footerSequence))
     {
         ROS_DEBUG("%s:: Matcher Returning Early", pluginName.c_str());
@@ -81,14 +81,17 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
     if((packetLengthInBytes - totalBytesInBuffer) <= 0)
     {
         ROS_DEBUG("%s:: Full Length Packet Received", pluginName.c_str());
-        /*    
+        
+        /*
         std::printf("Contents: ");
 	      for(int i = 0; i < totalBytesInBuffer; i++)
 	      {
               std::printf("%c, %X | ", receivedData[i], receivedData[i]);
 	      }
 	      std::printf("\r\n");
-	    */
+        */
+          
+	    
         const int footerLength = std::strlen(footerSequence);
         int i = 0;
         int j = footerLength-1;
@@ -111,7 +114,7 @@ std::size_t base_classes::base_interface::streamMatcherDelimAndLength(const boos
         for(i = 0; i < headerLength; i++)
         {
             //std::printf("%x, %x, %d| ", receivedData[totalBytesInBuffer - packetLengthInBytes + i], (headerSequence[i] & 0xff),
-              //          receivedData[totalBytesInBuffer - packetLengthInBytes + i] == headerSequence[i]);
+                       // receivedData[totalBytesInBuffer - packetLengthInBytes + i] == headerSequence[i]);
             if(receivedData[totalBytesInBuffer - packetLengthInBytes + i] != (headerSequence[i] & 0xff))
             {
                 //THIS IS WHERE AN HSM invalid message can be sent

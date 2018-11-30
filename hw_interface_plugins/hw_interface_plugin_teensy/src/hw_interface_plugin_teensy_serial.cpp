@@ -39,8 +39,7 @@ bool hw_interface_plugin_teensy::teensy_serial::subPluginInit(ros::NodeHandlePtr
     std::string header = "$S";
     std::string footer = "\n";
     int readLen = 20;
-    setupStreamMatcherDelimAndLength(readLen, header.c_str(),
-                                        footer.c_str());
+    setupStreamMatcherDelimAndLength(readLen, header.c_str(),footer.c_str());
 
     //retrieve string from the ROS Parameter Server
         //of the format '<plugin_name>/<parameter>
@@ -61,7 +60,7 @@ bool hw_interface_plugin_teensy::teensy_serial::subPluginInit(ros::NodeHandlePtr
     //place to publish the data after reading from device
     if(ros::param::get(pluginName+"/publishToTopic", tempString))
     {
-        //rosDataPub = nh->advertise<messages::encoder_data>(tempString, 1, false);
+        teensyDataPub = nhPtr->advertise<messages::encoderUpdate>(tempString, 1, false);
     }
     else
     {
@@ -115,12 +114,29 @@ bool hw_interface_plugin_teensy::teensy_serial::interfaceReadHandler(const size_
     ROS_INFO_EXTRA_SINGLE("teensy Plugin Data Handler");
 
     ROS_DEBUG("Buf Pointer: 0x%p\r\n", &receivedData[arrayStartPos]);
+    
+    
     std::printf("Contents: ");
     for(int i = 0; i < length; i++)
     {
         std::printf("%x | ", receivedData[arrayStartPos + i]);
     }
     std::printf("\r\n");
+    
+
+    
+    teensyDataMsg_t *teensyMsg = (teensyDataMsg_t*)(&(receivedData[0]));
+
+    teensyROSMsg.angleLeft = teensyMsg->angleLeft;
+    teensyROSMsg.angleRight = teensyMsg->angleRight;
+
+    teensyROSMsg.velocityLeft = teensyMsg->velocityLeft;
+    teensyROSMsg.velocityRight = teensyMsg->velocityRight;
+
+
+    teensyDataPub.publish(teensyROSMsg);
+    
+    
 
     return true;
 }

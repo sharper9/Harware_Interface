@@ -66,6 +66,9 @@ namespace base_classes
         ros::Publisher rosDataPub; //publisher, data from interface to ros
         ros::Subscriber rosDataSub;//subscriber, data from ros to interface
 
+        int readLength;
+        std::string headerString, footerString;
+
         //This ASIO strand is used for writing data to the interface.
         //If this object is not used for writing data to the interface, data writes could happen
         //  in any order, meaning output data packets can be sent in reverse order (bad for control packets).
@@ -104,10 +107,14 @@ namespace base_classes
         void setupStreamMatcherDelimAndLength(const int packetLengthInBytes, const char *headerSequence,
                                               const char *footerSequence)
         {
+            
+            headerString = std::string(headerSequence);
+            footerString = std::string(footerSequence);
+
             streamCompletionChecker =
                     boost::bind(&base_interface::streamMatcherDelimAndLength, this,
-                                    _1, _2, packetLengthInBytes, headerSequence,
-                                    footerSequence);
+                                    _1, _2, packetLengthInBytes, headerString.c_str(),
+                                    footerString.c_str());
             enableCompletionFunctor =! streamCompletionChecker.empty();
         }
 
